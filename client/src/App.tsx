@@ -1,7 +1,6 @@
 import React from 'react';
 import { RouterProvider, useRouter } from './lib/router';
 import { useCampusStore } from './lib/useStore';
-import { InstitutionalBanner } from './components/layout/InstitutionalBanner';
 import { PublicHeader } from './components/layout/PublicHeader';
 import { PublicFooter } from './components/layout/PublicFooter';
 
@@ -103,7 +102,6 @@ function AppRouter() {
 
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <InstitutionalBanner />
         <StudentShell>{content}</StudentShell>
       </div>
     );
@@ -133,7 +131,6 @@ function AppRouter() {
 
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <InstitutionalBanner />
         <RecruiterShell>{content}</RecruiterShell>
       </div>
     );
@@ -167,7 +164,6 @@ function AppRouter() {
 
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <InstitutionalBanner />
         <AdminShell>{content}</AdminShell>
       </div>
     );
@@ -194,7 +190,6 @@ function AppRouter() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <InstitutionalBanner />
       <PublicHeader />
       <main className="flex-1">{publicContent}</main>
       <PublicFooter />
