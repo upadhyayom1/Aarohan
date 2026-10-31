@@ -22,7 +22,7 @@ export function PublicHeader() {
         <div className="flex items-center gap-4">
           <Link to="/" className="flex flex-col group">
             <span className="text-lg font-bold tracking-tight text-[#111111] uppercase font-mono group-hover:opacity-80 transition-opacity">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-[9px] font-mono tracking-widest text-[#858585] uppercase">
               University Placement Office

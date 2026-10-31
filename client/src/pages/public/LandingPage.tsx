@@ -56,7 +56,7 @@ export function LandingPage() {
                 </Link>
                 <Link to="/about">
                   <Button variant="secondary" size="lg">
-                    How CampusLink works
+                    How Aarohan works
                   </Button>
                 </Link>
               </div>
@@ -133,7 +133,7 @@ export function LandingPage() {
               A clearer path from campus to career.
             </h2>
             <p className="text-sm sm:text-base text-[#666666] mt-4 leading-relaxed">
-              CampusLink unifies student preparation, recruiter coordination, and administrative governance into an objective, data-driven placement process.
+              Aarohan unifies student preparation, recruiter coordination, and administrative governance into an objective, data-driven placement process.
             </p>
           </div>
 
@@ -267,7 +267,7 @@ export function LandingPage() {
                 Know where you stand.
               </h2>
               <p className="text-base text-[#666666] leading-relaxed">
-                CampusLink helps students evaluate how their profile and verified coursework align with specific job requirements before applying.
+                Aarohan helps students evaluate how their profile and verified coursework align with specific job requirements before applying.
               </p>
 
               <div className="space-y-4 pt-2">
@@ -500,7 +500,7 @@ export function LandingPage() {
             </Link>
             <Link to="/register">
               <button className="bg-transparent text-white border border-neutral-400 hover:border-white hover:bg-neutral-900 px-6 py-3 text-base rounded-[3px] font-medium transition-colors cursor-pointer">
-                Join CampusLink
+                Join Aarohan
               </button>
             </Link>
           </div>

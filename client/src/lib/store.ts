@@ -344,7 +344,7 @@ export const INITIAL_APPLICATIONS: Application[] = [
     matchScore: 92,
     recruiterNotes: 'Exceptional systems background. Verified high alignment on React/Node and distributed systems project.',
     history: [
-      { stage: 'Applied', date: '2026-10-19', note: 'Application dossier submitted via CampusLink portal.' },
+      { stage: 'Applied', date: '2026-10-19', note: 'Application dossier submitted via Aarohan portal.' },
       { stage: 'Under Review', date: '2026-10-21', note: 'Technical recruiter screened resume and transcript.' },
       { stage: 'Shortlisted', date: '2026-10-24', note: 'Candidate selected for round 1 technical interview.' },
       { stage: 'Interview Scheduled', date: '2026-10-28', note: 'Technical System Architecture interview confirmed.' },
@@ -737,7 +737,7 @@ class CampusStore {
         auditLogs: this.auditLogs,
         skillResources: this.skillResources,
       };
-      localStorage.setItem('campuslink_state', JSON.stringify(data));
+      localStorage.setItem('aarohan_state', JSON.stringify(data));
     } catch {
       // ignore
     }
@@ -746,7 +746,7 @@ class CampusStore {
   private loadFromStorage() {
     if (typeof window === 'undefined') return;
     try {
-      const raw = localStorage.getItem('campuslink_state');
+      const raw = localStorage.getItem('aarohan_state');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed.currentUser) this.currentUser = parsed.currentUser;
@@ -910,7 +910,7 @@ class CampusStore {
         {
           stage: 'Applied',
           date: new Date().toISOString().slice(0, 10),
-          note: 'Application dossier transmitted via CampusLink.',
+          note: 'Application dossier transmitted via Aarohan.',
         },
       ],
     };
@@ -1202,7 +1202,7 @@ class CampusStore {
   // Reset to seed defaults
   public resetToDefaults() {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('campuslink_state');
+      localStorage.removeItem('aarohan_state');
     }
     this.currentUser = INITIAL_USER_STUDENT;
     this.studentProfile = INITIAL_STUDENT_PROFILE;

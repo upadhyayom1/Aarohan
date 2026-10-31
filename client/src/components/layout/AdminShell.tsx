@@ -76,7 +76,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </button>
           <div>
             <span className="font-mono text-sm font-bold uppercase tracking-tight block">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest block">
               Placement Directorate Administration
@@ -93,7 +93,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <div className="p-5 border-b border-[#E4E4E1]">
           <Link to="/admin/dashboard" className="block group">
             <span className="font-mono text-base font-bold uppercase tracking-tight text-[#111111]">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-[9px] font-mono uppercase tracking-widest text-[#858585] block mt-0.5">
               University Central Placement Office

@@ -95,7 +95,7 @@ export function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#111111]">
-              Sign in to CampusLink
+              Sign in to Aarohan
             </h1>
             <p className="text-xs font-mono text-[#666666] mt-1">
               Enter your institutional credentials or corporate partner email.

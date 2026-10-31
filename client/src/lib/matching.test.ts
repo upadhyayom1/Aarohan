@@ -69,7 +69,7 @@ test('calculateMatch returns high score when required skills directly match', ()
     projects: [
       {
         id: 'p-1',
-        title: 'CampusLink Portal',
+        title: 'Aarohan Portal',
         description: 'University placement system',
         techStack: ['React', 'TypeScript'],
       },
