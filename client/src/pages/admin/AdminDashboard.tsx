@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
+import { useCampusStore } from '../../lib/useStore';
 import { Button, StatusBadge, MetricSummary } from '../../components/ui';
 import api from '../../lib/api';
 import {
@@ -15,6 +16,7 @@ import {
 
 export function AdminDashboard() {
   const { navigate } = useRouter();
+  const { currentUser } = useCampusStore();
 
   const [stats, setStats] = useState<{
     total_students: number;
@@ -33,6 +35,10 @@ export function AdminDashboard() {
 
   useEffect(() => {
     let isMounted = true;
+    if (currentUser.role !== 'admin') {
+      setLoading(false);
+      return;
+    }
     Promise.all([
       api.admin.getStats().catch((err) => {
         console.warn('Failed to load admin stats:', err);

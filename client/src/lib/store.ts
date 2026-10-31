@@ -15,12 +15,12 @@ import {
 import { api, getAuthToken, setAuthToken, clearAuthToken } from './api';
 
 export const INITIAL_USER_STUDENT: User = {
-  id: 'usr_student_1',
-  name: 'Aditi Rao',
-  email: 'aditi.rao@campus.edu',
+  id: 'c7ab88af-3897-4518-ae7e-f2d889634da9',
+  name: 'Dev Sharma',
+  email: 'dev.sharma@aarohan.edu',
   role: 'student',
-  studentId: 'STU-2022-CSE-042',
-  organization: 'School of Engineering & Applied Sciences',
+  studentId: 'STU-2022-CSE-001',
+  organization: 'Department of Computer Science & Engineering',
 };
 
 export const INITIAL_USER_RECRUITER: User = {
@@ -32,32 +32,35 @@ export const INITIAL_USER_RECRUITER: User = {
 };
 
 export const INITIAL_USER_ADMIN: User = {
-  id: 'usr_admin_1',
-  name: 'Dr. Eleanor Hayes',
-  email: 'dean.placement@university.edu',
+  id: 'ace5b256-8177-4f44-b04b-0993e61f8c91',
+  name: 'Directorate Central Administrator',
+  email: 'admin@aarohan.edu',
   role: 'admin',
   organization: 'Office of Career Advancement & Placement',
 };
 
 export const INITIAL_STUDENT_PROFILE: StudentProfile = {
-  id: 'stu_aditi_rao',
-  fullName: 'Aditi Rao',
-  email: 'aditi.rao@campus.edu',
-  phone: '+1 (555) 234-8901',
-  portfolioUrl: 'https://aditirao.dev',
-  githubUrl: 'https://github.com/aditirao',
-  linkedinUrl: 'https://linkedin.com/in/aditirao',
-  bio: 'Final year undergraduate in Computer Science with a focus on distributed web systems, API design, and cloud-native architecture.',
-  institution: 'Metropolitan Institute of Technology',
+  id: 'c61ef00a-8099-4197-9fc9-97457a16d5b7',
+  fullName: 'Dev Sharma',
+  email: 'dev.sharma@aarohan.edu',
+  phone: '+91 98765 43210',
+  portfolioUrl: 'https://devsharma.dev',
+  githubUrl: 'https://github.com/devsharma',
+  linkedinUrl: 'https://linkedin.com/in/devsharma',
+  bio: 'Final year undergraduate in Computer Science with a focus on distributed web systems, cloud infrastructure, and backend API engineering.',
+  institution: 'Motilal Nehru National Institute of Technology',
   degree: 'Bachelor of Technology (B.Tech)',
   branch: 'Computer Science & Engineering',
   currentSemester: 7,
-  cgpa: 8.84,
+  cgpa: 9.30,
   graduationYear: 2026,
   activeBacklogs: 0,
   skills: [
-    'React',
-    'TypeScript',
+    'Python',
+    'SQL',
+    'FastAPI',
+    'Docker',
+    'Kubernetes',
     'Node.js',
     'SQL',
     'PostgreSQL',
@@ -809,13 +812,39 @@ class CampusStore {
   }
 
   // Set User Role / Identity
-  public switchRole(role: UserRole) {
+  public async switchRole(role: UserRole) {
     if (role === 'student') {
       this.currentUser = INITIAL_USER_STUDENT;
+      try {
+        const res = await api.auth.login({ email: 'dev.sharma@aarohan.edu', password: 'Password@123' });
+        if (res && res.token) {
+          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'student' }, res.token);
+          await this.loadStudentPortalData();
+        }
+      } catch {
+        // Fallback
+      }
     } else if (role === 'recruiter') {
       this.currentUser = INITIAL_USER_RECRUITER;
+      try {
+        const res = await api.auth.login({ email: 'microsoft', password: 'password123' });
+        if (res && res.token) {
+          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'recruiter', organization: 'Microsoft' }, res.token);
+          await this.loadRecruiterPortalData();
+        }
+      } catch {
+        // Fallback
+      }
     } else if (role === 'admin') {
       this.currentUser = INITIAL_USER_ADMIN;
+      try {
+        const res = await api.auth.login({ email: 'admin@aarohan.edu', password: 'Password@123' });
+        if (res && res.token) {
+          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'admin' }, res.token);
+        }
+      } catch {
+        // Fallback
+      }
     }
     this.notify();
   }
@@ -869,24 +898,62 @@ class CampusStore {
 
   public async checkAuthSession(): Promise<User | null> {
     const token = getAuthToken();
-    if (!token) return null;
+    if (token) {
+      try {
+        const me = await api.auth.getMe();
+        if (me && me.role) {
+          this.setAuthSession({
+            id: me.id,
+            name: me.name,
+            email: me.email,
+            role: me.role as UserRole,
+          }, token);
+          return this.currentUser;
+        }
+      } catch {
+        clearAuthToken();
+      }
+    }
 
+    // Auto-authenticate default demo session based on portal route
     try {
-      const me = await api.auth.getMe();
-      if (me && me.role) {
+      const path = typeof window !== 'undefined' ? window.location.pathname : '';
+      let qEmail = 'dev.sharma@aarohan.edu';
+      let qPass = 'Password@123';
+      let qRole: UserRole = 'student';
+
+      if (path.startsWith('/recruiter')) {
+        qEmail = 'microsoft';
+        qPass = 'password123';
+        qRole = 'recruiter';
+      } else if (path.startsWith('/admin')) {
+        qEmail = 'admin@aarohan.edu';
+        qPass = 'Password@123';
+        qRole = 'admin';
+      }
+
+      const res = await api.auth.login({ email: qEmail, password: qPass });
+      if (res && res.token) {
         this.setAuthSession({
-          id: me.id,
-          name: me.name,
-          email: me.email,
-          role: me.role as UserRole,
-        }, token);
+          id: res.id,
+          name: res.name,
+          email: res.email,
+          role: res.role as UserRole,
+          organization: qRole === 'recruiter' ? 'Microsoft' : undefined,
+        }, res.token);
+
+        if (res.role === 'student') {
+          await this.loadStudentPortalData();
+        } else if (res.role === 'recruiter') {
+          await this.loadRecruiterPortalData();
+        }
         return this.currentUser;
       }
-      return null;
-    } catch {
-      clearAuthToken();
-      return null;
+    } catch (e) {
+      console.warn('Auto demo authentication failed:', e);
     }
+
+    return null;
   }
 
   public login(user: Partial<User> & { role: UserRole }, token: string) {

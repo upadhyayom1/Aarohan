@@ -27,10 +27,21 @@ interface StudentShellProps {
 
 export function StudentShell({ children }: StudentShellProps) {
   const { path, navigate } = useRouter();
-  const { studentProfile, notifications, actions } = useCampusStore();
+  const { currentUser, studentProfile, notifications, actions } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  if (currentUser.role !== 'student') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#858585]">
+          <span className="inline-block w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+          Synchronizing student credentials...
+        </div>
+      </div>
+    );
+  }
 
   const unreadCount = notifications.filter(n => !n.read).length;
 

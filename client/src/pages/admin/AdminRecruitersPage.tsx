@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { api } from '../../lib/api';
+import { useCampusStore } from '../../lib/useStore';
 import { Input } from '../../components/ui';
 import { Loader2, Briefcase } from 'lucide-react';
 
 export function AdminRecruitersPage() {
+  const { currentUser } = useCampusStore();
   const [recruiters, setRecruiters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,6 +13,10 @@ export function AdminRecruitersPage() {
   useEffect(() => {
     let mounted = true;
     async function fetchRecruiters() {
+      if (currentUser.role !== 'admin') {
+        if (mounted) setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const res = await api.admin.getRecruiters();
@@ -28,7 +34,7 @@ export function AdminRecruitersPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [currentUser.role]);
 
   const filtered = useMemo(() => {
     return recruiters.filter(r => {

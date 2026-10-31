@@ -23,6 +23,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { currentUser } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
+  if (currentUser.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#858585]">
+          <span className="inline-block w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+          Synchronizing institutional administrator credentials...
+        </div>
+      </div>
+    );
+  }
+
   const navGroups = [
     {
       title: 'OVERVIEW',
