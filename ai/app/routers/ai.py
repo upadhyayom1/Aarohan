@@ -137,7 +137,7 @@ def skill_gaps(
     ctx = svc.resumes.try_get_context(student)
     breakdown = svc.matching.breakdown(student, job, ctx)
     pool = svc.matching.build_pool(student, ctx)
-    return svc.gaps.recommend(job, breakdown.summary.missing, pool)
+    return svc.gaps.recommend(job, breakdown.summary.missing, pool, resume=ctx.pdf if ctx else None)
 
 
 # ───────────────────────────── 6.5 ─────────────────────────────
@@ -152,7 +152,7 @@ def build_resume(
     student = _student(repo, body.student_id)
     authorize_student_access(repo, principal, student)
     ctx = svc.resumes.try_get_context(student)
-    return svc.builder.build(student, ctx.analysis if ctx else None)
+    return svc.builder.build(student, ctx.analysis if ctx else None, resume=ctx.pdf if ctx else None)
 
 
 # ═════════════════ EXTRA endpoints (not part of the frozen contract) ═════════════════
