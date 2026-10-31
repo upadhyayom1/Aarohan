@@ -82,10 +82,10 @@ export function StudentShell({ children }: StudentShellProps) {
           </button>
           <div>
             <span className="font-mono text-sm font-bold uppercase tracking-tight block">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest block">
-              Student Workspace
+              Every career begins with a step
             </span>
           </div>
         </div>
@@ -105,18 +105,17 @@ export function StudentShell({ children }: StudentShellProps) {
 
       {/* Desktop Sidebar (and mobile drawer overlay) */}
       <aside
-        className={`fixed md:sticky top-0 h-screen w-64 shrink-0 bg-[#FAFAF9] border-r border-[#E4E4E1] z-40 flex flex-col justify-between transition-transform duration-200 ${
-          mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        }`}
+        className={`fixed md:sticky top-0 h-screen w-64 shrink-0 bg-[#FAFAF9] border-r border-[#E4E4E1] z-40 flex flex-col justify-between transition-transform duration-200 ${mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          }`}
       >
         {/* Top Branding */}
         <div className="p-5 border-b border-[#E4E4E1]">
           <Link to="/student/dashboard" className="block group">
             <span className="font-mono text-base font-bold uppercase tracking-tight text-[#111111]">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-[9px] font-mono uppercase tracking-widest text-[#858585] block mt-0.5">
-              University Placement Portal
+              Every career begins with a step
             </span>
           </Link>
         </div>
@@ -140,11 +139,10 @@ export function StudentShell({ children }: StudentShellProps) {
                       key={item.href}
                       to={item.href}
                       onClick={() => setMobileDrawerOpen(false)}
-                      className={`flex items-center justify-between px-3 py-2 text-xs font-mono tracking-tight rounded-[2px] transition-colors ${
-                        isActive
+                      className={`flex items-center justify-between px-3 py-2 text-xs font-mono tracking-tight rounded-[2px] transition-colors ${isActive
                           ? 'bg-[#111111] text-white font-medium shadow-xs'
                           : 'text-[#444444] hover:text-[#111111] hover:bg-[#F5F5F3]'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <Icon size={14} className={isActive ? 'text-white' : 'text-[#858585]'} />
@@ -152,9 +150,8 @@ export function StudentShell({ children }: StudentShellProps) {
                       </div>
                       {item.badge !== undefined && (
                         <span
-                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                            isActive ? 'bg-white text-black' : 'bg-[#111111] text-white'
-                          }`}
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white text-black' : 'bg-[#111111] text-white'
+                            }`}
                         >
                           {item.badge}
                         </span>

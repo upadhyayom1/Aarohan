@@ -22,10 +22,10 @@ export function PublicHeader() {
         <div className="flex items-center gap-4">
           <Link to="/" className="flex flex-col group">
             <span className="text-lg font-bold tracking-tight text-[#111111] uppercase font-mono group-hover:opacity-80 transition-opacity">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-[9px] font-mono tracking-widest text-[#858585] uppercase">
-              University Placement Office
+              Every career begins with a step
             </span>
           </Link>
         </div>
@@ -38,11 +38,10 @@ export function PublicHeader() {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-xs uppercase tracking-wider font-mono transition-colors pb-0.5 ${
-                  isActive
+                className={`text-xs uppercase tracking-wider font-mono transition-colors pb-0.5 ${isActive
                     ? 'text-[#111111] font-bold border-b border-[#111111]'
                     : 'text-[#666666] hover:text-[#111111]'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>

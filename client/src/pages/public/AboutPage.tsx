@@ -19,11 +19,11 @@ export function AboutPage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#111111] leading-tight">
-            Connecting academic excellence with meaningful industry careers.
+            Every career begins with a step.
           </h1>
 
           <p className="text-base sm:text-lg text-[#666666] leading-relaxed">
-            CampusLink was established by the university Directorate of Career Development & Corporate Relations to establish a transparent, objective, and explainable placement ecosystem.
+            Aarohan was established by the university Directorate of Career Development & Corporate Relations to establish a transparent, objective, and explainable placement ecosystem connecting academic excellence with meaningful industry careers.
           </p>
         </div>
       </section>
@@ -53,7 +53,7 @@ export function AboutPage() {
               <span className="font-mono text-2xl font-bold text-[#111111] block">02</span>
               <h3 className="text-lg font-bold text-[#111111]">Human Agency in Hiring</h3>
               <p className="text-xs text-[#666666] leading-relaxed">
-                CampusLink does not automatically reject candidate applications. Similarity scores are advisory tools that empower recruiters to discover non-obvious engineering talent and evaluate students holistically.
+                Aarohan does not automatically reject candidate applications. Similarity scores are advisory tools that empower recruiters to discover non-obvious engineering talent and evaluate students holistically.
               </p>
             </div>
 

@@ -1,6 +1,8 @@
 {
-  "name": "CampusLink — University Placement & Recruitment Management",
-  "description": "AI-powered university placement and recruitment management platform connecting students, recruiters, and placement administration.",
+  "name": "Aarohan — University Placement & Recruitment Management",
+  "description": "Every career begins with a step. AI-powered university placement and recruitment management platform connecting students, recruiters, and placement administration.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
