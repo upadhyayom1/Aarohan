@@ -13,6 +13,13 @@ enum Role {
   admin
 }
 
+enum DriveStatus {
+  Draft
+  Active
+  Completed
+  Cancelled
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String
@@ -25,3 +32,21 @@ model User {
   @@map("users")
 }
 
+model PlacementDrive {
+  id                   String      @id @default(uuid())
+  name                 String
+  companies            String[]
+  jobOpeningsCount     Int         @default(0) @map("job_openings_count")
+  registrationDeadline DateTime    @map("registration_deadline")
+  eventStartDate       DateTime    @map("event_start_date")
+  eventEndDate         DateTime    @map("event_end_date")
+  rounds               String[]
+  eligibleBranches     String[]    @map("eligible_branches")
+  minCgpa              Float       @default(0.0) @map("min_cgpa")
+  status               DriveStatus @default(Active)
+  description          String?
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+
+  @@map("placement_drives")
+}
