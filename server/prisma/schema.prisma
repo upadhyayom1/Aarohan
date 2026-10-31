@@ -167,3 +167,26 @@ model PlacementDrive {
 
   @@map("placement_drives")
 }
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actor     String
+  actorRole Role     @default(admin) @map("actor_role")
+  action    String
+  entity    String
+  summary   String
+  details   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model InstitutionalSettings {
+  id                 String   @id @default("default")
+  placementYear      String   @default("2026–2027") @map("placement_year")
+  defaultMinCgpa     Float    @default(7.0) @map("default_min_cgpa")
+  maxBacklogsAllowed Int      @default(0) @map("max_backlogs_allowed")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("institutional_settings")
+}

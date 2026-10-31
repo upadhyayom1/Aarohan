@@ -4,25 +4,205 @@ import bcrypt from 'bcryptjs';
 async function main() {
   console.log('Seeding initial data...');
 
-  // Ensure default admin user exists
-  const existingAdmin = await prisma.user.findFirst({
+  const defaultPassword = await bcrypt.hash('Password@123', 10);
+
+  // 1. Ensure default admin user exists
+  let admin = await prisma.user.findFirst({
     where: { email: 'admin@aarohan.edu' },
   });
 
-  if (!existingAdmin) {
-    const hashedPassword = await bcrypt.hash('Admin@12345', 10);
-    await prisma.user.create({
+  if (!admin) {
+    admin = await prisma.user.create({
       data: {
         name: 'Directorate Central Administrator',
         email: 'admin@aarohan.edu',
-        password: hashedPassword,
+        password: defaultPassword,
         role: 'admin',
       },
     });
     console.log('Created default admin user: admin@aarohan.edu');
   }
 
-  // Seed placement drives if none exist
+  // 2. Ensure recruiter exists
+  let recruiter = await prisma.user.findFirst({
+    where: { email: 'recruiter@apexsystems.com' },
+  });
+
+  if (!recruiter) {
+    recruiter = await prisma.user.create({
+      data: {
+        name: 'Ananya Verma',
+        email: 'recruiter@apexsystems.com',
+        password: defaultPassword,
+        role: 'recruiter',
+      },
+    });
+    console.log('Created recruiter: recruiter@apexsystems.com');
+  }
+
+  // 3. Ensure jobs exist
+  const existingJobsCount = await prisma.job.count();
+  let jobApex;
+  let jobHorizon;
+
+  if (existingJobsCount === 0) {
+    jobApex = await prisma.job.create({
+      data: {
+        title: 'Software Development Engineer I',
+        company: 'Apex Systems',
+        description: 'Design and build high-performance microservices and cloud systems.',
+        requiredSkills: ['Python', 'SQL', 'FastAPI', 'Docker'],
+        eligibleBranches: ['CSE', 'IT', 'ECE'],
+        minCgpa: 7.5,
+        graduationYear: 2027,
+        maxBacklogs: 0,
+        deadline: new Date('2026-12-15T23:59:59Z'),
+        status: 'open',
+        recruiterId: recruiter.id,
+      },
+    });
+
+    jobHorizon = await prisma.job.create({
+      data: {
+        title: 'Machine Learning Research Engineer',
+        company: 'Horizon AI Labs',
+        description: 'Conduct foundational AI modeling, evaluation, and latency optimization.',
+        requiredSkills: ['Python', 'PyTorch', 'Transformers', 'CUDA'],
+        eligibleBranches: ['CSE', 'IT'],
+        minCgpa: 8.0,
+        graduationYear: 2027,
+        maxBacklogs: 0,
+        deadline: new Date('2026-12-20T23:59:59Z'),
+        status: 'open',
+        recruiterId: recruiter.id,
+      },
+    });
+    console.log('Created sample jobs.');
+  } else {
+    jobApex = await prisma.job.findFirst({ where: { company: 'Apex Systems' } });
+    jobHorizon = await prisma.job.findFirst({ where: { company: 'Horizon AI Labs' } });
+  }
+
+  // 4. Ensure students exist with profiles
+  const sampleStudents = [
+    {
+      name: 'Dev Sharma',
+      email: 'dev.sharma@aarohan.edu',
+      branch: 'CSE',
+      cgpa: 9.3,
+      skills: ['Python', 'SQL', 'FastAPI', 'Docker', 'Kubernetes'],
+    },
+    {
+      name: 'Aisha Khan',
+      email: 'aisha.khan@aarohan.edu',
+      branch: 'CSE',
+      cgpa: 8.9,
+      skills: ['Python', 'PyTorch', 'Transformers', 'CUDA', 'FastAPI'],
+    },
+    {
+      name: 'Priya Nair',
+      email: 'priya.nair@aarohan.edu',
+      branch: 'IT',
+      cgpa: 8.42,
+      skills: ['Python', 'React', 'Node.js', 'PostgreSQL'],
+    },
+    {
+      name: 'Siddharth Rao',
+      email: 'siddharth.rao@aarohan.edu',
+      branch: 'ECE',
+      cgpa: 7.91,
+      skills: ['C++', 'Embedded C', 'Python', 'Linux'],
+    },
+  ];
+
+  const studentProfiles = [];
+  for (const s of sampleStudents) {
+    let u = await prisma.user.findFirst({ where: { email: s.email } });
+    if (!u) {
+      u = await prisma.user.create({
+        data: {
+          name: s.name,
+          email: s.email,
+          password: defaultPassword,
+          role: 'student',
+        },
+      });
+    }
+
+    let sp = await prisma.studentProfile.findUnique({ where: { userId: u.id } });
+    if (!sp) {
+      sp = await prisma.studentProfile.create({
+        data: {
+          userId: u.id,
+          name: s.name,
+          branch: s.branch,
+          cgpa: s.cgpa,
+          graduationYear: 2027,
+          backlogs: 0,
+          skills: s.skills,
+          profileComplete: true,
+        },
+      });
+    }
+    studentProfiles.push(sp);
+  }
+  console.log(`Ensured ${studentProfiles.length} student profiles.`);
+
+  // 5. Seed Applications if none exist
+  const existingAppCount = await prisma.application.count();
+  if (existingAppCount === 0 && jobApex && jobHorizon) {
+    // Dev Sharma -> Apex Systems (selected)
+    await prisma.application.create({
+      data: {
+        jobId: jobApex.id,
+        studentId: studentProfiles[0].id,
+        status: 'selected',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: { match_score: 95, explanation: 'Full stack skill fit' },
+      },
+    });
+
+    // Aisha Khan -> Horizon AI Labs (selected)
+    await prisma.application.create({
+      data: {
+        jobId: jobHorizon.id,
+        studentId: studentProfiles[1].id,
+        status: 'selected',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: { match_score: 92, explanation: 'Strong PyTorch and CUDA research background' },
+      },
+    });
+
+    // Priya Nair -> Apex Systems (shortlisted)
+    await prisma.application.create({
+      data: {
+        jobId: jobApex.id,
+        studentId: studentProfiles[2].id,
+        status: 'shortlisted',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: { match_score: 84, explanation: 'Solid backend and database fundamentals' },
+      },
+    });
+
+    // Siddharth Rao -> Apex Systems (interview_scheduled)
+    await prisma.application.create({
+      data: {
+        jobId: jobApex.id,
+        studentId: studentProfiles[3].id,
+        status: 'interview_scheduled',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: { match_score: 78, explanation: 'Meets minimum CGPA and core Python qualification' },
+      },
+    });
+
+    console.log('Seeded sample candidate applications.');
+  }
+
+  // 6. Seed placement drives if none exist
   const count = await prisma.placementDrive.count();
   if (count === 0) {
     await prisma.placementDrive.createMany({
@@ -82,4 +262,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

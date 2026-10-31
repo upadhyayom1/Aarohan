@@ -21,3 +21,37 @@ export const createDriveSchema = z.object({
   description: z.string().trim().optional(),
 });
 
+export const updateDriveSchema = createDriveSchema.partial();
+
+export const updateDriveStatusSchema = z.object({
+  status: z.enum(['Draft', 'Active', 'Completed', 'Cancelled']),
+});
+
+export const getApplicationsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  status: z.string().trim().optional(),
+  search: z.string().trim().optional(),
+  job_id: z.string().trim().optional(),
+  student_id: z.string().trim().optional(),
+});
+
+export const getPlacementsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  branch: z.string().trim().optional(),
+  search: z.string().trim().optional(),
+});
+
+export const getAuditLogsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  role: z.string().trim().optional(),
+  search: z.string().trim().optional(),
+});
+
+export const updateSettingsSchema = z.object({
+  placement_year: z.string().trim().min(1).default('2026–2027'),
+  default_min_cgpa: z.coerce.number().min(0).max(10).default(7.0),
+  max_backlogs_allowed: z.coerce.number().int().min(0).default(0),
+});
