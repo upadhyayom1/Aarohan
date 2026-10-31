@@ -40,12 +40,12 @@ export function LandingPage() {
               </div>
 
               <h1 className="text-5xl sm:text-7xl lg:text-[88px] font-extrabold tracking-tight text-[#111111] leading-[0.98]">
-                Where ambition <br />
-                <span className="text-[#666666] font-normal italic font-serif">meets</span> opportunity.
+                Every career <br />
+                <span className="text-[#666666] font-normal italic font-serif">begins with</span> a step.
               </h1>
 
               <p className="text-base sm:text-lg text-[#666666] max-w-xl font-normal leading-relaxed">
-                Discover meaningful career opportunities, understand your fit, and navigate every stage of recruitment through one connected university platform.
+                Discover meaningful career opportunities, understand your fit, and navigate every stage of recruitment through Aarohan.
               </p>
 
               <div className="pt-4 flex flex-wrap items-center gap-4">
@@ -56,7 +56,7 @@ export function LandingPage() {
                 </Link>
                 <Link to="/about">
                   <Button variant="secondary" size="lg">
-                    How CampusLink works
+                    How Aarohan works
                   </Button>
                 </Link>
               </div>
@@ -133,7 +133,7 @@ export function LandingPage() {
               A clearer path from campus to career.
             </h2>
             <p className="text-sm sm:text-base text-[#666666] mt-4 leading-relaxed">
-              CampusLink unifies student preparation, recruiter coordination, and administrative governance into an objective, data-driven placement process.
+              Aarohan unifies student preparation, recruiter coordination, and administrative governance into an objective, data-driven placement process.
             </p>
           </div>
 
@@ -267,7 +267,7 @@ export function LandingPage() {
                 Know where you stand.
               </h2>
               <p className="text-base text-[#666666] leading-relaxed">
-                CampusLink helps students evaluate how their profile and verified coursework align with specific job requirements before applying.
+                Aarohan helps students evaluate how their profile and verified coursework align with specific job requirements before applying.
               </p>
 
               <div className="space-y-4 pt-2">
@@ -483,7 +483,7 @@ export function LandingPage() {
       <section className="bg-[#111111] text-white py-20 sm:py-24">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
-            OFFICIAL UNIVERSITY PLACEMENT SYSTEM
+            AAROHAN — EVERY CAREER BEGINS WITH A STEP
           </span>
           <h2 className="text-4xl sm:text-6xl font-extrabold tracking-tight max-w-2xl mx-auto">
             Your next opportunity starts here.
@@ -500,7 +500,7 @@ export function LandingPage() {
             </Link>
             <Link to="/register">
               <button className="bg-transparent text-white border border-neutral-400 hover:border-white hover:bg-neutral-900 px-6 py-3 text-base rounded-[3px] font-medium transition-colors cursor-pointer">
-                Join CampusLink
+                Join Aarohan
               </button>
             </Link>
           </div>

@@ -9,10 +9,10 @@ export function PublicFooter() {
           {/* Col 1: Identity */}
           <div className="lg:col-span-2 space-y-3">
             <span className="text-xl font-bold uppercase tracking-tight font-mono text-[#111111] block">
-              CampusLink
+              Aarohan
             </span>
             <span className="text-xs font-mono uppercase tracking-widest text-[#858585] block">
-              Directorate of Career Development & Placement
+              Every career begins with a step
             </span>
             <p className="text-xs text-[#666666] max-w-sm leading-relaxed mt-2">
               An institutional platform coordinating student career readiness, corporate campus recruitment drives, and explainable qualifications matching.
@@ -56,14 +56,14 @@ export function PublicFooter() {
               <li><Link to="/admin/drives" className="hover:text-black">Recruitment Drives</Link></li>
               <li><Link to="/admin/analytics" className="hover:text-black">Outcome Reports</Link></li>
               <li><Link to="/admin/audit-logs" className="hover:text-black">Audit Registry</Link></li>
-              <li><Link to="/about" className="hover:text-black">About CampusLink</Link></li>
+              <li><Link to="/about" className="hover:text-black">About Aarohan</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom credits */}
         <div className="pt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-[#858585]">
-          <p>© {new Date().getFullYear()} CampusLink Placement Directorate. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Aarohan Placement Directorate. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <span>Institutional Policy</span>
             <span>Data Protection</span>
