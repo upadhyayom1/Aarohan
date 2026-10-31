@@ -1,7 +1,43 @@
+# Dependencies
 node_modules/
+
+# Environment Variables & Sensitive Credentials
+.env
+.env.*
+!.env.example
+
+# Build Outputs
 dist/
 build/
-.DS_Store
+dist-ssr/
+
+# Uploaded Files (Resumes)
+uploads/*
+!uploads/.gitkeep
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Logs
 *.log
-.env*
-!.env.example
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS Specific
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Testing & Coverage
+coverage/
+
+# Deployment & Temporary Files
+.vercel/
+*.tmp*
