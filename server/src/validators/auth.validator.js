@@ -19,9 +19,9 @@ export const registerSchema = z.object({
 
 export const loginSchema = z.object({
   email: z
-    .string({ required_error: 'Email is required' })
+    .string({ required_error: 'Email or username is required' })
     .trim()
-    .email({ message: 'Must be a valid email address' }),
+    .min(1, { message: 'Email or username is required' }),
   password: z
     .string({ required_error: 'Password is required' })
     .min(1, { message: 'Password is required' }),

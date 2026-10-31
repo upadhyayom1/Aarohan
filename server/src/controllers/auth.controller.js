@@ -62,11 +62,18 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedInput = email.toLowerCase().trim();
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
+    // Find user by email or username / name
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: normalizedInput },
+          { email: `${normalizedInput}@microsoft.com` },
+          { email: `${normalizedInput}@aarohan.edu` },
+          { name: { equals: normalizedInput, mode: 'insensitive' } },
+        ],
+      },
     });
 
     if (!user) {

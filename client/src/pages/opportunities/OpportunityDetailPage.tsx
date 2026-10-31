@@ -417,9 +417,9 @@ export function OpportunityDetailPage() {
             </span>
             <div>
               <strong className="text-sm text-[#111111] block">
-                {job.recruiterName || 'Marcus Vance'}
+                {job.recruiterName || `${job.company} Talent Acquisition`}
               </strong>
-              <span className="text-[#666666]">{job.recruiterEmail || 'recruiting@apexsystems.com'}</span>
+              <span className="text-[#666666]">{job.recruiterEmail || `careers@${job.company.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`}</span>
             </div>
             <div className="flex items-center gap-2 text-[#858585] pt-1">
               <ShieldCheck size={14} className="text-[#111111]" />

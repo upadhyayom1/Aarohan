@@ -34,11 +34,10 @@ export function StudentCalendarPage() {
     }[] = [];
 
     // Interviews
+        const recruiterOrg = (currentUser.organization || currentUser.name || '').toLowerCase();
         const filteredInterviews = currentUser.role === 'recruiter'
           ? interviews.filter(
-            i =>
-              i.company.toLowerCase() === (currentUser.organization || 'Apex Systems').toLowerCase() ||
-              i.company.includes('Apex')
+            i => recruiterOrg && i.company.toLowerCase() === recruiterOrg
           )
           : currentUser.role === 'admin'
             ? interviews
@@ -62,8 +61,9 @@ export function StudentCalendarPage() {
           const filteredJobs = currentUser.role === 'recruiter'
             ? jobs.filter(
               j =>
-                j.company.toLowerCase() === (currentUser.organization || 'Apex Systems').toLowerCase() ||
-                j.company.includes('Apex')
+                (currentUser.id && (j as any).recruiter_id === currentUser.id) ||
+                (currentUser.id && (j as any).recruiterId === currentUser.id) ||
+                (recruiterOrg && j.company.toLowerCase() === recruiterOrg)
             )
             : jobs;
 
@@ -146,7 +146,7 @@ export function StudentCalendarPage() {
             </h1>
             <p className="text-sm text-[#666666] mt-1 max-w-xl">
               {currentUser.role === 'recruiter'
-                ? `Track confirmed candidate interview rounds and active vacancy application deadlines for ${currentUser.organization || 'Apex Systems'}.`
+                ? `Track confirmed candidate interview rounds and active vacancy application deadlines for ${currentUser.organization || currentUser.name || 'Corporate Partner'}.`
                 : currentUser.role === 'admin'
                   ? 'Track campus placement drives, technical interview rounds, and company application deadlines.'
                   : 'Track confirmed technical interviews, company vacancy deadlines, and placement drive event windows.'}

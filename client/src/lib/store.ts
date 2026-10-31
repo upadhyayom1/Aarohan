@@ -24,11 +24,11 @@ export const INITIAL_USER_STUDENT: User = {
 };
 
 export const INITIAL_USER_RECRUITER: User = {
-  id: 'usr_recruiter_1',
-  name: 'Marcus Vance',
-  email: 'm.vance@apexsystems.com',
+  id: 'usr_recruiter_microsoft',
+  name: 'Microsoft',
+  email: 'microsoft@microsoft.com',
   role: 'recruiter',
-  organization: 'Apex Systems',
+  organization: 'Microsoft',
 };
 
 export const INITIAL_USER_ADMIN: User = {
@@ -830,6 +830,8 @@ class CampusStore {
     if (user.role === 'recruiter') base = INITIAL_USER_RECRUITER;
     else if (user.role === 'admin') base = INITIAL_USER_ADMIN;
 
+    const org = user.organization || (user.role === 'recruiter' ? user.name || base.organization : base.organization);
+
     this.currentUser = {
       ...base,
       ...user,
@@ -837,6 +839,7 @@ class CampusStore {
       name: user.name || base.name,
       email: user.email || base.email,
       role: user.role,
+      organization: org,
     };
 
     if (user.role === 'student') {
@@ -987,6 +990,7 @@ class CampusStore {
         studentBranch: a.student?.branch || this.studentProfile.branch,
         studentCgpa: a.student?.cgpa ?? this.studentProfile.cgpa,
         studentGradYear: a.student?.graduationYear ?? this.studentProfile.graduationYear,
+        studentSkills: a.student?.skills || a.studentSkills || [],
         jobTitle: a.job?.title || a.job_title || existing?.jobTitle || 'Role Candidacy',
         company: a.job?.company || a.company || existing?.company || 'Enterprise',
         appliedDate: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : (existing?.appliedDate || '2026-10-01'),
@@ -1070,14 +1074,27 @@ class CampusStore {
     if (!token) return;
 
     try {
-      const jobsRes = await api.jobs.list({ open_only: false }).catch(() => null);
+      const [jobsRes, ivRes] = await Promise.all([
+        api.jobs.list({ open_only: false }).catch(() => null),
+        api.interviews.getMy().catch(() => null),
+      ]);
+
       if (jobsRes && Array.isArray(jobsRes.jobs)) {
         this.syncJobs(jobsRes.jobs);
 
-        const recruiterCompany = (this.currentUser.organization || 'Apex Systems').toLowerCase();
-        const relevantJobs = jobsRes.jobs.filter(
-          (j: any) => j.company.toLowerCase() === recruiterCompany || j.company.toLowerCase().includes('apex')
-        );
+        const currentRecruiterId = this.currentUser.id;
+        const recruiterCompany = (this.currentUser.organization || this.currentUser.name || '').toLowerCase();
+
+        const relevantJobs = jobsRes.jobs.filter((j: any) => {
+          if (this.currentUser.role === 'admin') return true;
+          if (currentRecruiterId && (j.recruiter_id === currentRecruiterId || j.recruiterId === currentRecruiterId)) {
+            return true;
+          }
+          if (recruiterCompany && j.company.toLowerCase() === recruiterCompany) {
+            return true;
+          }
+          return false;
+        });
 
         if (relevantJobs.length > 0) {
           const allApps: any[] = [];
@@ -1111,6 +1128,10 @@ class CampusStore {
             this.syncApplications(allApps);
           }
         }
+      }
+
+      if (ivRes && Array.isArray(ivRes.interviews)) {
+        this.syncInterviews(ivRes.interviews);
       }
     } catch (e) {
       console.warn('loadRecruiterPortalData error:', e);

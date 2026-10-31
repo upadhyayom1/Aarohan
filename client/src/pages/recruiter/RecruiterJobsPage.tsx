@@ -68,10 +68,14 @@ export function RecruiterJobsPage() {
     if (isAdmin) {
       return jobs;
     }
+    const recruiterCompany = (currentUser.organization || currentUser.name || '').toLowerCase();
     return jobs.filter(
-      j => j.company.toLowerCase() === (currentUser.organization || 'Apex Systems').toLowerCase() || j.company.includes('Apex')
+      j =>
+        (currentUser.id && (j as any).recruiter_id === currentUser.id) ||
+        (currentUser.id && (j as any).recruiterId === currentUser.id) ||
+        (recruiterCompany && j.company.toLowerCase() === recruiterCompany)
     );
-  }, [jobs, currentUser.organization, isAdmin]);
+  }, [jobs, currentUser.organization, currentUser.name, currentUser.id, isAdmin]);
 
   const filteredJobs = useMemo(() => {
     return companyJobs.filter(j => {
@@ -104,7 +108,7 @@ export function RecruiterJobsPage() {
           <p className="text-sm text-[#666666] mt-1 max-w-xl">
             {isAdmin
               ? 'Published placement opportunities and candidate application pipelines across all accredited employer partners.'
-              : `Published placement opportunities and candidate application pipelines for ${currentUser.organization || 'Apex Systems'}.`}
+              : `Published placement opportunities and candidate application pipelines for ${currentUser.organization || currentUser.name || 'Corporate Partner'}.`}
           </p>
         </div>
 

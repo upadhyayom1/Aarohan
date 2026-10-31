@@ -18,7 +18,7 @@ export function RecruiterDashboard() {
   const { currentUser, jobs, applications, interviews, actions } = useCampusStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const recruiterCompany = currentUser.organization || 'Apex Systems';
+  const recruiterCompany = currentUser.organization || currentUser.name || 'Corporate Partner';
 
   // Load recruiter portal data on mount
   useEffect(() => {
@@ -36,10 +36,14 @@ export function RecruiterDashboard() {
 
   // Filter jobs published by or relevant to this recruiter's company
   const companyJobs = useMemo(() => {
-    return jobs.filter(
-      j => j.company.toLowerCase() === recruiterCompany.toLowerCase() || j.company.includes('Apex')
-    );
-  }, [jobs, recruiterCompany]);
+    return jobs.filter(j => {
+      if (currentUser.role === 'admin') return true;
+      if (currentUser.id && (j as any).recruiter_id === currentUser.id) return true;
+      if (currentUser.id && (j as any).recruiterId === currentUser.id) return true;
+      if (j.company.toLowerCase() === recruiterCompany.toLowerCase()) return true;
+      return false;
+    });
+  }, [jobs, recruiterCompany, currentUser.id, currentUser.role]);
 
   const activeJobs = companyJobs.filter(j => j.status === 'Active');
 

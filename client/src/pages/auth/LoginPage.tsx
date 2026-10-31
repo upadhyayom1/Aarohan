@@ -53,10 +53,11 @@ export function LoginPage() {
 
   const handleQuickLogin = async (role: 'student' | 'recruiter' | 'admin') => {
     let qEmail = 'dev.sharma@aarohan.edu';
-    const qPass = 'Password@123';
+    let qPass = 'Password@123';
 
     if (role === 'recruiter') {
-      qEmail = 'recruiter@apexsystems.com';
+      qEmail = 'microsoft';
+      qPass = 'password123';
     } else if (role === 'admin') {
       qEmail = 'admin@aarohan.edu';
     }
@@ -107,7 +108,7 @@ export function LoginPage() {
               onClick={() => handleQuickLogin('recruiter')}
               className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
             >
-              Sign In as Recruiter (Apex Systems)
+              Sign In as Recruiter (Microsoft)
             </button>
             <button
               type="button"
@@ -149,12 +150,12 @@ export function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <FormField label="Institutional / Work Email" required>
+            <FormField label="Institutional / Corporate Username or Email" required>
               <Input
-                type="email"
+                type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="name@aarohan.edu"
+                placeholder="microsoft or name@aarohan.edu"
                 required
               />
             </FormField>

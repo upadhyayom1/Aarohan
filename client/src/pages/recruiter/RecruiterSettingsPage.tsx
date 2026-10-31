@@ -6,7 +6,7 @@ import { Building, CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react';
 
 export function RecruiterSettingsPage() {
   const { currentUser, actions } = useCampusStore();
-  const [orgName, setOrgName] = useState(currentUser.organization || 'Apex Systems');
+  const [orgName, setOrgName] = useState(currentUser.organization || currentUser.name || 'Corporate Partner');
   const [contactName, setContactName] = useState(currentUser.name);
   const [contactEmail, setContactEmail] = useState(currentUser.email);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -19,7 +19,10 @@ export function RecruiterSettingsPage() {
       try {
         const me = await api.auth.getMe();
         if (active && me) {
-          if (me.name) setContactName(me.name);
+          if (me.name) {
+            setContactName(me.name);
+            setOrgName(currentUser.organization || me.name);
+          }
           if (me.email) setContactEmail(me.email);
         }
       } catch (err) {

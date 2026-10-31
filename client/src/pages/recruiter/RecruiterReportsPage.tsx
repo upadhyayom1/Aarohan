@@ -6,7 +6,7 @@ import { Download, BarChart2, TrendingUp, Users, Award, Sparkles, RefreshCw } fr
 
 export function RecruiterReportsPage() {
   const { currentUser, jobs, applications, actions } = useCampusStore();
-  const recruiterCompany = currentUser.organization || 'Apex Systems';
+  const recruiterCompany = currentUser.organization || currentUser.name || 'Corporate Partner';
 
   const [aiDemandSkills, setAiDemandSkills] = useState<SkillDemandItem[]>([]);
   const [isLoadingDemand, setIsLoadingDemand] = useState(false);
@@ -35,9 +35,13 @@ export function RecruiterReportsPage() {
 
   const companyJobs = useMemo(() => {
     return jobs.filter(
-      j => j.company.toLowerCase() === recruiterCompany.toLowerCase() || j.company.includes('Apex')
+      j =>
+        currentUser.role === 'admin' ||
+        (currentUser.id && (j as any).recruiter_id === currentUser.id) ||
+        (currentUser.id && (j as any).recruiterId === currentUser.id) ||
+        j.company.toLowerCase() === recruiterCompany.toLowerCase()
     );
-  }, [jobs, recruiterCompany]);
+  }, [jobs, recruiterCompany, currentUser.id, currentUser.role]);
 
   const companyJobIds = new Set(companyJobs.map(j => j.id));
   const companyApps = useMemo(() => {

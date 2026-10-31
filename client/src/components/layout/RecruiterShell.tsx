@@ -143,10 +143,10 @@ export function RecruiterShell({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between mb-2">
             <div className="truncate">
               <span className="text-xs font-bold text-[#111111] block truncate">
-                {currentUser.role === 'recruiter' ? currentUser.name : 'Marcus Vance'}
+                {currentUser.name}
               </span>
               <span className="text-[10px] font-mono text-[#858585] block truncate">
-                {currentUser.role === 'recruiter' ? currentUser.organization : 'Apex Systems'}
+                {currentUser.organization || currentUser.name || 'Corporate Partner'}
               </span>
             </div>
           </div>

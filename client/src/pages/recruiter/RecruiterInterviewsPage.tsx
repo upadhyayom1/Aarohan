@@ -29,10 +29,13 @@ export function RecruiterInterviewsPage() {
   };
 
   const companyInterviews = useMemo(() => {
+    const recruiterCompany = (currentUser.organization || currentUser.name || '').toLowerCase();
     return interviews.filter(
-      i => i.company.toLowerCase() === (currentUser.organization || 'Apex Systems').toLowerCase() || i.company.includes('Apex')
+      i =>
+        currentUser.role === 'admin' ||
+        (recruiterCompany && i.company.toLowerCase() === recruiterCompany)
     );
-  }, [interviews, currentUser.organization]);
+  }, [interviews, currentUser.organization, currentUser.name, currentUser.role]);
 
   const handleOpenReschedule = (id: string) => {
     setSelectedInterviewId(id);
@@ -65,7 +68,7 @@ export function RecruiterInterviewsPage() {
             Scheduled Interviews
           </h1>
           <p className="text-sm text-[#666666] mt-1 max-w-xl">
-            Coordinate interview logistics, monitor booked time slots, and update scheduling status for {currentUser.organization || 'Apex Systems'}.
+            Coordinate interview logistics, monitor booked time slots, and update scheduling status for {currentUser.organization || currentUser.name || 'Corporate Partner'}.
           </p>
         </div>
 

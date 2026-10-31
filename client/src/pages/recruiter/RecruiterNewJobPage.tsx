@@ -124,7 +124,7 @@ export function RecruiterNewJobPage() {
 
     setIsPublishing(true);
 
-    const companyName = currentUser.organization || 'Apex Systems';
+    const companyName = currentUser.organization || currentUser.name || 'Corporate Partner';
 
     const payload = {
       title: title.trim(),
@@ -257,7 +257,7 @@ export function RecruiterNewJobPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="Hiring Organization" required>
                 <Input
-                  value={currentUser.organization || 'Apex Systems'}
+                  value={currentUser.organization || currentUser.name || 'Corporate Partner'}
                   disabled
                   className="bg-[#F5F5F3]"
                 />

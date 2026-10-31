@@ -56,7 +56,7 @@ export function RecruiterApplicantsPage() {
   const [startTime, setStartTime] = useState('11:00 AM');
   const [endTime, setEndTime] = useState('12:15 PM');
   const [interviewMode, setInterviewMode] = useState<'Video Call' | 'In-person' | 'Phone'>('Video Call');
-  const [locationOrLink, setLocationOrLink] = useState('https://meet.apexsystems.com/univ-tech-interview');
+  const [locationOrLink, setLocationOrLink] = useState('https://teams.microsoft.com/l/meetup-join/interview-room');
   const [interviewNotes, setInterviewNotes] = useState('Prepare to discuss systems projects and write algorithmic solutions.');
   const [isScheduling, setIsScheduling] = useState(false);
 
@@ -556,31 +556,35 @@ export function RecruiterApplicantsPage() {
               </div>
             </div>
 
-            {/* Verified Student Skills & Projects if available */}
-            {selectedApp.studentId === studentProfile.id && (
+            {/* Verified Student Skills & Competencies */}
+            {((selectedApp.studentSkills && selectedApp.studentSkills.length > 0) || (selectedApp.studentId === studentProfile.id && studentProfile.skills.length > 0)) && (
               <div className="border border-[#E4E4E1] p-4 space-y-3">
                 <span className="text-[10px] uppercase font-bold text-[#858585] block">
                   Verified Technical Competencies
                 </span>
                 <div className="flex flex-wrap gap-1">
-                  {studentProfile.skills.map(s => (
+                  {(selectedApp.studentSkills && selectedApp.studentSkills.length > 0 ? selectedApp.studentSkills : studentProfile.skills).map(s => (
                     <span key={s} className="bg-white border border-[#111111] px-2 py-0.5 text-[#111111]">
                       {s}
                     </span>
                   ))}
                 </div>
 
-                <span className="text-[10px] uppercase font-bold text-[#858585] block pt-2">
-                  Key Technical Projects
-                </span>
-                <div className="space-y-2">
-                  {studentProfile.projects.map(proj => (
-                    <div key={proj.id} className="p-2.5 bg-[#FAFAF9] border border-[#E4E4E1]">
-                      <strong className="text-[#111111] block">{proj.title}</strong>
-                      <p className="text-[11px] text-[#666666] mt-0.5">{proj.description}</p>
+                {selectedApp.studentId === studentProfile.id && studentProfile.projects.length > 0 && (
+                  <>
+                    <span className="text-[10px] uppercase font-bold text-[#858585] block pt-2">
+                      Key Technical Projects
+                    </span>
+                    <div className="space-y-2">
+                      {studentProfile.projects.map(proj => (
+                        <div key={proj.id} className="p-2.5 bg-[#FAFAF9] border border-[#E4E4E1]">
+                          <strong className="text-[#111111] block">{proj.title}</strong>
+                          <p className="text-[11px] text-[#666666] mt-0.5">{proj.description}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
               </div>
             )}
 
