@@ -1,6 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { AarohanLogo } from '../ui';
 import {
   LayoutDashboard,
   GraduationCap,
@@ -74,13 +75,16 @@ export function AdminShell({ children }: { children: ReactNode }) {
           >
             {mobileDrawerOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
-          <div>
-            <span className="font-mono text-sm font-bold uppercase tracking-tight block">
-              Aarohan
-            </span>
-            <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest block">
-              Placement Directorate Administration
-            </span>
+          <div className="flex items-center gap-2">
+            <AarohanLogo size={24} />
+            <div>
+              <span className="font-mono text-sm font-bold uppercase tracking-tight block">
+                Aarohan
+              </span>
+              <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest block">
+                Placement Directorate
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -91,13 +95,16 @@ export function AdminShell({ children }: { children: ReactNode }) {
           }`}
       >
         <div className="p-5 border-b border-[#E4E4E1]">
-          <Link to="/admin/dashboard" className="block group">
-            <span className="font-mono text-base font-bold uppercase tracking-tight text-[#111111]">
-              Aarohan
-            </span>
-            <span className="text-[9px] font-mono uppercase tracking-widest text-[#858585] block mt-0.5">
-              University Central Placement Office
-            </span>
+          <Link to="/admin/dashboard" className="flex items-center gap-2.5 group">
+            <AarohanLogo size={28} />
+            <div className="flex flex-col leading-tight">
+              <span className="font-mono text-base font-bold uppercase tracking-tight text-[#111111] group-hover:opacity-85 transition-opacity">
+                Aarohan
+              </span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-[#858585] block mt-0.5">
+                Placement Office
+              </span>
+            </div>
           </Link>
         </div>
 

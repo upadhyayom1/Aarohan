@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, ReactNode } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { AarohanLogo } from '../ui';
 import {
   LayoutDashboard,
   Briefcase,
@@ -75,12 +76,6 @@ export function StudentShell({ children }: StudentShellProps) {
         { label: 'Resume', href: '/student/resume', icon: FileText },
         { label: 'Interviews', href: '/student/interviews', icon: Briefcase },
         { label: 'Calendar', href: '/student/calendar', icon: Calendar },
-        {
-          label: 'Notifications',
-          href: '/student/notifications',
-          icon: Bell,
-          badge: unreadCount > 0 ? unreadCount : undefined,
-        },
       ],
     },
     {
@@ -104,13 +99,16 @@ export function StudentShell({ children }: StudentShellProps) {
           >
             {mobileDrawerOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
-          <Link to="/student/dashboard" className="flex flex-col leading-tight">
-            <span className="font-mono text-sm font-bold uppercase tracking-tight text-[#111111]">
-              Aarohan
-            </span>
-            <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest hidden sm:block">
-              Every career begins with a step
-            </span>
+          <Link to="/student/dashboard" className="flex items-center gap-2.5 group">
+            <AarohanLogo size={28} />
+            <div className="flex flex-col leading-tight">
+              <span className="font-mono text-sm font-bold uppercase tracking-tight text-[#111111] group-hover:opacity-85 transition-opacity">
+                Aarohan
+              </span>
+              <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest hidden sm:block">
+                Student Workspace
+              </span>
+            </div>
           </Link>
         </div>
 
