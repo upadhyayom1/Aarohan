@@ -118,11 +118,7 @@ export function StudentResumePage() {
       if (err instanceof ApiError) {
         setErrorMessage(err.message || 'Server rejected resume upload');
       } else {
-        // Graceful simulated fallback if local backend is restarting
-        const sizeKb = Math.round(file.size / 1024);
-        const sizeStr = sizeKb > 1000 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
-        actions.uploadResume(file.name, sizeStr);
-        setSuccessMessage('Resume uploaded (cached locally).');
+        setErrorMessage(err?.message || 'Resume upload failed. Please verify that the server is operational.');
       }
     } finally {
       setIsUploading(false);
@@ -462,7 +458,7 @@ export function StudentResumePage() {
                     Extracted Education Credentials
                   </span>
                   <div className="p-3 bg-white border border-[#E4E4E1] text-[#111111]">
-                    {resume.parsedEducation || `${studentProfile.degree} in ${studentProfile.branch}, ${studentProfile.institution}`}
+                    {resume.parsedEducation || (studentProfile.branch ? `${studentProfile.degree || 'Degree'} in ${studentProfile.branch}, ${studentProfile.institution || 'University'}` : 'Academic credentials not yet specified')}
                   </div>
                 </div>
 

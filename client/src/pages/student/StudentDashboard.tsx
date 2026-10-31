@@ -42,7 +42,9 @@ export function StudentDashboard() {
   }, [jobs, studentProfile]);
 
   const studentApps = useMemo(() => {
-    return applications.filter(a => a.studentId === studentProfile.id && a.status !== 'Withdrawn');
+    return applications.filter(
+      a => (!studentProfile.id || !a.studentId || a.studentId === studentProfile.id) && a.status !== 'Withdrawn'
+    );
   }, [applications, studentProfile.id]);
 
   const shortlistedCount = studentApps.filter(
@@ -51,7 +53,7 @@ export function StudentDashboard() {
 
   const upcomingInterviews = useMemo(() => {
     return interviews.filter(
-      i => i.studentId === studentProfile.id && (i.status === 'Scheduled' || i.status === 'Rescheduled')
+      i => (!studentProfile.id || !i.studentId || i.studentId === studentProfile.id) && (i.status === 'Scheduled' || i.status === 'Rescheduled')
     );
   }, [interviews, studentProfile.id]);
 
@@ -82,10 +84,10 @@ export function StudentDashboard() {
             </span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#111111]">
-            Welcome, {studentProfile.fullName.split(' ')[0]}.
+            Welcome, {(studentProfile.fullName || 'Student').split(' ')[0]}.
           </h1>
           <p className="text-sm sm:text-base text-[#666666] mt-2 max-w-xl">
-            You are eligible for <strong className="text-[#111111]">{eligibleJobsCount} campus openings</strong>. Your profile is verified for the Autumn 2026 recruitment drive.
+            You are eligible for <strong className="text-[#111111]">{eligibleJobsCount} campus openings</strong>. Your profile is verified for the current recruitment cycle.
           </p>
         </div>
 
@@ -115,7 +117,7 @@ export function StudentDashboard() {
             </h3>
           </div>
           <span className="text-xs font-mono font-semibold text-[#111111] bg-white border border-[#E4E4E1] px-3 py-1">
-            CGPA: {studentProfile.cgpa.toFixed(2)} / 10.00
+            CGPA: {(studentProfile.cgpa || 0).toFixed(2)} / 10.00
           </span>
         </div>
 
@@ -185,7 +187,16 @@ export function StudentDashboard() {
           </div>
 
           <div className="space-y-4">
-            {recommendedJobs.map(({ job, match }) => (
+            {recommendedJobs.length === 0 ? (
+              <div className="border border-dashed border-[#E4E4E1] p-8 text-center bg-[#FAFAF9]">
+                <p className="text-xs font-mono text-[#666666]">
+                  {jobs.length === 0
+                    ? 'No placement openings currently published.'
+                    : 'No direct matches found for your profile. Update your skills or explore all openings.'}
+                </p>
+              </div>
+            ) : (
+              recommendedJobs.map(({ job, match }) => (
               <div
                 key={job.id}
                 className="border border-[#E4E4E1] bg-white p-5 hover:border-[#111111] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -228,7 +239,8 @@ export function StudentDashboard() {
                   </Link>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         </div>
 

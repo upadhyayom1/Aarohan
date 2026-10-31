@@ -56,7 +56,9 @@ export function StudentInterviewsPage() {
   };
 
   const studentInterviews = useMemo(() => {
-    return interviews.filter(i => i.studentId === studentProfile.id);
+    return interviews.filter(
+      i => !studentProfile.id || !i.studentId || i.studentId === studentProfile.id
+    );
   }, [interviews, studentProfile.id]);
 
   const activeModalInterview = useMemo(() => {

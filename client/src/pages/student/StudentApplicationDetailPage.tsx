@@ -48,11 +48,26 @@ export function StudentApplicationDetailPage() {
   }, [params.applicationId]);
 
   const app = useMemo(() => {
-    const fromStore = applications.find(a => a.id === params.applicationId) || applications[0];
+    const fromStore = applications.find(a => a.id === params.applicationId);
+    if (!fromStore && !backendApp) return null;
     if (backendApp) {
       return {
-        ...fromStore,
+        ...(fromStore || {
+          id: backendApp.id,
+          jobId: backendApp.job_id || backendApp.jobId || '',
+          jobTitle: backendApp.job?.title || 'Placement Opening',
+          company: backendApp.job?.company || 'Company Partner',
+          studentId: backendApp.student_id || '',
+          studentName: backendApp.student?.name || '',
+          studentBranch: backendApp.student?.branch || '',
+          studentCgpa: backendApp.student?.cgpa || 0,
+          studentGradYear: backendApp.student?.graduation_year || 2026,
+          appliedDate: backendApp.created_at ? new Date(backendApp.created_at).toISOString().split('T')[0] : '',
+          history: [],
+        }),
         id: backendApp.id,
+        jobTitle: backendApp.job?.title || fromStore?.jobTitle || 'Placement Opening',
+        company: backendApp.job?.company || fromStore?.company || 'Company Partner',
         status: (backendApp.status === 'interview_scheduled'
           ? 'Interview Scheduled'
           : backendApp.status === 'shortlisted'
@@ -64,8 +79,8 @@ export function StudentApplicationDetailPage() {
           : backendApp.status === 'withdrawn'
           ? 'Withdrawn'
           : 'Under Review') as any,
-        matchScore: backendApp.matchResult?.match_score ?? backendApp.match_score ?? fromStore.matchScore,
-        recruiterNotes: backendApp.notes || backendApp.recruiterNotes || fromStore.recruiterNotes,
+        matchScore: backendApp.matchResult?.match_score ?? backendApp.match_score ?? fromStore?.matchScore ?? 0,
+        recruiterNotes: backendApp.notes || backendApp.recruiterNotes || fromStore?.recruiterNotes,
       };
     }
     return fromStore;
@@ -84,9 +99,33 @@ export function StudentApplicationDetailPage() {
   ];
 
   const handleWithdraw = () => {
+    if (!app) return;
     actions.withdrawApplication(app.id);
     setWithdrawModalOpen(false);
   };
+
+  if (!app) {
+    return (
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+        <button
+          onClick={() => navigate('/student/applications')}
+          className="inline-flex items-center gap-1.5 text-xs font-mono text-[#666666] hover:text-[#111111] cursor-pointer"
+        >
+          <ArrowLeft size={14} />
+          <span>Return to Application Tracker</span>
+        </button>
+        <div className="border border-dashed border-[#E4E4E1] p-12 text-center bg-[#FAFAF9]">
+          <h2 className="text-xl font-bold text-[#111111] mb-2">Application Dossier Not Found</h2>
+          <p className="text-xs font-mono text-[#666666] mb-4">
+            The requested application could not be found or may have been deleted.
+          </p>
+          <Button variant="primary" size="sm" onClick={() => navigate('/student/applications')}>
+            Back to My Applications
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -183,7 +222,7 @@ export function StudentApplicationDetailPage() {
             <div className="space-y-2">
               <div>Candidate: <strong>{app.studentName}</strong></div>
               <div>Department: <strong>{app.studentBranch}</strong></div>
-              <div>CGPA at Submission: <strong>{app.studentCgpa.toFixed(2)}</strong></div>
+              <div>CGPA at Submission: <strong>{(app.studentCgpa || 0).toFixed(2)}</strong></div>
               <div>Cohort: <strong>Class of {app.studentGradYear}</strong></div>
               <div>Match Fit Index: <strong>{app.matchScore}%</strong></div>
             </div>

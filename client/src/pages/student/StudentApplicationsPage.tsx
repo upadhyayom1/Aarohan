@@ -49,7 +49,9 @@ export function StudentApplicationsPage() {
   };
 
   const studentApps = useMemo(() => {
-    return applications.filter(a => a.studentId === studentProfile.id);
+    return applications.filter(
+      a => !studentProfile.id || !a.studentId || a.studentId === studentProfile.id
+    );
   }, [applications, studentProfile.id]);
 
   // Counts

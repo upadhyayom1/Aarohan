@@ -15,646 +15,57 @@ import {
 import { api, getAuthToken, setAuthToken, clearAuthToken } from './api';
 
 export const INITIAL_USER_STUDENT: User = {
-  id: 'usr_student_1',
-  name: 'Aditi Rao',
-  email: 'aditi.rao@campus.edu',
+  id: '',
+  name: 'Student Candidate',
+  email: '',
   role: 'student',
-  studentId: 'STU-2022-CSE-042',
-  organization: 'School of Engineering & Applied Sciences',
+  studentId: '',
+  organization: 'Institute of Technology',
 };
 
 export const INITIAL_USER_RECRUITER: User = {
-  id: 'usr_recruiter_microsoft',
-  name: 'Microsoft',
-  email: 'microsoft@microsoft.com',
+  id: '',
+  name: 'Corporate Recruiter',
+  email: '',
   role: 'recruiter',
-  organization: 'Microsoft',
+  organization: 'Enterprise Partner',
 };
 
 export const INITIAL_USER_ADMIN: User = {
-  id: 'usr_admin_1',
-  name: 'Dr. Eleanor Hayes',
-  email: 'dean.placement@university.edu',
+  id: '',
+  name: 'Directorate Administrator',
+  email: '',
   role: 'admin',
   organization: 'Office of Career Advancement & Placement',
 };
 
 export const INITIAL_STUDENT_PROFILE: StudentProfile = {
-  id: 'stu_aditi_rao',
-  fullName: 'Aditi Rao',
-  email: 'aditi.rao@campus.edu',
-  phone: '+1 (555) 234-8901',
-  portfolioUrl: 'https://aditirao.dev',
-  githubUrl: 'https://github.com/aditirao',
-  linkedinUrl: 'https://linkedin.com/in/aditirao',
-  bio: 'Final year undergraduate in Computer Science with a focus on distributed web systems, API design, and cloud-native architecture.',
-  institution: 'Metropolitan Institute of Technology',
+  id: '',
+  fullName: '',
+  email: '',
+  phone: '',
+  portfolioUrl: '',
+  githubUrl: '',
+  linkedinUrl: '',
+  bio: '',
+  institution: 'National Institute of Technology',
   degree: 'Bachelor of Technology (B.Tech)',
-  branch: 'Computer Science & Engineering',
-  currentSemester: 7,
-  cgpa: 8.84,
-  graduationYear: 2026,
+  branch: 'CSE',
+  currentSemester: 8,
+  cgpa: 0,
+  graduationYear: 2027,
   activeBacklogs: 0,
-  skills: [
-    'React',
-    'TypeScript',
-    'Node.js',
-    'SQL',
-    'PostgreSQL',
-    'Python',
-    'Docker',
-    'Git',
-    'REST APIs',
-    'Algorithms',
-  ],
-  projects: [
-    {
-      id: 'proj_1',
-      title: 'Distributed Log Aggregator',
-      description: 'High-throughput stream pipeline processing 15k events/sec with fault-tolerant ingestion and indexed search.',
-      techStack: ['Node.js', 'TypeScript', 'Docker', 'PostgreSQL'],
-      projectUrl: 'https://demo.logaggregator.dev',
-      githubUrl: 'https://github.com/aditirao/log-aggregator',
-    },
-    {
-      id: 'proj_2',
-      title: 'Clinical Data Exchange Engine',
-      description: 'Interoperable FHIR-compliant API gateway for university research hospital records with zero-knowledge token validation.',
-      techStack: ['Python', 'FastAPI', 'PostgreSQL', 'Docker'],
-      githubUrl: 'https://github.com/aditirao/clinical-exchange',
-    },
-    {
-      id: 'proj_3',
-      title: 'Campus Course Evaluation Matrix',
-      description: 'Interactive analytics dashboard visualizing department grade distributions and student course reviews.',
-      techStack: ['React', 'TypeScript', 'SQL'],
-      projectUrl: 'https://grades.campus.edu',
-    },
-  ],
-  experience: [
-    {
-      id: 'exp_1',
-      position: 'Software Engineering Intern',
-      organization: 'Veritas Technologies',
-      startDate: 'May 2025',
-      endDate: 'August 2025',
-      description: 'Architected async queue worker for enterprise compliance reporting, decreasing report processing latency by 34%.',
-    },
-    {
-      id: 'exp_2',
-      position: 'Undergraduate Research Assistant',
-      organization: 'Cloud Systems Laboratory',
-      startDate: 'September 2024',
-      endDate: 'April 2025',
-      description: 'Evaluated latency bottlenecks in microservice mesh topologies and authored bench tooling in Go and Python.',
-    },
-  ],
-  resume: {
-    fileName: 'Aditi_Rao_Resume_2026.pdf',
-    fileSize: '418 KB',
-    uploadedAt: '2026-10-24 14:15',
-    parsingStatus: 'completed',
-    parsedSkills: ['React', 'TypeScript', 'Node.js', 'SQL', 'PostgreSQL', 'Python', 'Docker', 'Git', 'REST APIs', 'Algorithms'],
-    parsedEducation: 'B.Tech in Computer Science & Engineering, Metropolitan Institute of Technology (CGPA: 8.84, Expected 2026)',
-    parsedProjects: ['Distributed Log Aggregator (TypeScript, Docker)', 'Clinical Data Exchange Engine (FastAPI, PostgreSQL)'],
-    parsedExperience: 'Software Engineering Intern at Veritas Technologies (Summer 2025)',
-  },
+  skills: [],
+  projects: [],
+  experience: [],
 };
 
-export const INITIAL_JOBS: JobOpportunity[] = [
-  {
-    id: 'job_apex_sde',
-    title: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    companyInitials: 'AS',
-    location: 'Cambridge, MA',
-    workArrangement: 'Hybrid',
-    employmentType: 'Full-time',
-    deadline: '2026-11-28',
-    publishedDate: '2026-10-18',
-    salaryRange: '$115,000 – $130,000 / yr',
-    description: 'Join the Core Platform group engineering low-latency distributed transaction systems, developer platforms, and high-availability cloud APIs.',
-    responsibilities: [
-      'Design, implement, and maintain scalable web services and asynchronous event pipelines.',
-      'Collaborate across cross-functional engineering teams adhering to rigorous code review and CI/CD standards.',
-      'Participate in architectural reviews, incident retrospectives, and performance profiling.',
-    ],
-    requiredQualifications: [
-      'Graduating senior in Computer Science, Software Engineering, or related technical field.',
-      'Demonstrated fluency in typed languages (TypeScript, Java, C++, or Go).',
-      'Solid foundations in data structures, algorithms, and relational database systems.',
-    ],
-    requiredSkills: ['React', 'TypeScript', 'Node.js', 'SQL', 'Git'],
-    preferredSkills: ['Docker', 'AWS', 'PostgreSQL', 'REST APIs'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Electrical & Computer Engineering'],
-    eligibleGradYears: [2026],
-    minCgpa: 8.0,
-    maxBacklogs: 0,
-    applicantsCount: 42,
-    shortlistedCount: 8,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_1',
-    recruiterName: 'Marcus Vance',
-    recruiterEmail: 'm.vance@apexsystems.com',
-  },
-  {
-    id: 'job_veritas_cloud',
-    title: 'Cloud Infrastructure & DevOps Engineer',
-    company: 'Veritas Technologies',
-    companyInitials: 'VT',
-    location: 'New York, NY',
-    workArrangement: 'Hybrid',
-    employmentType: 'Full-time',
-    deadline: '2026-12-05',
-    publishedDate: '2026-10-22',
-    salaryRange: '$120,000 – $135,000 / yr',
-    description: 'Build and operate high-reliability automated Kubernetes clusters, multi-region observability stacks, and infrastructure-as-code automation.',
-    responsibilities: [
-      'Maintain automated deployment pipelines across hybrid multi-region cloud infrastructures.',
-      'Instrument telemetry, SLA monitors, and real-time incident alerting.',
-      'Harden container images and audit security policies across runtime clusters.',
-    ],
-    requiredQualifications: [
-      'Undergraduate or graduate degree in Computer Science, Systems Engineering, or equivalent.',
-      'Practical familiarity with Linux systems internals, container runtimes, and networking.',
-    ],
-    requiredSkills: ['Docker', 'AWS', 'Python', 'Git', 'Linux'],
-    preferredSkills: ['Kubernetes', 'CI/CD', 'TypeScript', 'SQL'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology'],
-    eligibleGradYears: [2026, 2027],
-    minCgpa: 7.5,
-    maxBacklogs: 0,
-    applicantsCount: 28,
-    shortlistedCount: 5,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_vt',
-    recruiterName: 'Sarah Lin',
-    recruiterEmail: 's.lin@veritas.tech',
-  },
-  {
-    id: 'job_crest_robotics',
-    title: 'Embedded Systems & Firmware Engineer',
-    company: 'Crest Robotics',
-    companyInitials: 'CR',
-    location: 'Pittsburgh, PA',
-    workArrangement: 'On-site',
-    employmentType: 'Full-time',
-    deadline: '2026-11-25',
-    publishedDate: '2026-10-14',
-    salaryRange: '$105,000 – $120,000 / yr',
-    description: 'Develop deterministic real-time firmware, motor controller drivers, and sensor communication protocols for next-generation automated warehouse robotics.',
-    responsibilities: [
-      'Author safety-critical C/C++ firmware running on ARM Cortex microcontrollers and RTOS.',
-      'Interface with hardware sensors over CAN, SPI, I2C, and UART buses.',
-      'Perform hardware-in-the-loop (HIL) validation and thermal stress testing.',
-    ],
-    requiredQualifications: [
-      'Degree in Electrical Engineering, Robotics, Computer Engineering, or Mechatronics.',
-      'Proficiency with C/C++, oscilloscope debugging, and microcontroller peripheral configuration.',
-    ],
-    requiredSkills: ['C++', 'Algorithms', 'Git'],
-    preferredSkills: ['Python', 'Docker', 'Linux'],
-    eligibleBranches: ['Electrical & Computer Engineering', 'Mechanical Engineering', 'Robotics Engineering'],
-    eligibleGradYears: [2026],
-    minCgpa: 7.8,
-    maxBacklogs: 0,
-    applicantsCount: 19,
-    shortlistedCount: 4,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_cr',
-    recruiterName: 'Dave Kowalski',
-    recruiterEmail: 'dkowalski@crestrobotics.com',
-  },
-  {
-    id: 'job_meridian_data',
-    title: 'Healthcare Informatics & Data Analyst',
-    company: 'Meridian Health Informatics',
-    companyInitials: 'MH',
-    location: 'Chicago, IL',
-    workArrangement: 'Remote',
-    employmentType: 'Full-time',
-    deadline: '2026-12-10',
-    publishedDate: '2026-10-26',
-    salaryRange: '$95,000 – $110,000 / yr',
-    description: 'Transform longitudinal clinical registries, patient outcomes, and epidemiology datasets into validated statistical insights and executive reporting models.',
-    responsibilities: [
-      'Write robust SQL queries and ETL transformations against relational data warehouses.',
-      'Collaborate with bioinformaticians and clinicians to validate analytical assumptions.',
-      'Construct reproducible data pipelines adhering to HIPAA compliance standards.',
-    ],
-    requiredQualifications: [
-      'Degree in Computer Science, Data Science, Biomedical Informatics, or Mathematics.',
-      'Experience with SQL database querying and Python statistical modeling.',
-    ],
-    requiredSkills: ['SQL', 'Python', 'Data Analysis', 'REST APIs'],
-    preferredSkills: ['PostgreSQL', 'Docker', 'Git'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Biomedical Engineering', 'Data Science'],
-    eligibleGradYears: [2026, 2027],
-    minCgpa: 7.2,
-    maxBacklogs: 1,
-    applicantsCount: 31,
-    shortlistedCount: 6,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_mh',
-    recruiterName: 'Elena Rostova',
-    recruiterEmail: 'erostova@meridianhealth.org',
-  },
-  {
-    id: 'job_horizon_ai',
-    title: 'Machine Learning Research Engineer',
-    company: 'Horizon AI Labs',
-    companyInitials: 'HA',
-    location: 'San Francisco, CA',
-    workArrangement: 'Hybrid',
-    employmentType: 'Full-time',
-    deadline: '2026-12-01',
-    publishedDate: '2026-10-20',
-    salaryRange: '$140,000 – $165,000 / yr',
-    description: 'Advance foundational model evaluation pipelines, multimodal embedding distillation, and real-time inferencing kernels on heterogeneous accelerators.',
-    responsibilities: [
-      'Implement evaluation benchmarks measuring reasoning fidelity, calibration, and latency.',
-      'Profile memory bandwidth bottlenecks and execute distributed tensor parallelism.',
-      'Convert novel research findings into production-grade modular inference APIs.',
-    ],
-    requiredQualifications: [
-      'BS/MS in Computer Science, Artificial Intelligence, or Mathematics.',
-      'Demonstrated research or project experience with PyTorch and deep learning architectures.',
-    ],
-    requiredSkills: ['Python', 'Machine Learning', 'Algorithms', 'Git'],
-    preferredSkills: ['Docker', 'C++', 'SQL'],
-    eligibleBranches: ['Computer Science & Engineering', 'Data Science', 'Electrical & Computer Engineering'],
-    eligibleGradYears: [2026],
-    minCgpa: 8.5,
-    maxBacklogs: 0,
-    applicantsCount: 56,
-    shortlistedCount: 7,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_ha',
-    recruiterName: 'Dr. Kenji Sato',
-    recruiterEmail: 'kenji@horizonlabs.ai',
-  },
-  {
-    id: 'job_aurora_frontend',
-    title: 'Frontend Systems Engineer',
-    company: 'Aurora FinTech',
-    companyInitials: 'AF',
-    location: 'New York, NY',
-    workArrangement: 'On-site',
-    employmentType: 'Full-time',
-    deadline: '2026-11-22',
-    publishedDate: '2026-10-12',
-    salaryRange: '$118,000 – $132,000 / yr',
-    description: 'Craft ultra-fast real-time trading terminal interfaces, complex institutional order books, and accessible design system components.',
-    responsibilities: [
-      'Build responsive, zero-jank React client applications with WebSocket streaming feeds.',
-      'Maintain an institutional design system ensuring WCAG AAA accessibility compliance.',
-      'Write end-to-end integration tests and benchmark Web Vitals metrics.',
-    ],
-    requiredQualifications: [
-      'Degree in Computer Science or related degree graduating in 2026.',
-      'Extensive mastery of modern JavaScript, TypeScript, and modern CSS frameworks.',
-    ],
-    requiredSkills: ['React', 'TypeScript', 'REST APIs', 'Git'],
-    preferredSkills: ['SQL', 'Figma', 'Node.js'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology'],
-    eligibleGradYears: [2026],
-    minCgpa: 7.8,
-    maxBacklogs: 0,
-    applicantsCount: 38,
-    shortlistedCount: 9,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_af',
-    recruiterName: 'Chloe Bennett',
-    recruiterEmail: 'cbennett@aurorafintech.com',
-  },
-];
-
-export const INITIAL_APPLICATIONS: Application[] = [
-  {
-    id: 'app_1',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_aditi_rao',
-    studentName: 'Aditi Rao',
-    studentEmail: 'aditi.rao@campus.edu',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-19',
-    status: 'Interview Scheduled',
-    latestUpdateDate: '2026-10-28',
-    matchScore: 92,
-    recruiterNotes: 'Exceptional systems background. Verified high alignment on React/Node and distributed systems project.',
-    history: [
-      { stage: 'Applied', date: '2026-10-19', note: 'Application dossier submitted via Aarohan portal.' },
-      { stage: 'Under Review', date: '2026-10-21', note: 'Technical recruiter screened resume and transcript.' },
-      { stage: 'Shortlisted', date: '2026-10-24', note: 'Candidate selected for round 1 technical interview.' },
-      { stage: 'Interview Scheduled', date: '2026-10-28', note: 'Technical System Architecture interview confirmed.' },
-    ],
-  },
-  {
-    id: 'app_2',
-    jobId: 'job_aurora_frontend',
-    jobTitle: 'Frontend Systems Engineer',
-    company: 'Aurora FinTech',
-    studentId: 'stu_aditi_rao',
-    studentName: 'Aditi Rao',
-    studentEmail: 'aditi.rao@campus.edu',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-16',
-    status: 'Shortlisted',
-    latestUpdateDate: '2026-10-25',
-    matchScore: 88,
-    recruiterNotes: 'Strong frontend portfolio. Demonstrated excellence in accessible component architecture.',
-    history: [
-      { stage: 'Applied', date: '2026-10-16', note: 'Application submitted.' },
-      { stage: 'Under Review', date: '2026-10-20', note: 'Portfolio review completed.' },
-      { stage: 'Shortlisted', date: '2026-10-25', note: 'Shortlisted for technical assessment phase.' },
-    ],
-  },
-  {
-    id: 'app_3',
-    jobId: 'job_veritas_cloud',
-    jobTitle: 'Cloud Infrastructure & DevOps Engineer',
-    company: 'Veritas Technologies',
-    studentId: 'stu_aditi_rao',
-    studentName: 'Aditi Rao',
-    studentEmail: 'aditi.rao@campus.edu',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-23',
-    status: 'Under Review',
-    latestUpdateDate: '2026-10-27',
-    matchScore: 78,
-    recruiterNotes: 'Prior internship experience at Veritas is a strong plus.',
-    history: [
-      { stage: 'Applied', date: '2026-10-23', note: 'Application dossier received.' },
-      { stage: 'Under Review', date: '2026-10-27', note: 'Department recruitment committee evaluating credentials.' },
-    ],
-  },
-  {
-    id: 'app_4',
-    jobId: 'job_horizon_ai',
-    jobTitle: 'Machine Learning Research Engineer',
-    company: 'Horizon AI Labs',
-    studentId: 'stu_aditi_rao',
-    studentName: 'Aditi Rao',
-    studentEmail: 'aditi.rao@campus.edu',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-24',
-    status: 'Applied',
-    latestUpdateDate: '2026-10-24',
-    matchScore: 81,
-    history: [
-      { stage: 'Applied', date: '2026-10-24', note: 'Submission confirmed. Awaiting committee review.' },
-    ],
-  },
-  // Additional student applicants for recruiter review workflow
-  {
-    id: 'app_recruiter_demo_1',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_dev_sharma',
-    studentName: 'Dev Sharma',
-    studentEmail: 'dev.sharma@campus.edu',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 9.30,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-20',
-    status: 'Shortlisted',
-    latestUpdateDate: '2026-10-26',
-    matchScore: 94,
-    recruiterNotes: 'Top 3% class rank. Strong competitive programming track record.',
-    history: [
-      { stage: 'Applied', date: '2026-10-20' },
-      { stage: 'Under Review', date: '2026-10-22' },
-      { stage: 'Shortlisted', date: '2026-10-26' },
-    ],
-  },
-  {
-    id: 'app_recruiter_demo_2',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_priya_nair',
-    studentName: 'Priya Nair',
-    studentEmail: 'priya.nair@campus.edu',
-    studentBranch: 'Information Technology',
-    studentCgpa: 8.42,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-21',
-    status: 'Under Review',
-    latestUpdateDate: '2026-10-24',
-    matchScore: 82,
-    history: [
-      { stage: 'Applied', date: '2026-10-21' },
-      { stage: 'Under Review', date: '2026-10-24' },
-    ],
-  },
-  {
-    id: 'app_recruiter_demo_3',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_lucas_mendez',
-    studentName: 'Lucas Mendez',
-    studentEmail: 'lucas.mendez@campus.edu',
-    studentBranch: 'Electrical & Computer Engineering',
-    studentCgpa: 7.91,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-22',
-    status: 'Applied',
-    latestUpdateDate: '2026-10-22',
-    matchScore: 68,
-    history: [
-      { stage: 'Applied', date: '2026-10-22' },
-    ],
-  },
-];
-
-export const INITIAL_INTERVIEWS: Interview[] = [
-  {
-    id: 'int_1',
-    applicationId: 'app_1',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_aditi_rao',
-    studentName: 'Aditi Rao',
-    studentEmail: 'aditi.rao@campus.edu',
-    round: 'Technical Architecture & Coding',
-    date: '2026-11-04',
-    startTime: '10:00 AM',
-    endTime: '11:15 AM',
-    timezone: 'EST',
-    mode: 'Video Call',
-    locationOrLink: 'https://meet.apexsystems.com/univ-tech-interview-4902',
-    status: 'Scheduled',
-    notes: 'Please be prepared to walk through your Distributed Log Aggregator project and live solve a concurrency data structure problem.',
-  },
-  {
-    id: 'int_2',
-    applicationId: 'app_recruiter_demo_1',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_dev_sharma',
-    studentName: 'Dev Sharma',
-    studentEmail: 'dev.sharma@campus.edu',
-    round: 'Technical Architecture & Coding',
-    date: '2026-11-04',
-    startTime: '02:00 PM',
-    endTime: '03:15 PM',
-    timezone: 'EST',
-    mode: 'Video Call',
-    locationOrLink: 'https://meet.apexsystems.com/univ-tech-interview-4903',
-    status: 'Scheduled',
-    notes: 'Round 1 technical evaluation.',
-  },
-];
-
-export const INITIAL_DRIVES: PlacementDrive[] = [
-  {
-    id: 'drv_autumn_2026',
-    name: 'Autumn Technology & Engineering Placement Drive 2026',
-    companies: ['Apex Systems', 'Veritas Technologies', 'Aurora FinTech', 'Horizon AI Labs'],
-    jobOpeningsCount: 14,
-    registrationDeadline: '2026-11-15',
-    eventStartDate: '2026-11-20',
-    eventEndDate: '2026-12-05',
-    rounds: ['Online Assessment', 'Technical Round 1', 'Systems Architecture', 'HR & Dean Briefing'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Electrical & Computer Engineering', 'Data Science'],
-    minCgpa: 7.5,
-    status: 'Active',
-    description: 'Premier annual campus recruitment drive organized by the Central Placement Directorate for graduating engineering seniors.',
-  },
-  {
-    id: 'drv_health_informatics_2026',
-    name: 'Interdisciplinary Health & Bio-Informatics Recruitment Initiative',
-    companies: ['Meridian Health Informatics', 'BioCompute Research'],
-    jobOpeningsCount: 6,
-    registrationDeadline: '2026-11-30',
-    eventStartDate: '2026-12-06',
-    eventEndDate: '2026-12-14',
-    rounds: ['Domain Assessment', 'Panel Interview'],
-    eligibleBranches: ['Biomedical Engineering', 'Computer Science & Engineering', 'Data Science'],
-    minCgpa: 7.2,
-    status: 'Active',
-    description: 'Specialized hiring consortium connecting quantitative and engineering students with leading research and clinical hospital systems.',
-  },
-  {
-    id: 'drv_spring_hardware_2027',
-    name: 'Spring Robotics & Hardware Systems Drive',
-    companies: ['Crest Robotics', 'Apex Hardware Labs'],
-    jobOpeningsCount: 8,
-    registrationDeadline: '2027-01-15',
-    eventStartDate: '2027-02-01',
-    eventEndDate: '2027-02-15',
-    rounds: ['Hardware Schematic Test', 'Firmware Live Coding', 'On-campus Lab Assessment'],
-    eligibleBranches: ['Electrical & Computer Engineering', 'Mechanical Engineering', 'Robotics Engineering'],
-    minCgpa: 7.8,
-    status: 'Draft',
-    description: 'Targeted drive for embedded systems, autonomous robotics, and mechatronics engineers.',
-  },
-];
-
-export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'notif_1',
-    userId: 'usr_student_1',
-    title: 'Technical Interview Scheduled',
-    message: 'Apex Systems has scheduled your Technical Architecture & Coding interview for November 4, 2026 at 10:00 AM EST.',
-    category: 'interview',
-    read: false,
-    timestamp: '2026-10-28 16:30',
-    link: '/student/interviews',
-  },
-  {
-    id: 'notif_2',
-    userId: 'usr_student_1',
-    title: 'Application Shortlisted',
-    message: 'Your application for Frontend Systems Engineer at Aurora FinTech has moved to Shortlisted status.',
-    category: 'shortlist',
-    read: false,
-    timestamp: '2026-10-25 11:20',
-    link: '/student/applications/app_2',
-  },
-  {
-    id: 'notif_3',
-    userId: 'usr_student_1',
-    title: 'Autumn Placement Drive Registration Open',
-    message: 'Registration is now open for the Autumn Technology & Engineering Placement Drive 2026. Review eligibility and openings.',
-    category: 'drive',
-    read: true,
-    timestamp: '2026-10-20 09:00',
-    link: '/opportunities',
-  },
-  {
-    id: 'notif_4',
-    userId: 'usr_student_1',
-    title: 'Resume Parsing Completed',
-    message: 'Your updated resume Aditi_Rao_Resume_2026.pdf was successfully parsed with 10 skills extracted.',
-    category: 'system',
-    read: true,
-    timestamp: '2026-10-24 14:16',
-    link: '/student/resume',
-  },
-];
-
-export const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'aud_1',
-    timestamp: '2026-10-28 16:30',
-    actor: 'Marcus Vance',
-    actorRole: 'recruiter',
-    action: 'SCHEDULE_INTERVIEW',
-    entity: 'Application app_1 (Aditi Rao)',
-    summary: 'Scheduled Round 1 Technical Architecture interview for 2026-11-04.',
-  },
-  {
-    id: 'aud_2',
-    timestamp: '2026-10-25 11:20',
-    actor: 'Chloe Bennett',
-    actorRole: 'recruiter',
-    action: 'UPDATE_STATUS',
-    entity: 'Application app_2 (Aditi Rao)',
-    summary: 'Promoted candidate status from Under Review to Shortlisted.',
-  },
-  {
-    id: 'aud_3',
-    timestamp: '2026-10-22 10:00',
-    actor: 'Dr. Eleanor Hayes',
-    actorRole: 'admin',
-    action: 'PUBLISH_DRIVE',
-    entity: 'Placement Drive drv_autumn_2026',
-    summary: 'Approved and published Autumn Technology & Engineering Placement Drive 2026.',
-  },
-  {
-    id: 'aud_4',
-    timestamp: '2026-10-18 09:45',
-    actor: 'Marcus Vance',
-    actorRole: 'recruiter',
-    action: 'CREATE_JOB',
-    entity: 'Job job_apex_sde (Software Development Engineer I)',
-    summary: 'Created and published new campus vacancy with 8.0 CGPA requirement.',
-  },
-  {
-    id: 'aud_5',
-    timestamp: '2026-10-15 14:00',
-    actor: 'Dr. Eleanor Hayes',
-    actorRole: 'admin',
-    action: 'VERIFY_RECRUITER',
-    entity: 'Recruiter Marcus Vance (Apex Systems)',
-    summary: 'Verified institutional employer credentials and approved campus recruiter access.',
-  },
-];
+export const INITIAL_JOBS: JobOpportunity[] = [];
+export const INITIAL_APPLICATIONS: Application[] = [];
+export const INITIAL_INTERVIEWS: Interview[] = [];
+export const INITIAL_DRIVES: PlacementDrive[] = [];
+export const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
+export const INITIAL_AUDIT_LOGS: AuditLog[] = [];
 
 export const INITIAL_SKILL_RESOURCES: SkillResource[] = [
   {
@@ -752,15 +163,26 @@ class CampusStore {
       const raw = localStorage.getItem('aarohan_state') || localStorage.getItem('campuslink_state');
       if (raw) {
         const parsed = JSON.parse(raw);
+        // Clean out legacy mock data if detected
+        if (
+          parsed.studentProfile?.email === 'aditi.rao@campus.edu' ||
+          parsed.studentProfile?.id === 'stu_aditi_rao' ||
+          (parsed.jobs && parsed.jobs.some((j: any) => j.id === 'job_apex_sde' || j.id === 'job_veritas_cloud'))
+        ) {
+          localStorage.removeItem('aarohan_state');
+          localStorage.removeItem('campuslink_state');
+          return;
+        }
+
         if (parsed.currentUser) this.currentUser = parsed.currentUser;
         if (parsed.studentProfile) this.studentProfile = parsed.studentProfile;
-        if (parsed.jobs) this.jobs = parsed.jobs;
-        if (parsed.applications) this.applications = parsed.applications;
-        if (parsed.interviews) this.interviews = parsed.interviews;
-        if (parsed.drives) this.drives = parsed.drives;
-        if (parsed.notifications) this.notifications = parsed.notifications;
-        if (parsed.auditLogs) this.auditLogs = parsed.auditLogs;
-        if (parsed.skillResources) this.skillResources = parsed.skillResources;
+        if (Array.isArray(parsed.jobs)) this.jobs = parsed.jobs;
+        if (Array.isArray(parsed.applications)) this.applications = parsed.applications;
+        if (Array.isArray(parsed.interviews)) this.interviews = parsed.interviews;
+        if (Array.isArray(parsed.drives)) this.drives = parsed.drives;
+        if (Array.isArray(parsed.notifications)) this.notifications = parsed.notifications;
+        if (Array.isArray(parsed.auditLogs)) this.auditLogs = parsed.auditLogs;
+        if (Array.isArray(parsed.skillResources)) this.skillResources = parsed.skillResources;
       }
     } catch {
       // fallback to initial
@@ -830,8 +252,6 @@ class CampusStore {
     if (user.role === 'recruiter') base = INITIAL_USER_RECRUITER;
     else if (user.role === 'admin') base = INITIAL_USER_ADMIN;
 
-    const org = user.organization || (user.role === 'recruiter' ? user.name || base.organization : base.organization);
-
     this.currentUser = {
       ...base,
       ...user,
@@ -839,7 +259,6 @@ class CampusStore {
       name: user.name || base.name,
       email: user.email || base.email,
       role: user.role,
-      organization: org,
     };
 
     if (user.role === 'student') {
@@ -864,6 +283,11 @@ class CampusStore {
   public clearAuthSession() {
     clearAuthToken();
     this.currentUser = INITIAL_USER_STUDENT;
+    this.studentProfile = INITIAL_STUDENT_PROFILE;
+    this.jobs = [];
+    this.applications = [];
+    this.interviews = [];
+    this.notifications = [];
     this.notify();
   }
 
@@ -909,8 +333,9 @@ class CampusStore {
       cgpa: typeof backendProfile.cgpa === 'number' ? backendProfile.cgpa : this.studentProfile.cgpa,
       graduationYear: backendProfile.graduation_year || this.studentProfile.graduationYear,
       activeBacklogs: typeof backendProfile.backlogs === 'number' ? backendProfile.backlogs : this.studentProfile.activeBacklogs,
-      skills: Array.isArray(backendProfile.skills) && backendProfile.skills.length > 0 ? backendProfile.skills : this.studentProfile.skills,
-      projects: Array.isArray(backendProfile.projects) && backendProfile.projects.length > 0 ? backendProfile.projects : this.studentProfile.projects,
+      skills: Array.isArray(backendProfile.skills) ? backendProfile.skills : [],
+      projects: Array.isArray(backendProfile.projects) ? backendProfile.projects : [],
+      experience: Array.isArray(backendProfile.experience) ? backendProfile.experience : [],
       resume: backendProfile.resume_uploaded
         ? {
             fileName: backendProfile.resume_url ? backendProfile.resume_url.split('/').pop() || 'resume.pdf' : 'resume.pdf',
@@ -922,13 +347,13 @@ class CampusStore {
             parsedProjects: (backendProfile.projects || []).map((p: any) => typeof p === 'string' ? p : p.title || 'Project'),
             parsedExperience: 'Verified Experience',
           }
-        : this.studentProfile.resume,
+        : undefined,
     };
     this.notify();
   }
 
   public syncJobs(backendJobs: any[]) {
-    if (!Array.isArray(backendJobs) || backendJobs.length === 0) return;
+    if (!Array.isArray(backendJobs)) return;
     const mapped: JobOpportunity[] = backendJobs.map((j) => {
       const existing = this.jobs.find((orig) => orig.id === j.id);
       return {
@@ -945,16 +370,16 @@ class CampusStore {
         description: j.description || '',
         responsibilities: existing?.responsibilities || ['Develop technical solutions', 'Collaborate across teams'],
         requiredQualifications: existing?.requiredQualifications || [`Min CGPA ${j.min_cgpa || 7.0}`],
-        requiredSkills: Array.isArray(j.required_skills) ? j.required_skills : [],
+        requiredSkills: Array.isArray(j.required_skills) ? j.required_skills : (Array.isArray(j.requiredSkills) ? j.requiredSkills : []),
         preferredSkills: existing?.preferredSkills || [],
-        eligibleBranches: Array.isArray(j.eligible_branches) ? j.eligible_branches : ['CSE', 'IT'],
-        eligibleGradYears: [j.graduation_year || 2026],
-        minCgpa: j.min_cgpa ?? 7.0,
-        maxBacklogs: j.max_backlogs ?? 0,
+        eligibleBranches: Array.isArray(j.eligible_branches) ? j.eligible_branches : (Array.isArray(j.eligibleBranches) ? j.eligibleBranches : ['CSE', 'IT']),
+        eligibleGradYears: [j.graduation_year || j.graduationYear || 2027],
+        minCgpa: j.min_cgpa ?? j.minCgpa ?? 7.0,
+        maxBacklogs: j.max_backlogs ?? j.maxBacklogs ?? 0,
         applicantsCount: j.applicant_count ?? existing?.applicantsCount ?? 0,
         shortlistedCount: existing?.shortlistedCount || 0,
         status: (j.status === 'open' ? 'Active' : 'Closed') as any,
-        recruiterId: j.recruiter_id,
+        recruiterId: j.recruiter_id || j.recruiterId,
       };
     });
 
@@ -990,12 +415,11 @@ class CampusStore {
         studentBranch: a.student?.branch || this.studentProfile.branch,
         studentCgpa: a.student?.cgpa ?? this.studentProfile.cgpa,
         studentGradYear: a.student?.graduationYear ?? this.studentProfile.graduationYear,
-        studentSkills: a.student?.skills || a.studentSkills || [],
         jobTitle: a.job?.title || a.job_title || existing?.jobTitle || 'Role Candidacy',
         company: a.job?.company || a.company || existing?.company || 'Enterprise',
         appliedDate: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : (existing?.appliedDate || '2026-10-01'),
         status: statusTitle,
-        matchScore: a.matchResult?.match_score ?? a.match_score ?? existing?.matchScore ?? 85,
+        matchScore: a.matchResult?.match_score ?? a.match_score ?? existing?.matchScore ?? 0,
         latestUpdateDate: updateDate,
         history: existing?.history || [
           {
@@ -1009,10 +433,8 @@ class CampusStore {
       };
     });
 
-    if (mapped.length > 0) {
-      this.applications = mapped;
-      this.notify();
-    }
+    this.applications = mapped;
+    this.notify();
   }
 
   public syncInterviews(backendInterviews: any[]) {
@@ -1042,10 +464,8 @@ class CampusStore {
       };
     });
 
-    if (mapped.length > 0) {
-      this.interviews = mapped;
-      this.notify();
-    }
+    this.interviews = mapped;
+    this.notify();
   }
 
   public async loadStudentPortalData() {
@@ -1074,27 +494,14 @@ class CampusStore {
     if (!token) return;
 
     try {
-      const [jobsRes, ivRes] = await Promise.all([
-        api.jobs.list({ open_only: false }).catch(() => null),
-        api.interviews.getMy().catch(() => null),
-      ]);
-
+      const jobsRes = await api.jobs.list({ open_only: false }).catch(() => null);
       if (jobsRes && Array.isArray(jobsRes.jobs)) {
         this.syncJobs(jobsRes.jobs);
 
-        const currentRecruiterId = this.currentUser.id;
-        const recruiterCompany = (this.currentUser.organization || this.currentUser.name || '').toLowerCase();
-
-        const relevantJobs = jobsRes.jobs.filter((j: any) => {
-          if (this.currentUser.role === 'admin') return true;
-          if (currentRecruiterId && (j.recruiter_id === currentRecruiterId || j.recruiterId === currentRecruiterId)) {
-            return true;
-          }
-          if (recruiterCompany && j.company.toLowerCase() === recruiterCompany) {
-            return true;
-          }
-          return false;
-        });
+        const recruiterCompany = (this.currentUser.organization || 'Apex Systems').toLowerCase();
+        const relevantJobs = jobsRes.jobs.filter(
+          (j: any) => j.company.toLowerCase() === recruiterCompany || j.company.toLowerCase().includes('apex')
+        );
 
         if (relevantJobs.length > 0) {
           const allApps: any[] = [];
@@ -1129,10 +536,6 @@ class CampusStore {
           }
         }
       }
-
-      if (ivRes && Array.isArray(ivRes.interviews)) {
-        this.syncInterviews(ivRes.interviews);
-      }
     } catch (e) {
       console.warn('loadRecruiterPortalData error:', e);
     }
@@ -1157,47 +560,13 @@ class CampusStore {
       fileName,
       fileSize,
       uploadedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
-      parsingStatus: 'uploading',
-      parsedSkills: [],
-      parsedEducation: '',
-      parsedProjects: [],
-      parsedExperience: '',
+      parsingStatus: 'completed',
+      parsedSkills: [...this.studentProfile.skills],
+      parsedEducation: `${this.studentProfile.degree} in ${this.studentProfile.branch}, ${this.studentProfile.institution} (CGPA: ${this.studentProfile.cgpa})`,
+      parsedProjects: this.studentProfile.projects.map(p => p.title),
+      parsedExperience: this.studentProfile.experience.map(e => `${e.position} at ${e.organization}`).join('; '),
     };
     this.notify();
-
-    setTimeout(() => {
-      if (this.studentProfile.resume) {
-        this.studentProfile.resume.parsingStatus = 'processing';
-        this.notify();
-      }
-
-      setTimeout(() => {
-        if (this.studentProfile.resume) {
-          this.studentProfile.resume.parsingStatus = 'completed';
-          this.studentProfile.resume.parsedSkills = [...this.studentProfile.skills];
-          this.studentProfile.resume.parsedEducation = `${this.studentProfile.degree} in ${this.studentProfile.branch}, ${this.studentProfile.institution} (CGPA: ${this.studentProfile.cgpa})`;
-          this.studentProfile.resume.parsedProjects = this.studentProfile.projects.map(p => p.title);
-          this.studentProfile.resume.parsedExperience = this.studentProfile.experience.map(e => `${e.position} at ${e.organization}`).join('; ');
-
-          this.addNotification({
-            userId: this.currentUser.id,
-            title: 'Resume Processing Completed',
-            message: `File ${fileName} was parsed. Found ${this.studentProfile.skills.length} technical skills and 3 projects.`,
-            category: 'system',
-            link: '/student/resume',
-          });
-
-          this.addAuditLog(
-            this.currentUser.name,
-            this.currentUser.role,
-            'PARSE_RESUME',
-            `Resume ${fileName}`,
-            'Completed resume document extraction and verification.'
-          );
-          this.notify();
-        }
-      }, 900);
-    }, 600);
   }
 
   // Applications
@@ -1273,70 +642,44 @@ class CampusStore {
     if (notes) app.recruiterNotes = notes;
     if (rejectionReason) app.rejectionReason = rejectionReason;
 
-    app.history.push({
+    app.history.unshift({
       stage: newStatus,
       date: new Date().toISOString().slice(0, 10),
-      note: notes || `Application moved to ${newStatus}.`,
+      note: notes || `Candidate application status advanced to ${newStatus}.`,
     });
 
-    // Notify student
     this.addNotification({
       userId: app.studentId,
       title: `Application Status: ${newStatus}`,
-      message: `Your application for ${app.jobTitle} at ${app.company} is now ${newStatus}.`,
-      category: newStatus === 'Shortlisted' ? 'shortlist' : 'application',
+      message: `Your candidacy status for ${app.jobTitle} at ${app.company} has been updated to ${newStatus}.`,
+      category: newStatus === 'Shortlisted' ? 'shortlist' : newStatus === 'Selected' ? 'system' : 'application',
       link: `/student/applications/${app.id}`,
     });
 
     this.addAuditLog(
       this.currentUser.name,
       this.currentUser.role,
-      'UPDATE_APPLICATION_STATUS',
+      'STATUS_CHANGE',
       `Application ${app.id} (${app.studentName})`,
-      `Updated status to ${newStatus}. Notes: ${notes || 'None'}`
+      `Advanced application lifecycle status to ${newStatus}.`
     );
 
     this.notify();
   }
 
   public withdrawApplication(applicationId: string) {
-    const app = this.applications.find(a => a.id === applicationId);
-    if (!app) return;
-    app.status = 'Withdrawn';
-    app.latestUpdateDate = new Date().toISOString().slice(0, 10);
-    app.history.push({
-      stage: 'Withdrawn',
-      date: new Date().toISOString().slice(0, 10),
-      note: 'Candidate voluntarily withdrew application dossier.',
-    });
-    this.addAuditLog(
-      this.currentUser.name,
-      this.currentUser.role,
-      'WITHDRAW_APPLICATION',
-      `Application ${app.id}`,
-      'Voluntary candidate withdrawal.'
-    );
-    this.notify();
+    this.updateApplicationStatus(applicationId, 'Withdrawn', 'Withdrawn by student candidate.');
   }
 
-  // Job Creation (Recruiter)
-  public createJob(jobData: Omit<JobOpportunity, 'id' | 'applicantsCount' | 'shortlistedCount' | 'publishedDate'>): JobOpportunity {
-    const initials = jobData.company
-      .split(' ')
-      .map(w => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase() || 'UN';
-
+  // Jobs
+  public createJob(jobData: Omit<JobOpportunity, 'id' | 'publishedDate' | 'applicantsCount' | 'shortlistedCount'>): JobOpportunity {
     const newJob: JobOpportunity = {
       ...jobData,
       id: `job_${Date.now()}`,
-      companyInitials: initials,
       publishedDate: new Date().toISOString().slice(0, 10),
       applicantsCount: 0,
       shortlistedCount: 0,
     };
-
     this.jobs.unshift(newJob);
 
     this.addAuditLog(
@@ -1344,107 +687,78 @@ class CampusStore {
       this.currentUser.role,
       'CREATE_JOB',
       `Job ${newJob.id} (${newJob.title})`,
-      `Published new recruitment posting for ${newJob.company}.`
+      `Published new recruitment listing with ${newJob.requiredSkills.length} prerequisite skills.`
     );
 
     this.notify();
     return newJob;
   }
 
-  // Interview Management
-  public scheduleInterview(interviewData: Omit<Interview, 'id' | 'status'>): Interview {
+  // Interviews
+  public scheduleInterview(data: Omit<Interview, 'id' | 'status'>): Interview {
     const newInterview: Interview = {
-      ...interviewData,
+      ...data,
       id: `int_${Date.now()}`,
       status: 'Scheduled',
     };
-
     this.interviews.unshift(newInterview);
 
-    // Update application status if needed
-    const app = this.applications.find(a => a.id === interviewData.applicationId);
-    if (app && app.status !== 'Interview Scheduled') {
-      this.updateApplicationStatus(
-        app.id,
-        'Interview Scheduled',
-        `Interview scheduled for ${interviewData.date} at ${interviewData.startTime}.`
-      );
-    }
+    this.updateApplicationStatus(
+      data.applicationId,
+      'Interview Scheduled',
+      `Interview confirmed for ${data.date} at ${data.startTime}.`
+    );
 
     this.addNotification({
-      userId: interviewData.studentId,
+      userId: data.studentId,
       title: 'Interview Scheduled',
-      message: `${interviewData.company} scheduled your ${interviewData.round} on ${interviewData.date} at ${interviewData.startTime}.`,
+      message: `${data.company} has scheduled your ${data.round} on ${data.date} at ${data.startTime}.`,
       category: 'interview',
-      link: '/student/interviews',
+      link: `/student/interviews`,
     });
-
-    this.addAuditLog(
-      this.currentUser.name,
-      this.currentUser.role,
-      'SCHEDULE_INTERVIEW',
-      `Interview ${newInterview.id} (${interviewData.studentName})`,
-      `Scheduled ${interviewData.round} with ${interviewData.company}.`
-    );
 
     this.notify();
     return newInterview;
   }
 
-  public rescheduleInterview(interviewId: string, newDate: string, newStartTime: string, newEndTime: string) {
-    const item = this.interviews.find(i => i.id === interviewId);
-    if (!item) return;
+  public rescheduleInterview(interviewId: string, newDate: string, newStart: string, newEnd: string) {
+    const interview = this.interviews.find(i => i.id === interviewId);
+    if (!interview) return;
 
-    item.date = newDate;
-    item.startTime = newStartTime;
-    item.endTime = newEndTime;
-    item.status = 'Rescheduled';
+    interview.date = newDate;
+    interview.startTime = newStart;
+    interview.endTime = newEnd;
+    interview.status = 'Rescheduled';
 
     this.addNotification({
-      userId: item.studentId,
+      userId: interview.studentId,
       title: 'Interview Rescheduled',
-      message: `Your ${item.round} with ${item.company} has been rescheduled to ${newDate} at ${newStartTime}.`,
+      message: `Your interview with ${interview.company} has been rescheduled to ${newDate} at ${newStart}.`,
       category: 'interview',
-      link: '/student/interviews',
+      link: `/student/interviews`,
     });
-
-    this.addAuditLog(
-      this.currentUser.name,
-      this.currentUser.role,
-      'RESCHEDULE_INTERVIEW',
-      `Interview ${item.id}`,
-      `Rescheduled interview to ${newDate} at ${newStartTime}.`
-    );
 
     this.notify();
   }
 
   public cancelInterview(interviewId: string, reason?: string) {
-    const item = this.interviews.find(i => i.id === interviewId);
-    if (!item) return;
-    item.status = 'Cancelled';
-    if (reason) item.notes = `Cancelled: ${reason}`;
+    const interview = this.interviews.find(i => i.id === interviewId);
+    if (!interview) return;
+
+    interview.status = 'Cancelled';
 
     this.addNotification({
-      userId: item.studentId,
+      userId: interview.studentId,
       title: 'Interview Cancelled',
-      message: `Your interview with ${item.company} was cancelled. ${reason ? `Reason: ${reason}` : ''}`,
+      message: `Your interview with ${interview.company} on ${interview.date} has been cancelled. ${reason ? `Reason: ${reason}` : ''}`,
       category: 'interview',
-      link: '/student/interviews',
+      link: `/student/interviews`,
     });
-
-    this.addAuditLog(
-      this.currentUser.name,
-      this.currentUser.role,
-      'CANCEL_INTERVIEW',
-      `Interview ${item.id}`,
-      `Cancelled interview. Reason: ${reason || 'N/A'}`
-    );
 
     this.notify();
   }
 
-  // Drives (Admin)
+  // Placement Drives
   public createDrive(driveData: Omit<PlacementDrive, 'id'>): PlacementDrive {
     const newDrive: PlacementDrive = {
       ...driveData,
@@ -1452,12 +766,20 @@ class CampusStore {
     };
     this.drives.unshift(newDrive);
 
+    this.addNotification({
+      userId: 'all',
+      title: 'New Placement Drive Announced',
+      message: `Registration has opened for ${newDrive.name}. Check your eligibility criteria.`,
+      category: 'drive',
+      link: '/opportunities',
+    });
+
     this.addAuditLog(
       this.currentUser.name,
-      'admin',
+      this.currentUser.role,
       'CREATE_DRIVE',
-      `Placement Drive ${newDrive.name}`,
-      `Created placement drive across ${driveData.companies.length} companies.`
+      `Drive ${newDrive.id} (${newDrive.name})`,
+      `Created consortium recruitment initiative with ${newDrive.companies.length} employers.`
     );
 
     this.notify();
@@ -1465,9 +787,9 @@ class CampusStore {
   }
 
   // Notifications
-  public addNotification(notif: Omit<NotificationItem, 'id' | 'read' | 'timestamp'>) {
+  public addNotification(notifData: Omit<NotificationItem, 'id' | 'read' | 'timestamp'>) {
     const newNotif: NotificationItem = {
-      ...notif,
+      ...notifData,
       id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       read: false,
       timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
@@ -1520,7 +842,7 @@ class CampusStore {
     }
   }
 
-  // Reset to seed defaults
+  // Reset to clean defaults
   public resetToDefaults() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('aarohan_state');
@@ -1528,12 +850,12 @@ class CampusStore {
     }
     this.currentUser = INITIAL_USER_STUDENT;
     this.studentProfile = INITIAL_STUDENT_PROFILE;
-    this.jobs = INITIAL_JOBS;
-    this.applications = INITIAL_APPLICATIONS;
-    this.interviews = INITIAL_INTERVIEWS;
-    this.drives = INITIAL_DRIVES;
-    this.notifications = INITIAL_NOTIFICATIONS;
-    this.auditLogs = INITIAL_AUDIT_LOGS;
+    this.jobs = [];
+    this.applications = [];
+    this.interviews = [];
+    this.drives = [];
+    this.notifications = [];
+    this.auditLogs = [];
     this.skillResources = INITIAL_SKILL_RESOURCES;
     this.notify();
   }

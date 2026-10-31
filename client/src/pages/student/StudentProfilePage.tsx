@@ -33,8 +33,8 @@ export function StudentProfilePage() {
             cgpa: typeof res.cgpa === 'number' ? res.cgpa : prev.cgpa,
             graduationYear: res.graduation_year || prev.graduationYear,
             activeBacklogs: typeof res.backlogs === 'number' ? res.backlogs : prev.activeBacklogs,
-            skills: Array.isArray(res.skills) && res.skills.length > 0 ? res.skills : prev.skills,
-            projects: Array.isArray(res.projects) && res.projects.length > 0 ? res.projects : prev.projects,
+            skills: Array.isArray(res.skills) ? res.skills : [],
+            projects: Array.isArray(res.projects) ? res.projects : [],
           }));
         }
       })
@@ -335,22 +335,26 @@ export function StudentProfilePage() {
             </div>
 
             <div className="flex flex-wrap gap-2 pt-2">
-              {formData.skills.map(skill => (
-                <span
-                  key={skill}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAFAF9] border border-[#222222] text-[#111111] font-mono text-xs rounded-[2px]"
-                >
-                  <span>{skill}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeSkill(skill)}
-                    className="text-[#858585] hover:text-black ml-1 cursor-pointer"
-                    aria-label={`Remove ${skill}`}
+              {formData.skills.length === 0 ? (
+                <p className="text-xs font-mono text-[#858585]">No competencies recorded yet. Add your primary frameworks, languages, or tools above.</p>
+              ) : (
+                formData.skills.map(skill => (
+                  <span
+                    key={skill}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAFAF9] border border-[#222222] text-[#111111] font-mono text-xs rounded-[2px]"
                   >
-                    ✕
-                  </button>
-                </span>
-              ))}
+                    <span>{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="text-[#858585] hover:text-black ml-1 cursor-pointer"
+                      aria-label={`Remove ${skill}`}
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -367,21 +371,25 @@ export function StudentProfilePage() {
           </div>
 
           <div className="space-y-4">
-            {formData.projects.map((proj, idx) => (
-              <div key={proj.id} className="p-4 border border-[#E4E4E1] bg-[#FAFAF9] space-y-2">
-                <div className="flex items-start justify-between">
-                  <h3 className="font-bold text-sm text-[#111111]">{proj.title}</h3>
-                  <div className="flex gap-1 font-mono text-[10px]">
-                    {proj.techStack.map(t => (
-                      <span key={t} className="bg-white border border-[#E4E4E1] px-1.5 py-0.5">
-                        {t}
-                      </span>
-                    ))}
+            {formData.projects.length === 0 ? (
+              <p className="text-xs font-mono text-[#858585]">No projects added to dossier yet. Technical projects can be documented here or parsed from your uploaded resume.</p>
+            ) : (
+              formData.projects.map((proj, idx) => (
+                <div key={proj.id} className="p-4 border border-[#E4E4E1] bg-[#FAFAF9] space-y-2">
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-bold text-sm text-[#111111]">{proj.title}</h3>
+                    <div className="flex gap-1 font-mono text-[10px]">
+                      {proj.techStack.map(t => (
+                        <span key={t} className="bg-white border border-[#E4E4E1] px-1.5 py-0.5">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                  <p className="text-xs text-[#666666] leading-relaxed">{proj.description}</p>
                 </div>
-                <p className="text-xs text-[#666666] leading-relaxed">{proj.description}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

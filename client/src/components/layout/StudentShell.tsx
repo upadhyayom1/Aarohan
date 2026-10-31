@@ -27,12 +27,16 @@ interface StudentShellProps {
 
 export function StudentShell({ children }: StudentShellProps) {
   const { path, navigate } = useRouter();
-  const { studentProfile, notifications, actions } = useCampusStore();
+  const { currentUser, studentProfile, notifications, actions } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  useEffect(() => {
+    actions.loadStudentPortalData();
+  }, [actions]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -85,6 +89,10 @@ export function StudentShell({ children }: StudentShellProps) {
       ],
     },
   ];
+
+  const displayName = studentProfile.fullName || currentUser.name || 'Student Candidate';
+  const displayBranch = studentProfile.branch || 'Engineering';
+  const displayCgpa = studentProfile.cgpa ? studentProfile.cgpa.toFixed(2) : '—';
 
   return (
     <div className="min-h-screen bg-white text-[#111111] flex flex-col">
@@ -305,14 +313,14 @@ export function StudentShell({ children }: StudentShellProps) {
             <div className="flex items-center justify-between mb-2">
               <div className="truncate">
                 <span className="text-xs font-bold text-[#111111] block truncate">
-                  {studentProfile.fullName}
+                  {displayName}
                 </span>
                 <span className="text-[10px] font-mono text-[#858585] block truncate">
-                  {studentProfile.branch.slice(0, 24)}
+                  {displayBranch}
                 </span>
               </div>
               <span className="text-[10px] font-mono bg-[#F5F5F3] border border-[#E4E4E1] px-1.5 py-0.5 rounded-[2px] text-[#111111] font-bold">
-                {studentProfile.cgpa.toFixed(2)}
+                {displayCgpa}
               </span>
             </div>
             <button

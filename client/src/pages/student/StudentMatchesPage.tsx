@@ -200,7 +200,15 @@ export function StudentMatchesPage() {
       </div>
 
       {/* Main Two-Column Master / Detail View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {matchResults.length === 0 ? (
+        <div className="border border-dashed border-[#E4E4E1] p-12 text-center bg-[#FAFAF9]">
+          <h3 className="text-base font-bold text-[#111111] mb-1">No Placement Opportunities Found</h3>
+          <p className="text-xs font-mono text-[#666666]">
+            Opportunities will appear here for AI match analysis once published by recruiters or administrators.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Match Listings */}
         <div className="lg:col-span-5 space-y-4">
           <span className="text-xs font-mono uppercase text-[#858585] tracking-widest block mb-2">
@@ -446,7 +454,8 @@ export function StudentMatchesPage() {
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

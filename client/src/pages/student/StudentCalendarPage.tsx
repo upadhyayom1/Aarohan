@@ -13,8 +13,9 @@ import {
 
 export function StudentCalendarPage() {
   const { interviews, jobs, drives, studentProfile, currentUser } = useCampusStore();
-  const [currentMonth, setCurrentMonth] = useState<number>(10); // November (0-indexed: 10)
-  const [currentYear, setCurrentYear] = useState<number>(2026);
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState<number>(today.getMonth());
+  const [currentYear, setCurrentYear] = useState<number>(today.getFullYear());
   const [viewMode, setViewMode] = useState<'calendar' | 'agenda'>('calendar');
 
   const monthNames = [
@@ -41,7 +42,7 @@ export function StudentCalendarPage() {
           )
           : currentUser.role === 'admin'
             ? interviews
-            : interviews.filter(i => i.studentId === studentProfile.id);
+            : interviews.filter(i => !studentProfile.id || !i.studentId || i.studentId === studentProfile.id);
 
         filteredInterviews.forEach(i => {
           const displayTitle = currentUser.role === 'recruiter' || currentUser.role === 'admin'

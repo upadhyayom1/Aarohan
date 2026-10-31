@@ -32,27 +32,30 @@ export function OpportunityDetailPage() {
   const [isLoadingAiMatch, setIsLoadingAiMatch] = useState(false);
 
   const job = useMemo(() => {
-    return jobs.find(j => j.id === params.jobId) || jobs[0];
+    return jobs.find(j => j.id === params.jobId);
   }, [jobs, params.jobId]);
 
   const existingApp = useMemo(() => {
+    if (!job) return null;
     return applications.find(
-      a => a.jobId === job.id && a.studentId === studentProfile.id && a.status !== 'Withdrawn'
+      a => a.jobId === job.id && (!studentProfile.id || a.studentId === studentProfile.id) && a.status !== 'Withdrawn'
     );
-  }, [applications, job.id, studentProfile.id]);
+  }, [applications, job, studentProfile.id]);
 
   const eligibility = useMemo(() => {
+    if (!job) return { isEligible: false, reasons: [] };
     return checkEligibility(studentProfile, job);
   }, [studentProfile, job]);
 
   const match = useMemo(() => {
+    if (!job) return { overallScore: 0, matchedSkills: [], missingRequiredSkills: [], matchExplanation: '' };
     return calculateMatch(studentProfile, job);
   }, [studentProfile, job]);
 
   // Request AI Match from Python AI Server on mount
   useEffect(() => {
     let active = true;
-    if (!studentProfile.id || !job.id) return;
+    if (!studentProfile.id || !job?.id) return;
 
     const fetchAiMatch = async () => {
       setIsLoadingAiMatch(true);
@@ -456,8 +459,8 @@ export function OpportunityDetailPage() {
           <div className="space-y-2">
             <span className="text-[#858585] block">Transmitted Information:</span>
             <ul className="space-y-1 text-[#666666] list-disc list-inside">
-              <li>Verified Academic Transcript (CGPA: {studentProfile.cgpa.toFixed(2)})</li>
-              <li>Active Resume: {studentProfile.resume?.fileName || 'Aditi_Rao_Resume_2026.pdf'}</li>
+              <li>Verified Academic Transcript (CGPA: {(studentProfile.cgpa || 0).toFixed(2)})</li>
+              <li>Active Resume: {studentProfile.resume?.fileName || (studentProfile.resume_uploaded ? 'Uploaded PDF Dossier' : 'No resume uploaded')}</li>
               <li>{studentProfile.skills.length} Technical Skills & {studentProfile.projects.length} Projects</li>
               <li>Department: {studentProfile.branch}</li>
             </ul>
