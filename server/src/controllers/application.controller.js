@@ -171,6 +171,7 @@ export const getMyApplications = async (req, res) => {
             deadline: true,
           },
         },
+        interview: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -186,7 +187,15 @@ export const getMyApplications = async (req, res) => {
         },
         status: app.status,
         match_result: app.matchResult,
-        interview: null,
+        interview: app.interview
+          ? {
+              id: app.interview.id,
+              scheduled_at: app.interview.scheduledAt.toISOString(),
+              mode: app.interview.mode,
+              location: app.interview.location,
+              notes: app.interview.notes || '',
+            }
+          : null,
         applied_at: app.createdAt.toISOString(),
         updated_at: app.updatedAt.toISOString(),
       })),
@@ -307,6 +316,7 @@ export const getApplicationById = async (req, res) => {
             user: { select: { email: true } },
           },
         },
+        interview: true,
       },
     });
 
@@ -349,7 +359,15 @@ export const getApplicationById = async (req, res) => {
       eligible: application.eligible,
       match_result: application.matchResult,
       ats_result: application.atsResult,
-      interview: null,
+      interview: application.interview
+        ? {
+            id: application.interview.id,
+            scheduled_at: application.interview.scheduledAt.toISOString(),
+            mode: application.interview.mode,
+            location: application.interview.location,
+            notes: application.interview.notes || '',
+          }
+        : null,
       applied_at: application.createdAt.toISOString(),
       updated_at: application.updatedAt.toISOString(),
     });
