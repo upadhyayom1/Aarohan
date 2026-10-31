@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
 import { Button, StatusBadge, MetricSummary } from '../../components/ui';
+import api from '../../lib/api';
 import {
   GraduationCap,
   Briefcase,
@@ -18,9 +19,44 @@ export function AdminDashboard() {
   const { navigate } = useRouter();
   const { currentUser, jobs, applications, interviews, drives, auditLogs } = useCampusStore();
 
+  const [stats, setStats] = useState<{
+    total_students: number;
+    students_placed: number;
+    total_jobs: number;
+    open_jobs: number;
+    total_applications: number;
+    shortlisted: number;
+    interviews_scheduled: number;
+  } | null>(null);
+  const [recruitersCount, setRecruitersCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.all([
+      api.admin.getStats().catch((err) => {
+        console.warn('Failed to load admin stats from backend:', err);
+        return null;
+      }),
+      api.admin.getRecruiters().catch((err) => {
+        console.warn('Failed to load recruiters from backend:', err);
+        return null;
+      }),
+    ]).then(([statsRes, recruitersRes]) => {
+      if (!isMounted) return;
+      if (statsRes) setStats(statsRes);
+      if (recruitersRes) setRecruitersCount(recruitersRes.total);
+      setLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const activeDrives = drives.filter(d => d.status === 'Active');
-  const companiesCount = new Set(jobs.map(j => j.company)).size;
-  const selectedCount = applications.filter(a => a.status === 'Selected').length;
+  const fallbackCompaniesCount = new Set(jobs.map(j => j.company)).size;
+  const fallbackSelectedCount = applications.filter(a => a.status === 'Selected').length;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -56,12 +92,36 @@ export function AdminDashboard() {
       {/* Summary Metrics */}
       <div className="border border-[#E4E4E1] bg-[#FAFAF9] p-6">
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-6">
-          <MetricSummary label="Registered Seniors" value="412" sublabel="Class of 2026" />
-          <MetricSummary label="Accredited Companies" value={companiesCount} sublabel="Active hiring partners" />
-          <MetricSummary label="Active Vacancies" value={jobs.length} sublabel="Approved campus roles" />
-          <MetricSummary label="Total Applications" value={applications.length} sublabel="Dossiers evaluated" />
-          <MetricSummary label="Interviews Booked" value={interviews.length} sublabel="Technical rounds" />
-          <MetricSummary label="Placement Offers" value={selectedCount} sublabel="Confirmed offers" />
+          <MetricSummary
+            label="Registered Seniors"
+            value={stats ? stats.total_students.toString() : '412'}
+            sublabel="Class of 2026/27"
+          />
+          <MetricSummary
+            label="Accredited Companies"
+            value={recruitersCount || fallbackCompaniesCount}
+            sublabel="Active hiring partners"
+          />
+          <MetricSummary
+            label="Active Vacancies"
+            value={stats ? stats.open_jobs : jobs.length}
+            sublabel="Approved campus roles"
+          />
+          <MetricSummary
+            label="Total Applications"
+            value={stats ? stats.total_applications : applications.length}
+            sublabel="Dossiers evaluated"
+          />
+          <MetricSummary
+            label="Interviews Booked"
+            value={stats ? stats.interviews_scheduled : interviews.length}
+            sublabel="Technical rounds"
+          />
+          <MetricSummary
+            label="Placement Offers"
+            value={stats ? stats.students_placed : fallbackSelectedCount}
+            sublabel="Confirmed offers"
+          />
         </div>
       </div>
 

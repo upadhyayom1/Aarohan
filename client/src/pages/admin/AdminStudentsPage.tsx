@@ -1,16 +1,75 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
 import { Button, Input, Select, StatusBadge } from '../../components/ui';
-import { Search, Download, GraduationCap, ChevronRight } from 'lucide-react';
+import api from '../../lib/api';
+import { Search, Download, GraduationCap, ChevronRight, Loader2 } from 'lucide-react';
+
+interface StudentRosterItem {
+  id: string;
+  name: string;
+  studentId: string;
+  branch: string;
+  cgpa: number;
+  cohort: number;
+  backlogs?: number;
+  appliedCount: number;
+  shortlistedCount: number;
+  resumeUploaded: boolean;
+  status: string;
+}
 
 export function AdminStudentsPage() {
   const { studentProfile, applications } = useCampusStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
+  const [liveStudents, setLiveStudents] = useState<StudentRosterItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Realistic sample cohort for administrative roster view
-  const roster = useMemo(() => {
+  useEffect(() => {
+    let isMounted = true;
+    api.admin
+      .getStudents()
+      .then((res) => {
+        if (!isMounted) return;
+        if (res?.students && res.students.length > 0) {
+          const mapped: StudentRosterItem[] = res.students.map((s, index) => ({
+            id: s.id,
+            name: s.name,
+            studentId: `STU-2022-${s.branch}-${String(index + 1).padStart(3, '0')}`,
+            branch: s.branch,
+            cgpa: s.cgpa,
+            cohort: s.graduation_year,
+            appliedCount: s.applications_count,
+            shortlistedCount: s.shortlisted_count,
+            resumeUploaded: s.resume_uploaded,
+            status:
+              s.shortlisted_count > 0
+                ? 'Shortlisted'
+                : s.applications_count > 0
+                ? 'Applied'
+                : 'Active Candidacy',
+          }));
+          setLiveStudents(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load students from backend API:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const roster: StudentRosterItem[] = useMemo(() => {
+    if (liveStudents.length > 0) {
+      return liveStudents;
+    }
+    // Fallback sample cohort
     return [
       {
         id: studentProfile.id,
@@ -19,56 +78,37 @@ export function AdminStudentsPage() {
         branch: studentProfile.branch,
         cgpa: studentProfile.cgpa,
         cohort: studentProfile.graduationYear,
-        backlogs: studentProfile.activeBacklogs,
         appliedCount: applications.filter(a => a.studentId === studentProfile.id).length,
+        shortlistedCount: 1,
+        resumeUploaded: true,
         status: 'Active Candidacy',
       },
       {
         id: 'stu_dev_sharma',
         name: 'Dev Sharma',
         studentId: 'STU-2022-CSE-018',
-        branch: 'Computer Science & Engineering',
+        branch: 'CSE',
         cgpa: 9.30,
         cohort: 2026,
-        backlogs: 0,
         appliedCount: 5,
+        shortlistedCount: 2,
+        resumeUploaded: true,
         status: 'Shortlisted',
       },
       {
         id: 'stu_priya_nair',
         name: 'Priya Nair',
         studentId: 'STU-2022-IT-089',
-        branch: 'Information Technology',
+        branch: 'IT',
         cgpa: 8.42,
         cohort: 2026,
-        backlogs: 0,
         appliedCount: 3,
+        shortlistedCount: 0,
+        resumeUploaded: true,
         status: 'Under Review',
       },
-      {
-        id: 'stu_lucas_mendez',
-        name: 'Lucas Mendez',
-        studentId: 'STU-2022-ECE-104',
-        branch: 'Electrical & Computer Engineering',
-        cgpa: 7.91,
-        cohort: 2026,
-        backlogs: 0,
-        appliedCount: 2,
-        status: 'Applied',
-      },
-      {
-        id: 'stu_aisha_khan',
-        name: 'Aisha Khan',
-        studentId: 'STU-2022-DS-012',
-        branch: 'Data Science',
-        cgpa: 8.95,
-        cohort: 2026,
-        backlogs: 0,
-        appliedCount: 4,
-        status: 'Shortlisted',
-      },
     ];
-  }, [studentProfile, applications]);
+  }, [liveStudents, studentProfile, applications]);
 
   const filteredRoster = useMemo(() => {
     return roster.filter(s => {
@@ -118,10 +158,17 @@ export function AdminStudentsPage() {
             className="w-56"
           >
             <option value="All">All Departments</option>
-            <option value="Computer Science & Engineering">Computer Science & Engineering</option>
-            <option value="Information Technology">Information Technology</option>
-            <option value="Electrical & Computer Engineering">Electrical & Computer Engineering</option>
-            <option value="Data Science">Data Science</option>
+            <option value="CSE">CSE</option>
+            <option value="IT">IT</option>
+            <option value="ECE">ECE</option>
+            <option value="EE">EE</option>
+            <option value="ME">ME</option>
+            <option value="CE">CE</option>
+            <option value="CH">CH</option>
+            <option value="MCA">MCA</option>
+            <option value="MBA">MBA</option>
+            <option value="PHD_CS">PHD_CS</option>
+            <option value="OTHER">OTHER</option>
           </Select>
         </div>
       </div>
@@ -138,6 +185,7 @@ export function AdminStudentsPage() {
                 <th className="py-3 px-4">CGPA</th>
                 <th className="py-3 px-4">Cohort</th>
                 <th className="py-3 px-4">Applications</th>
+                <th className="py-3 px-4">Shortlisted</th>
                 <th className="py-3 px-4 text-right">Status</th>
               </tr>
             </thead>
@@ -150,6 +198,7 @@ export function AdminStudentsPage() {
                   <td className="py-3.5 px-4 font-bold text-[#111111]">{s.cgpa.toFixed(2)}</td>
                   <td className="py-3.5 px-4 text-[#666666]">{s.cohort}</td>
                   <td className="py-3.5 px-4">{s.appliedCount} submitted</td>
+                  <td className="py-3.5 px-4 font-bold text-[#111111]">{s.shortlistedCount}</td>
                   <td className="py-3.5 px-4 text-right">
                     <span className="text-[10px] uppercase font-bold bg-[#FAFAF9] border border-[#222222] px-2 py-0.5 rounded-[2px]">
                       {s.status}

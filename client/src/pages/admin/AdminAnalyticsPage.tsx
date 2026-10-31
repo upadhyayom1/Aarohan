@@ -1,31 +1,69 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useCampusStore } from '../../lib/useStore';
 import { MetricSummary } from '../../components/ui';
+import api from '../../lib/api';
 import { BarChart3, TrendingUp, PieChart, Users, Award, ShieldCheck } from 'lucide-react';
 
 export function AdminAnalyticsPage() {
-  const { applications, jobs, drives } = useCampusStore();
+  const { applications, jobs } = useCampusStore();
 
-  // Branch statistics
-  const branchData = [
-    { branch: 'Computer Science & Engineering', applicants: 185, placed: 32, rate: 86 },
-    { branch: 'Information Technology', applicants: 94, placed: 18, rate: 78 },
-    { branch: 'Electrical & Computer Engineering', applicants: 68, placed: 12, rate: 72 },
-    { branch: 'Data Science', applicants: 45, placed: 9, rate: 84 },
-    { branch: 'Mechanical Engineering', applicants: 20, placed: 3, rate: 65 },
+  const [analyticsData, setAnalyticsData] = useState<{
+    kpis: {
+      total_applications: number;
+      interview_conversion_rate: number;
+      selection_conversion_rate: number;
+      department_breadth: number;
+    };
+    department_performance: Array<{
+      branch: string;
+      applicants: number;
+      placed: number;
+      rate: number;
+    }>;
+    in_demand_skills: Array<{ skill: string; count: number }>;
+  } | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    api.admin
+      .getAnalytics()
+      .then((data) => {
+        if (!isMounted) return;
+        if (data) setAnalyticsData(data);
+      })
+      .catch((err) => {
+        console.warn('Failed to load live analytics:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fallback branch statistics if backend is empty
+  const defaultBranchData = [
+    { branch: 'CSE', applicants: 185, placed: 32, rate: 86 },
+    { branch: 'IT', applicants: 94, placed: 18, rate: 78 },
+    { branch: 'ECE', applicants: 68, placed: 12, rate: 72 },
+    { branch: 'EE', applicants: 45, placed: 9, rate: 84 },
+    { branch: 'ME', applicants: 20, placed: 3, rate: 65 },
   ];
 
-  // Most required skills across all active jobs
-  const skillDemands = useMemo(() => {
-    const map = new Map<string, number>();
-    jobs.forEach(j => {
-      j.requiredSkills.forEach(s => map.set(s, (map.get(s) || 0) + 1));
-      j.preferredSkills?.forEach(s => map.set(s, (map.get(s) || 0) + 1));
-    });
-    return Array.from(map.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 8);
-  }, [jobs]);
+  const branchData = analyticsData?.department_performance?.length
+    ? analyticsData.department_performance
+    : defaultBranchData;
+
+  const inDemandSkillsList = analyticsData?.in_demand_skills?.length
+    ? analyticsData.in_demand_skills.map((item) => [item.skill, item.count] as [string, number])
+    : (function () {
+        const map = new Map<string, number>();
+        jobs.forEach((j) => {
+          j.requiredSkills.forEach((s) => map.set(s, (map.get(s) || 0) + 1));
+        });
+        return Array.from(map.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 8);
+      })();
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
@@ -45,10 +83,26 @@ export function AdminAnalyticsPage() {
       {/* KPI Bar */}
       <div className="border border-[#E4E4E1] bg-[#FAFAF9] p-6">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricSummary label="Total Applications Processed" value={applications.length} sublabel="Current recruitment period" />
-          <MetricSummary label="Interview Conversion Rate" value="28%" sublabel="Application-to-interview" />
-          <MetricSummary label="Selection Conversion Rate" value="14%" sublabel="Interview-to-offer" />
-          <MetricSummary label="Department Breadth" value="5" sublabel="Disciplines placed" />
+          <MetricSummary
+            label="Total Applications Processed"
+            value={analyticsData ? analyticsData.kpis.total_applications : applications.length}
+            sublabel="Current recruitment period"
+          />
+          <MetricSummary
+            label="Interview Conversion Rate"
+            value={analyticsData ? `${analyticsData.kpis.interview_conversion_rate}%` : '28%'}
+            sublabel="Application-to-interview"
+          />
+          <MetricSummary
+            label="Selection Conversion Rate"
+            value={analyticsData ? `${analyticsData.kpis.selection_conversion_rate}%` : '14%'}
+            sublabel="Interview-to-offer"
+          />
+          <MetricSummary
+            label="Department Breadth"
+            value={analyticsData ? analyticsData.kpis.department_breadth : branchData.length}
+            sublabel="Disciplines placed"
+          />
         </div>
       </div>
 
@@ -80,7 +134,7 @@ export function AdminAnalyticsPage() {
               <div className="w-full bg-[#F5F5F3] h-3 border border-[#E4E4E1] rounded-[1px] overflow-hidden">
                 <div
                   className="bg-[#111111] h-full transition-all duration-300"
-                  style={{ width: `${item.rate}%` }}
+                  style={{ width: `${Math.min(100, Math.max(0, item.rate))}%` }}
                 />
               </div>
             </div>
@@ -103,7 +157,7 @@ export function AdminAnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-mono text-xs">
-          {skillDemands.map(([skill, count]) => (
+          {inDemandSkillsList.map(([skill, count]) => (
             <div key={skill} className="p-4 bg-white border border-[#E4E4E1] space-y-1">
               <span className="text-[10px] text-[#858585] uppercase block">Competency</span>
               <strong className="text-base text-[#111111] block">{skill}</strong>
