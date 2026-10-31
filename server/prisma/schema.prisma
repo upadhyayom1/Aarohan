@@ -46,6 +46,13 @@ enum InterviewMode {
   on_campus
 }
 
+enum DriveStatus {
+  Draft
+  Active
+  Completed
+  Cancelled
+}
+
 model User {
   id             String          @id @default(uuid())
   name           String
@@ -140,4 +147,46 @@ model Interview {
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
   @@map("interviews")
+}
+
+model PlacementDrive {
+  id                   String      @id @default(uuid())
+  name                 String
+  companies            String[]
+  jobOpeningsCount     Int         @default(0) @map("job_openings_count")
+  registrationDeadline DateTime    @map("registration_deadline")
+  eventStartDate       DateTime    @map("event_start_date")
+  eventEndDate         DateTime    @map("event_end_date")
+  rounds               String[]
+  eligibleBranches     String[]    @map("eligible_branches")
+  minCgpa              Float       @default(0.0) @map("min_cgpa")
+  status               DriveStatus @default(Active)
+  description          String?
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+
+  @@map("placement_drives")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actor     String
+  actorRole Role     @default(admin) @map("actor_role")
+  action    String
+  entity    String
+  summary   String
+  details   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model InstitutionalSettings {
+  id                 String   @id @default("default")
+  placementYear      String   @default("2026–2027") @map("placement_year")
+  defaultMinCgpa     Float    @default(7.0) @map("default_min_cgpa")
+  maxBacklogsAllowed Int      @default(0) @map("max_backlogs_allowed")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("institutional_settings")
 }

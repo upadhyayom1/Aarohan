@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from '../../lib/router';
+import { AarohanLogo } from '../ui';
 
 export function PublicFooter() {
   return (
@@ -8,12 +9,17 @@ export function PublicFooter() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#E4E4E1]">
           {/* Col 1: Identity */}
           <div className="lg:col-span-2 space-y-3">
-            <span className="text-xl font-bold uppercase tracking-tight font-mono text-[#111111] block">
-              Aarohan
-            </span>
-            <span className="text-xs font-mono uppercase tracking-widest text-[#858585] block">
-              Every career begins with a step
-            </span>
+            <div className="flex items-center gap-3">
+              <AarohanLogo size={32} />
+              <div>
+                <span className="text-xl font-bold uppercase tracking-tight font-mono text-[#111111] block leading-none">
+                  Aarohan
+                </span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585] block mt-1">
+                  Every career begins with a step
+                </span>
+              </div>
+            </div>
             <p className="text-xs text-[#666666] max-w-sm leading-relaxed mt-2">
               An institutional platform coordinating student career readiness, corporate campus recruitment drives, and explainable qualifications matching.
             </p>

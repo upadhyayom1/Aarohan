@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect, useRef } from 'react';
 import { ApplicationStatus } from '../../types';
+export { AarohanLogo } from './AarohanLogo';
 
 // ==========================================
 // BUTTON

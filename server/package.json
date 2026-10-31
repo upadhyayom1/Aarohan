@@ -8,6 +8,8 @@
     "dev": "nodemon src/index.js",
     "build": "npx prisma generate",
     "start": "node src/index.js",
+    "test": "node --test tests/**/*.test.js",
+    "seed": "node prisma/seed.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
