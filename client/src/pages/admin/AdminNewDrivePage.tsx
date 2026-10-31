@@ -1,0 +1,151 @@
+import React, { useState } from 'react';
+import { useRouter } from '../../lib/router';
+import { useCampusStore } from '../../lib/useStore';
+import { Button, Input, Textarea, FormField } from '../../components/ui';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
+
+export function AdminNewDrivePage() {
+  const { navigate } = useRouter();
+  const { actions } = useCampusStore();
+
+  const [name, setName] = useState('');
+  const [companiesText, setCompaniesText] = useState('Apex Systems, Veritas Technologies, Horizon AI Labs');
+  const [registrationDeadline, setRegistrationDeadline] = useState('2026-12-01');
+  const [eventStartDate, setEventStartDate] = useState('2026-12-10');
+  const [eventEndDate, setEventEndDate] = useState('2026-12-20');
+  const [minCgpa, setMinCgpa] = useState<number>(7.5);
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setError('Drive name is required.');
+      return;
+    }
+    const companies = companiesText.split(',').map(s => s.trim()).filter(Boolean);
+    if (companies.length === 0) {
+      setError('At least one participating corporate partner is required.');
+      return;
+    }
+
+    actions.createDrive({
+      name: name.trim(),
+      companies,
+      jobOpeningsCount: 10,
+      registrationDeadline,
+      eventStartDate,
+      eventEndDate,
+      rounds: ['Online Assessment', 'Technical Evaluation', 'HR Discussion'],
+      eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Data Science'],
+      minCgpa,
+      status: 'Active',
+      description: description.trim(),
+    });
+
+    navigate('/admin/drives');
+  };
+
+  return (
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <button
+        onClick={() => navigate('/admin/drives')}
+        className="inline-flex items-center gap-1.5 text-xs font-mono text-[#666666] hover:text-[#111111] cursor-pointer"
+      >
+        <ArrowLeft size={14} />
+        <span>Return to Drives Directory</span>
+      </button>
+
+      <div className="border-b border-[#E4E4E1] pb-6">
+        <span className="text-[11px] font-mono uppercase tracking-widest text-[#858585] block mb-1">
+          CAMPUS CONSORTIUM PROVISIONING
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
+          Create Placement Drive
+        </h1>
+        <p className="text-sm text-[#666666] mt-1 max-w-xl">
+          Coordinate partner employers, define registration windows, and set institutional participation criteria.
+        </p>
+      </div>
+
+      {error && (
+        <div className="p-3 border border-[#111111] bg-[#FAFAF9] text-xs font-mono flex items-center gap-2">
+          <AlertCircle size={15} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+        <div className="border border-[#E4E4E1] bg-white p-6 sm:p-8 space-y-6">
+          <FormField label="Placement Drive Name" required>
+            <Input
+              placeholder="e.g. Winter Technology & Systems Consortium 2026"
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="Participating Corporate Partners" required hint="Comma separated">
+            <Input
+              value={companiesText}
+              onChange={e => setCompaniesText(e.target.value)}
+            />
+          </FormField>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <FormField label="Registration Deadline" required>
+              <Input
+                type="date"
+                value={registrationDeadline}
+                onChange={e => setRegistrationDeadline(e.target.value)}
+              />
+            </FormField>
+
+            <FormField label="Event Start Date" required>
+              <Input
+                type="date"
+                value={eventStartDate}
+                onChange={e => setEventStartDate(e.target.value)}
+              />
+            </FormField>
+
+            <FormField label="Event End Date" required>
+              <Input
+                type="date"
+                value={eventEndDate}
+                onChange={e => setEventEndDate(e.target.value)}
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Minimum Required CGPA Threshold" required>
+            <Input
+              type="number"
+              step="0.1"
+              value={minCgpa}
+              onChange={e => setMinCgpa(parseFloat(e.target.value) || 0)}
+            />
+          </FormField>
+
+          <FormField label="Institutional Briefing / Scope">
+            <Textarea
+              rows={3}
+              placeholder="Outline the drive scope and participating department eligibility..."
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+            />
+          </FormField>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" size="md" onClick={() => navigate('/admin/drives')}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="md" type="submit">
+            Publish Placement Drive
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}

@@ -1,0 +1,2516 @@
+# PROJECT: CAMPUSLINK
+## AI-Powered Placement & Recruitment Management Platform
+
+You are a senior frontend engineer, UI/UX designer, and design systems architect tasked with building the complete frontend for CampusLink, an AI-powered university placement and recruitment management platform.
+
+Your task is to design and implement a polished, production-quality frontend using Next.js.
+
+The platform connects three primary user groups:
+
+1. Students
+2. Recruiters
+3. Placement administrators
+
+The application must support job discovery, eligibility checking, resume-to-job matching, applications, candidate shortlisting, interview scheduling, notifications, recruitment analytics, and placement management.
+
+The frontend should resemble the official digital experience of a prestigious university: editorial typography, strong visual hierarchy, institutional credibility, refined monochrome styling, and carefully structured content.
+
+Do not build a generic SaaS dashboard with repetitive cards, excessive rounded corners, colorful gradients, or unnecessary decorative elements.
+
+Build a coherent university recruitment platform with a recognizable visual identity.
+
+---
+
+# 1. FIRST: INSPECT THE EXISTING PROJECT
+
+Before writing code, inspect the existing repository thoroughly.
+
+Determine:
+
+- Whether Next.js is already configured.
+- Which Next.js version and routing approach are being used.
+- Whether TypeScript is enabled.
+- Which styling system is installed.
+- Whether Tailwind CSS is configured.
+- Whether shadcn/ui or another component library is present.
+- Whether authentication already exists.
+- Whether backend API endpoints are available.
+- How environment variables are configured.
+- Whether existing components, layouts, and design tokens can be reused.
+
+Inspect the existing project structure before making architectural decisions.
+
+IMPORTANT:
+
+- Do not overwrite working backend integration.
+- Do not delete existing features without justification.
+- Do not introduce duplicate dependencies unnecessarily.
+- Do not replace real API calls with hardcoded frontend data.
+- Preserve working authentication and authorization.
+- Reuse existing components when they are appropriate.
+- If backend APIs are incomplete, create clean API integration boundaries and explicitly identify missing endpoints.
+
+After the inspection, implement the frontend systematically.
+
+Do not stop after producing a design plan. Implement the actual application.
+
+---
+
+# 2. TECHNOLOGY STACK
+
+Use the following stack unless the repository already has an appropriate equivalent.
+
+- Next.js with App Router
+- React
+- TypeScript with strict type checking
+- Tailwind CSS
+- shadcn/ui for accessible primitives where appropriate
+- Lucide React for icons
+- React Hook Form for forms
+- Zod for validation
+- TanStack Query for server-state management when appropriate
+- Recharts for analytics
+- date-fns for date formatting
+- A suitable calendar component for interviews and recruitment events
+
+Use Server Components by default.
+
+Use Client Components only when interaction, browser APIs, client-side state, or event handlers require them.
+
+Use reusable components and a well-organized feature-based architecture.
+
+Do not make every page a single enormous component.
+
+Avoid installing a large dependency for functionality that can be implemented cleanly with the existing stack.
+
+---
+
+# 3. DESIGN DIRECTION: UNIVERSITY EDITORIAL MINIMALISM
+
+Use the provided Khazar University events-page screenshot as the primary visual reference.
+
+Extract the visual principles rather than copying the page.
+
+The design should combine:
+
+- Official university website aesthetics.
+- Black-and-white editorial design.
+- Large typography and strong hierarchy.
+- Minimal borders and restrained separators.
+- Generous whitespace.
+- Carefully aligned content grids.
+- Rectangular or subtly rounded components.
+- High-quality typography.
+- Professional tables and data visualization.
+- Understated interactive states.
+- Functional, accessible navigation.
+
+The finished product should look as though a university's central placement office commissioned a professional design agency to build it.
+
+The website must feel institutional, trustworthy, sophisticated, and functional.
+
+Avoid the visual language of a generic AI startup landing page.
+
+## 3.1 Color palette
+
+Use a restrained monochrome palette.
+
+Define these design tokens:
+
+- Primary background: #FFFFFF
+- Main text: #111111
+- Secondary text: #666666
+- Muted text: #858585
+- Subtle background: #F5F5F3
+- Secondary surface: #FAFAF9
+- Border: #E4E4E1
+- Strong border: #222222
+- Primary button background: #111111
+- Primary button text: #FFFFFF
+- Secondary button background: #FFFFFF
+- Secondary button text: #111111
+- Focus indicator: a clearly visible high-contrast outline
+
+Use black for primary actions and white for the dominant page background.
+
+Use gray to communicate hierarchy without making secondary information difficult to read.
+
+Do not introduce purple, blue, pink, orange, or green accent colors throughout the interface.
+
+Functional statuses may use subtle neutral treatments, but they must remain understandable without relying on color alone.
+
+For example:
+
+- Applied: neutral outlined badge.
+- Shortlisted: stronger text with a subtle gray background.
+- Interview Scheduled: dark badge with white text.
+- Selected: bold, clearly labeled status.
+- Rejected: muted text and a restrained border.
+
+Always display the status label in addition to any visual treatment.
+
+## 3.2 Typography
+
+Use a refined sans-serif font system.
+
+Preferred options include Geist, Inter, or an equivalent locally available font.
+
+Use:
+
+- Large, confident headings.
+- Clear differences between page titles and section headings.
+- Compact typography for metadata.
+- Readable body text.
+- Consistent line heights.
+- Restrained letter spacing.
+- Monospaced typography for selected identifiers, dates, or numerical metadata where appropriate.
+
+Do not make every heading bold.
+
+Use font weight, size, spacing, and alignment to establish hierarchy.
+
+### Typography scale
+
+Suggested desktop sizes:
+
+- Main landing-page heading: 76–104px.
+- Main dashboard page title: 44–60px.
+- Section heading: 26–36px.
+- Card or table-section heading: 18–22px.
+- Body text: 14–16px.
+- Secondary metadata: 12–13px.
+
+These are starting points, not rigid values. Use responsive typography and ensure text does not overflow.
+
+On mobile, scale headings down appropriately using fluid typography such as clamp().
+
+## 3.3 Layout and spacing
+
+Use a consistent spacing system based on multiples of 4px.
+
+The main content should generally have:
+
+- Maximum content width of approximately 1440px.
+- Centered content containers.
+- Generous desktop margins.
+- Consistent horizontal alignment.
+- Clear separation between page sections.
+- Comfortable mobile padding.
+
+Do not place every component inside a card.
+
+Use a combination of:
+
+- Open editorial sections.
+- Horizontal separators.
+- White content surfaces.
+- Minimal bordered panels.
+- Structured tables.
+- Full-width headings.
+- Asymmetric layouts where they improve visual storytelling.
+
+Cards should be used when they represent a meaningful, independent piece of information.
+
+Avoid excessive rounded corners. Prefer square corners or a small radius of approximately 2–6px.
+
+Avoid oversized shadows.
+
+---
+
+# 4. GLOBAL SITE ARCHITECTURE
+
+Create the following routes using the Next.js App Router.
+
+PUBLIC ROUTES
+
+- /
+- /about
+- /opportunities
+- /opportunities/[jobId]
+- /login
+- /register
+- /forgot-password
+
+STUDENT ROUTES
+
+- /student/dashboard
+- /student/profile
+- /student/resume
+- /student/opportunities
+- /student/applications
+- /student/applications/[applicationId]
+- /student/matches
+- /student/skills
+- /student/interviews
+- /student/calendar
+- /student/notifications
+- /student/settings
+
+RECRUITER ROUTES
+
+- /recruiter/dashboard
+- /recruiter/jobs
+- /recruiter/jobs/new
+- /recruiter/jobs/[jobId]
+- /recruiter/jobs/[jobId]/edit
+- /recruiter/jobs/[jobId]/applicants
+- /recruiter/candidates/[applicationId]
+- /recruiter/interviews
+- /recruiter/calendar
+- /recruiter/reports
+- /recruiter/settings
+
+PLACEMENT ADMINISTRATOR ROUTES
+
+- /admin/dashboard
+- /admin/students
+- /admin/students/[studentId]
+- /admin/recruiters
+- /admin/companies
+- /admin/drives
+- /admin/drives/new
+- /admin/applications
+- /admin/placements
+- /admin/analytics
+- /admin/audit-logs
+- /admin/settings
+
+Implement route protection according to the authenticated user's role.
+
+Do not rely on client-side navigation restrictions alone. The backend must independently authorize every protected operation.
+
+If the backend is not yet available, isolate authentication behind a well-defined interface so it can be integrated later without rewriting the UI.
+
+---
+
+# 5. PUBLIC LANDING PAGE
+
+Route: /
+
+This page introduces CampusLink to students, recruiters, and university placement teams.
+
+It must look like the official placement portal of a leading university.
+
+Do not use the usual startup template containing a gradient background, a centered heading, three generic feature cards, and a row of testimonials.
+
+Use an editorial, university-inspired composition.
+
+## Section 1: Institutional navigation
+
+Create a clean white header.
+
+Desktop layout:
+
+LEFT:
+- CampusLink wordmark.
+- A small institutional descriptor such as "UNIVERSITY PLACEMENT OFFICE".
+
+CENTER:
+- Opportunities.
+- For Students.
+- For Recruiters.
+- About.
+
+RIGHT:
+- Sign In.
+- A restrained dark "Get Started" button.
+
+Use a thin bottom border.
+
+The logo should be typography-led rather than an elaborate artificial emblem.
+
+Make the navigation compact, with carefully aligned text and consistent spacing.
+
+Use subtle hover states.
+
+On smaller screens, replace the horizontal navigation with an accessible menu button and a mobile navigation panel.
+
+The mobile navigation must open and close correctly, close after navigation, and support keyboard interaction.
+
+## Section 2: Hero
+
+Create a striking editorial hero.
+
+Suggested copy:
+
+Small eyebrow:
+"UNIVERSITY PLACEMENT OFFICE"
+
+Main heading:
+"Where ambition
+meets opportunity."
+
+Supporting text:
+"Discover meaningful career opportunities, understand your fit, and navigate every stage of recruitment through one connected university platform."
+
+Primary button:
+"Explore opportunities"
+
+Secondary button:
+"How CampusLink works"
+
+Visual composition:
+
+- Large left-aligned heading.
+- Generous whitespace.
+- A narrow supporting text column.
+- A subtle right-side visual composed of real interface elements, a recruitment timeline, or a typographic information panel.
+- A small institutional metadata row at the bottom.
+
+Do not use a generic AI-generated illustration.
+
+Do not use a massive floating dashboard screenshot with decorative gradients.
+
+If imagery is used, use genuine, appropriately licensed university or workplace imagery. Avoid fake university logos and fabricated institutional endorsements.
+
+At smaller widths, stack the composition vertically and maintain a clear heading hierarchy.
+
+## Section 3: Platform introduction
+
+Use an open editorial layout with a large heading:
+
+"A clearer path from campus to career."
+
+Supporting copy should explain how CampusLink brings together student preparation, recruitment opportunities, and placement coordination.
+
+Introduce three user groups in three balanced columns:
+
+01 — Students
+"Discover opportunities that fit your qualifications and understand how your profile aligns with employer requirements."
+
+02 — Recruiters
+"Manage openings, evaluate applicants, and coordinate interviews through a structured recruitment workflow."
+
+03 — Placement Office
+"Coordinate recruitment drives, monitor outcomes, and maintain a reliable overview of placement activity."
+
+Use large numerical labels, typography, and thin separators.
+
+Avoid decorative icons inside every section.
+
+## Section 4: Featured opportunities
+
+Section heading:
+"Opportunities worth exploring."
+
+Include a concise introduction and a link to view all openings.
+
+Display a responsive grid of opportunity listings.
+
+Each listing should include:
+
+- Company name.
+- Job title.
+- Employment type.
+- Location or work arrangement.
+- Application deadline.
+- Eligible graduation years, when available.
+- Required skills.
+- A link to view details.
+
+Use monochrome company initials or simple typographic wordmarks when actual company logos are unavailable.
+
+Do not fabricate real company affiliations.
+
+On desktop, display two or three listings per row depending on available space.
+
+On tablets, use two columns.
+
+On mobile, use one column.
+
+The listing should resemble a professional university vacancy notice rather than a colorful commercial job board.
+
+Opportunity data must come from the backend when available.
+
+## Section 5: Explainable AI feature
+
+Section heading:
+"Know where you stand."
+
+Explain that CampusLink helps students understand how their resumes align with specific job requirements.
+
+Build a restrained two-column layout.
+
+LEFT:
+
+- A heading.
+- A short explanation of resume-to-job matching.
+- A list of supported capabilities.
+
+RIGHT:
+
+An illustrative match report containing:
+
+- Overall match score.
+- Matched skills.
+- Related skills.
+- Missing required skills.
+- Eligibility status.
+- A short explanation of how the score was calculated.
+
+Use a horizontal score indicator and typography rather than a giant circular progress chart.
+
+Any illustrative example must be clearly identified as a sample rather than real student data.
+
+Never imply that the matching score guarantees an interview or job offer.
+
+## Section 6: Recruitment process
+
+Create a horizontal recruitment timeline on desktop.
+
+Steps:
+
+01 — Complete your profile.
+02 — Discover eligible opportunities.
+03 — Review your match insights.
+04 — Apply and track progress.
+05 — Attend scheduled interviews.
+
+On mobile, transform this into a vertical timeline.
+
+Use thin lines, numbered steps, and concise text.
+
+## Section 7: Institutional statistics
+
+Create a restrained statistics section with a subtle background.
+
+Potential metrics:
+
+- Active opportunities.
+- Participating employers.
+- Applications submitted.
+- Placement outcomes.
+
+IMPORTANT:
+
+These values must come from verified backend data.
+
+If no real data is available, display a neutral introduction to the platform instead of inventing impressive numbers.
+
+Do not hardcode fake placement percentages or employer counts.
+
+## Section 8: Call to action
+
+Use a high-contrast black section with white text.
+
+Heading:
+"Your next opportunity starts here."
+
+Buttons:
+
+- Explore opportunities.
+- Join CampusLink.
+
+Keep the composition simple and editorial.
+
+Ensure all buttons have appropriate hover, focus, and active states.
+
+## Section 9: Footer
+
+Create a comprehensive institutional footer.
+
+Include:
+
+- CampusLink wordmark.
+- Short platform description.
+- Student links.
+- Recruiter links.
+- Placement Office links.
+- Contact information, if configured.
+- Privacy policy.
+- Terms of service.
+- Copyright information.
+
+Use a subtle top border and a clean grid.
+
+On mobile, stack the footer groups vertically with appropriate spacing.
+
+Do not fabricate university contact details.
+
+---
+
+# 6. AUTHENTICATION PAGES
+
+Routes:
+
+- /login
+- /register
+- /forgot-password
+
+The authentication experience should be simple and professional.
+
+Use a split layout on desktop:
+
+LEFT:
+A monochrome institutional panel with a short statement and carefully composed typography.
+
+RIGHT:
+The authentication form.
+
+On mobile, use a single-column layout.
+
+## Login form
+
+Fields:
+
+- Email address.
+- Password.
+- Show/hide password control.
+- Remember me, if supported.
+- Forgot password link.
+
+Actions:
+
+- Sign in.
+- Continue with an enabled institutional authentication provider, if implemented.
+
+Display validation messages next to the relevant fields.
+
+Show loading states during submission.
+
+Prevent duplicate submissions.
+
+Provide clear feedback for authentication failures.
+
+Do not pretend login succeeded if the backend request failed.
+
+## Registration
+
+Allow the user to choose an account type only if the platform's registration policy permits it.
+
+Student registration fields may include:
+
+- Full name.
+- Email.
+- Password.
+- Graduation year.
+
+Recruiter access may require invitation, verification, or administrator approval.
+
+Do not allow users to grant themselves administrator privileges.
+
+Use accessible labels, correct input types, and keyboard-friendly form behavior.
+
+---
+
+# 7. STUDENT APPLICATION SHELL
+
+Routes:
+
+/student/*
+
+Create a consistent application shell for authenticated students.
+
+The experience should combine a university portal with a clean professional workspace.
+
+## Desktop navigation
+
+Use a compact sidebar or a restrained top-level institutional navigation system.
+
+The sidebar should contain:
+
+OVERVIEW
+- Dashboard
+
+CAREER
+- Find Opportunities
+- My Applications
+- AI Match Insights
+- Skill Development
+
+PROFILE
+- My Profile
+- Resume
+- Interviews
+- Calendar
+- Notifications
+
+SETTINGS
+- Preferences
+
+Include the CampusLink wordmark at the top.
+
+Place account information and logout at the bottom.
+
+Use text labels with small icons where appropriate.
+
+The active item should be visually obvious through typography, a subtle background, or a thin black indicator.
+
+Avoid rainbow-colored icons.
+
+The sidebar should not occupy excessive width.
+
+On mobile, use a compact header and a drawer or appropriately designed mobile navigation.
+
+Do not squeeze a full desktop sidebar into a narrow viewport.
+
+## Student dashboard
+
+Route: /student/dashboard
+
+### Welcome section
+
+Display:
+
+- A personalized greeting.
+- A concise summary of the student's current recruitment activity.
+- A primary action to explore opportunities.
+- A secondary action to complete or update the profile.
+
+Use real authenticated user information.
+
+### Profile completion
+
+Display a compact profile-completion indicator.
+
+Possible checklist items:
+
+- Academic information.
+- Skills.
+- Projects.
+- Resume.
+- Experience.
+
+Calculate completion from actual profile fields rather than hardcoding a percentage.
+
+### Summary statistics
+
+Include:
+
+- Eligible opportunities.
+- Applications submitted.
+- Shortlisted applications.
+- Upcoming interviews.
+
+Use restrained typographic statistics with thin dividers.
+
+Avoid four oversized colored metric cards.
+
+### Recommended opportunities
+
+Show a small selection of eligible or relevant openings.
+
+Each item should display:
+
+- Role.
+- Company.
+- Location.
+- Deadline.
+- Match score, when available.
+- Eligibility status.
+
+Provide a clear action to view the full opportunity.
+
+### Application activity
+
+Show the student's most recent application updates.
+
+Each entry should contain:
+
+- Job title.
+- Company.
+- Status.
+- Date of latest update.
+- Link to application details.
+
+Use a compact list or timeline.
+
+### Upcoming interviews
+
+Display upcoming interviews with:
+
+- Job title.
+- Company.
+- Date.
+- Time.
+- Interview mode.
+- Interview status.
+
+Include a link to the calendar.
+
+If the student has no upcoming interviews, show a useful empty state.
+
+Do not show an endless loading skeleton when no records exist.
+
+---
+
+# 8. STUDENT PROFILE
+
+Route: /student/profile
+
+Create a comprehensive profile-editing experience.
+
+Use clearly separated sections rather than one enormous form.
+
+## Personal information
+
+Fields:
+
+- Full name.
+- Email.
+- Phone, if required.
+- Profile image, if supported.
+- Portfolio URL.
+- GitHub URL.
+- LinkedIn URL.
+
+Do not expose private information unnecessarily.
+
+## Academic information
+
+Fields:
+
+- Institution.
+- Degree.
+- Branch or department.
+- Current semester.
+- CGPA.
+- Graduation year.
+- Active backlogs, if required by the institution's placement policy.
+
+Use appropriate validation and clear field descriptions.
+
+## Skills
+
+Allow students to add and remove skills.
+
+Display skills as simple monochrome tags.
+
+Support search or suggestions if a verified skills catalog exists.
+
+Do not allow arbitrary skill entries to break the layout.
+
+## Projects
+
+Each project should include:
+
+- Project name.
+- Description.
+- Technology stack.
+- Project URL.
+- GitHub repository, when available.
+
+Support adding, editing, and deleting projects.
+
+## Experience
+
+Support:
+
+- Position.
+- Organization.
+- Start date.
+- End date.
+- Description.
+
+Clearly support students with no formal work experience.
+
+## Form behavior
+
+- Separate editing from viewing when appropriate.
+- Show unsaved-change warnings.
+- Validate input.
+- Show saving and success states.
+- Preserve user-entered values after recoverable errors.
+- Use explicit Save and Cancel actions.
+- Prevent accidental loss of edits.
+
+The interface should work well with long profiles and smaller screens.
+
+---
+
+# 9. RESUME MANAGEMENT
+
+Route: /student/resume
+
+Create a clean resume-management page.
+
+Include:
+
+- Current resume.
+- Upload or replace action.
+- File type and size restrictions.
+- Upload progress.
+- Parsing status.
+- Extracted skills.
+- Extracted education.
+- Extracted projects.
+- Extracted experience.
+- Last processed timestamp, when available.
+
+Support PDF uploads according to backend restrictions.
+
+Display parsing states:
+
+- Not uploaded.
+- Uploading.
+- Processing.
+- Completed.
+- Failed.
+
+If parsing fails, explain the failure and allow the student to retry.
+
+If extracted information is incorrect, provide an option to review and correct the profile data.
+
+Do not expose raw storage credentials or direct private storage locations.
+
+Do not claim that a resume has been analyzed until the backend confirms processing.
+
+Use a restrained document-preview panel if a safe preview implementation is available.
+
+---
+
+# 10. JOB DISCOVERY
+
+Routes:
+
+- /opportunities
+- /student/opportunities
+
+This should be one of the most polished parts of the application.
+
+Use the university events-page reference as inspiration for its editorial layout.
+
+## Page header
+
+Large heading:
+"Find your next opportunity."
+
+Supporting text:
+"Explore openings, understand eligibility, and discover roles aligned with your skills."
+
+Display a compact summary only when real backend data is available.
+
+## Search and filters
+
+Provide:
+
+- Search by role, company, or keyword.
+- Location.
+- Employment type.
+- Company.
+- Graduation year.
+- Branch or department.
+- Minimum CGPA.
+- Eligibility.
+- Skills.
+
+Use a horizontal filter toolbar on desktop.
+
+Use an accessible filter drawer on mobile.
+
+Display active filters as removable, monochrome chips.
+
+Provide Clear all.
+
+Filters must actually update the displayed results.
+
+Use URL query parameters for shareable filters when appropriate.
+
+## Opportunity listings
+
+Each listing should contain:
+
+- Job title.
+- Company.
+- Location.
+- Employment type.
+- Required skills.
+- Application deadline.
+- Eligibility status.
+- Match score, when available.
+
+Use a clean two-column or three-column grid when appropriate.
+
+A compact list view may also be provided.
+
+Do not create visually identical cards with unnecessary decorative icons.
+
+Use subtle separators and typography to distinguish each listing.
+
+## Opportunity detail page
+
+Route: /opportunities/[jobId]
+
+Display:
+
+- Job title.
+- Company.
+- Location.
+- Employment type.
+- Application deadline.
+- Job description.
+- Responsibilities.
+- Required qualifications.
+- Required and preferred skills.
+- Eligibility criteria.
+- Application instructions.
+- Recruiter information, if authorized.
+- AI match insights, for authenticated students.
+
+On desktop, use a main content column and a narrower application panel.
+
+The application panel may contain:
+
+- Eligibility result.
+- Match score.
+- Application deadline.
+- Apply button.
+
+On mobile, place the application action in a suitable full-width section. A sticky bottom action is acceptable only if it does not obscure content or navigation.
+
+If the student is ineligible, clearly explain why.
+
+Do not permit the frontend to override a server-side eligibility decision.
+
+If the application has already been submitted, display the current application status instead of presenting a misleading duplicate-application action.
+
+---
+
+# 11. APPLICATION TRACKING
+
+Route: /student/applications
+
+Create a recruitment application tracker.
+
+At the top, display a page title and concise explanation.
+
+Provide summary counts for:
+
+- Total applications.
+- Under review.
+- Shortlisted.
+- Interviews scheduled.
+- Selected.
+
+Calculate the counts from actual application data.
+
+Provide status filters and search.
+
+## Application table
+
+Columns:
+
+- Job.
+- Company.
+- Date applied.
+- Current status.
+- Latest update.
+- Actions.
+
+Use a compact, readable table on desktop.
+
+On mobile, transform each row into a well-structured stacked item or card.
+
+Do not force a wide desktop table into a tiny horizontal viewport without a deliberate overflow strategy.
+
+## Application details
+
+Route: /student/applications/[applicationId]
+
+Display:
+
+- Job information.
+- Submission details.
+- Current status.
+- Status history, if available.
+- Interview information.
+- Recruiter messages, if supported.
+- Relevant next steps.
+
+Use a vertical timeline to communicate progress.
+
+Example stages:
+
+Applied → Under Review → Shortlisted → Interview Scheduled → Selected.
+
+The timeline must reflect actual application events. Do not imply that every application follows every stage in exactly that order.
+
+Support rejection and withdrawal states where the backend permits them.
+
+---
+
+# 12. AI MATCH INSIGHTS
+
+Route: /student/matches
+
+Build a dedicated page that explains how students align with available job opportunities.
+
+The design should emphasize transparency rather than presenting AI as a mysterious authority.
+
+## Overview
+
+Display:
+
+- Relevant opportunities.
+- Strong skill matches.
+- Common skill gaps.
+- Recently updated match results.
+
+Only show values derived from actual match records.
+
+## Match listings
+
+Each result should contain:
+
+- Job title.
+- Company.
+- Overall match score.
+- Eligibility status.
+- Matched skills.
+- Missing required skills.
+- A concise explanation.
+
+## Match detail panel
+
+When a result is selected, show:
+
+1. Overall similarity score.
+2. Skills explicitly matched.
+3. Related skills identified by the matching system.
+4. Missing required skills.
+5. Relevant projects or experience.
+6. Eligibility criteria and their outcomes.
+7. Suggested learning resources.
+
+Use a horizontal progress indicator rather than excessive charts.
+
+Clearly distinguish semantic similarity from verified possession of a skill.
+
+Do not treat a related skill as proof that a student has the required skill.
+
+If a recommendation is based on an incomplete profile, communicate that limitation.
+
+Do not fabricate AI explanations when the backend has not provided the underlying match information.
+
+---
+
+# 13. SKILL DEVELOPMENT
+
+Route: /student/skills
+
+Build a learning-oriented page based on identified skill gaps.
+
+Display:
+
+- Skills relevant to current opportunities.
+- Skills already present in the student profile.
+- Missing or underrepresented skills.
+- Recommended learning resources.
+- Related opportunities.
+
+Each learning resource should contain:
+
+- Resource title.
+- Provider.
+- Relevant skill.
+- Resource type.
+- Estimated duration, if available.
+- External destination.
+
+Use verified resource URLs supplied by the backend or a curated resource catalog.
+
+Do not fabricate course providers or links.
+
+Distinguish platform recommendations from mandatory job requirements.
+
+Allow students to mark a resource as saved or completed only if the backend supports those actions.
+
+Use a simple list-based layout with clear typographic hierarchy.
+
+---
+
+# 14. STUDENT INTERVIEWS AND CALENDAR
+
+Routes:
+
+- /student/interviews
+- /student/calendar
+
+## Interviews page
+
+Show upcoming and past interviews.
+
+Information:
+
+- Job.
+- Company.
+- Interview round.
+- Date.
+- Start and end times.
+- Interview mode.
+- Meeting location or authorized meeting link.
+- Status.
+
+Allow students to view interview details.
+
+Do not expose private meeting links to unauthorized users.
+
+## Calendar page
+
+Provide month and week views when supported by the chosen calendar component.
+
+Show:
+
+- Interviews.
+- Application deadlines.
+- Recruitment drives.
+- Other relevant placement events.
+
+Use monochrome event styling with readable labels.
+
+Differentiate event types using labels, borders, or patterns rather than depending exclusively on color.
+
+On mobile, prioritize an agenda list and a compact calendar.
+
+Ensure date navigation and event selection are usable on touchscreens.
+
+Always handle timezone formatting consistently.
+
+---
+
+# 15. NOTIFICATIONS
+
+Route: /student/notifications
+
+Create a professional notification center.
+
+Notification categories may include:
+
+- Application updates.
+- Shortlisting.
+- Interview scheduling.
+- Interview rescheduling.
+- Deadline reminders.
+- Recruitment announcements.
+
+Each notification should display:
+
+- Title.
+- Brief message.
+- Timestamp.
+- Read/unread status.
+- Relevant destination.
+
+Provide:
+
+- Mark as read.
+- Mark all as read, if supported.
+- Relevant filtering.
+- Empty state.
+
+Use real backend data.
+
+If real-time updates are supported, integrate them through the existing WebSocket, SSE, or notification infrastructure.
+
+Otherwise, use an appropriate refetching strategy.
+
+Do not add artificial notification popups merely to make the application appear active.
+
+---
+
+# 16. RECRUITER APPLICATION SHELL
+
+Routes:
+
+/recruiter/*
+
+Recruiters need a professional workspace focused on recruitment operations.
+
+Create a consistent shell with navigation for:
+
+OVERVIEW
+- Dashboard
+
+RECRUITMENT
+- Job Openings
+- Applicants
+- Interviews
+- Calendar
+
+REPORTING
+- Recruitment Reports
+
+SETTINGS
+- Company Profile
+- Account Settings
+
+Display the company or recruiter identity only when the backend provides it.
+
+Apply the same monochrome design system used across the platform.
+
+The recruiter experience should be data-dense enough to support real work without becoming visually cluttered.
+
+---
+
+# 17. RECRUITER DASHBOARD
+
+Route: /recruiter/dashboard
+
+## Header
+
+Display:
+
+- Recruiter greeting.
+- Company or organization name.
+- A prominent "Post a job" action.
+
+## Summary metrics
+
+Include:
+
+- Active openings.
+- Total applicants.
+- Candidates shortlisted.
+- Upcoming interviews.
+
+Use typographic statistics separated by thin borders.
+
+## Active recruitment
+
+Display a table of active jobs with:
+
+- Job title.
+- Publication status.
+- Application deadline.
+- Number of applicants.
+- Number shortlisted.
+- Actions.
+
+## Recent applications
+
+Show recently submitted applications with:
+
+- Candidate name, when authorized.
+- Job title.
+- Application date.
+- Relevant match information.
+- Current status.
+- Review action.
+
+## Upcoming interviews
+
+Show the next scheduled interviews.
+
+Provide links to interview details and the calendar.
+
+## Empty states
+
+When no jobs exist, explain how to create the first opening.
+
+When no applications exist, provide a useful explanation rather than displaying zero-filled decorative cards everywhere.
+
+---
+
+# 18. JOB MANAGEMENT
+
+Routes:
+
+- /recruiter/jobs
+- /recruiter/jobs/new
+- /recruiter/jobs/[jobId]
+- /recruiter/jobs/[jobId]/edit
+
+## Job list
+
+Provide:
+
+- Search.
+- Status filters.
+- Sorting.
+- Applicant counts.
+- Publication dates.
+- Application deadlines.
+- Edit and view actions.
+- Publish, close, or archive actions where permitted.
+
+Use a professional table on desktop and stacked items on mobile.
+
+## Job creation and editing
+
+Organize the form into clear sections.
+
+SECTION A: BASIC INFORMATION
+
+- Job title.
+- Company or department.
+- Location.
+- Work arrangement.
+- Employment type.
+- Description.
+
+SECTION B: RESPONSIBILITIES
+
+- Responsibilities.
+- Required qualifications.
+- Preferred qualifications.
+
+SECTION C: SKILLS
+
+- Required skills.
+- Preferred skills.
+- Minimum relevant experience, if applicable.
+
+SECTION D: ELIGIBILITY
+
+- Eligible branches.
+- Graduation years.
+- Minimum CGPA.
+- Backlog requirements.
+- Additional criteria.
+
+SECTION E: RECRUITMENT TIMELINE
+
+- Publication date.
+- Application opening date.
+- Application deadline.
+- Recruitment drive, if applicable.
+
+SECTION F: REVIEW AND PUBLISH
+
+Display a review summary before publication.
+
+Validate every field.
+
+Prevent invalid deadlines.
+
+Provide save-draft and publish actions when supported by the backend.
+
+Show clear feedback when a save or publication fails.
+
+Do not lose entered form data when an API request fails.
+
+Never allow a recruiter to modify a job owned by another organization unless authorized.
+
+---
+
+# 19. APPLICANT REVIEW AND SHORTLISTING
+
+Route:
+
+/recruiter/jobs/[jobId]/applicants
+
+This page is central to the recruiter workflow.
+
+## Header
+
+Display:
+
+- Job title.
+- Publication status.
+- Application deadline.
+- Applicant count.
+- Link to job details.
+
+## Filters
+
+Support:
+
+- Application status.
+- Eligibility.
+- Matching score.
+- Branch.
+- Graduation year.
+- CGPA.
+- Skills.
+
+Filters must use actual applicant data.
+
+## Applicant table
+
+Columns:
+
+- Candidate.
+- Branch.
+- Graduation year.
+- CGPA, if authorized and relevant.
+- Eligibility.
+- Match score.
+- Application status.
+- Actions.
+
+Keep the table compact and readable.
+
+Use a responsive alternative on mobile.
+
+## Candidate detail view
+
+Display:
+
+- Student profile.
+- Academic details relevant to the job.
+- Skills.
+- Projects.
+- Experience.
+- Resume access, subject to permissions.
+- Eligibility breakdown.
+- Match explanation.
+- Application history.
+
+Include actions such as:
+
+- Shortlist.
+- Schedule interview.
+- Reject.
+- Update status.
+
+Only display actions allowed by the backend.
+
+Use confirmation dialogs for consequential status changes.
+
+Provide a reason field when rejection reasons are part of the institution's workflow.
+
+Record successful state-changing actions through the backend's audit system.
+
+Do not automatically reject candidates solely because of an AI-generated similarity score.
+
+AI recommendations should support human review, not replace it.
+
+---
+
+# 20. INTERVIEW MANAGEMENT
+
+Routes:
+
+- /recruiter/interviews
+- /recruiter/calendar
+
+Create a clear interview-management interface.
+
+Features:
+
+- View scheduled interviews.
+- Filter by job and status.
+- Schedule interviews.
+- Reschedule interviews.
+- Cancel interviews when authorized.
+- View candidate information.
+- Track interview outcomes when supported.
+
+## Scheduling form
+
+Fields:
+
+- Job.
+- Candidate.
+- Interview round.
+- Date.
+- Start time.
+- End time.
+- Timezone.
+- Interview mode.
+- Meeting link or location.
+- Additional instructions.
+
+Validate dates and times.
+
+Prevent invalid time ranges.
+
+Check scheduling conflicts if the backend provides availability information.
+
+Require confirmation before cancelling or rescheduling an existing interview.
+
+Display changes clearly and trigger notifications through the backend when supported.
+
+Use the same calendar visual language as the student portal.
+
+---
+
+# 21. RECRUITER REPORTS
+
+Route: /recruiter/reports
+
+Build a restrained analytics interface.
+
+Include:
+
+- Applications per opening.
+- Application status distribution.
+- Shortlisting rate.
+- Interview scheduling statistics.
+- Recruitment funnel.
+- Most common skills among applicants.
+
+Use Recharts where a chart improves understanding.
+
+Charts must use backend data.
+
+Use neutral monochrome styling, with sufficient contrast between chart series.
+
+Provide readable legends, axes, tooltips, and empty states.
+
+Avoid decorative charts with no decision-making value.
+
+Support exporting recruitment reports or candidate lists only if the backend provides the relevant functionality and permissions.
+
+Clearly indicate the reporting period.
+
+---
+
+# 22. PLACEMENT ADMINISTRATOR SHELL
+
+Routes:
+
+/admin/*
+
+The administrator interface should be designed for coordinating university-wide placement operations.
+
+Use the same visual identity but a more information-dense layout.
+
+Navigation:
+
+OVERVIEW
+- Dashboard
+
+PEOPLE
+- Students
+- Recruiters
+- Companies
+
+RECRUITMENT
+- Placement Drives
+- Applications
+- Placement Outcomes
+- Interview Overview
+
+INSIGHTS
+- Analytics
+- Reports
+
+GOVERNANCE
+- Audit Logs
+
+SETTINGS
+- Platform Settings
+
+Ensure the navigation is usable on smaller screens.
+
+Do not display administrative navigation to students or recruiters.
+
+---
+
+# 23. ADMINISTRATOR DASHBOARD
+
+Route: /admin/dashboard
+
+## Page header
+
+Display:
+
+- Placement Office.
+- Current academic or recruitment period, when configured.
+- Date range selector, if reporting supports it.
+
+## Summary metrics
+
+Potential metrics:
+
+- Registered students.
+- Active recruiters.
+- Open positions.
+- Applications.
+- Upcoming interviews.
+- Recorded placement outcomes.
+
+Only use verified backend data.
+
+## Recruitment overview
+
+Include:
+
+- Active placement drives.
+- Upcoming deadlines.
+- Recent recruitment activity.
+- Application status distribution.
+
+## Placement trends
+
+Show appropriate historical trends if sufficient data exists.
+
+Do not invent trends or placement rates.
+
+If data is insufficient, show a well-designed empty state.
+
+## Administrative actions
+
+Provide quick access to:
+
+- Manage students.
+- Review recruiters.
+- Create placement drives.
+- Review application activity.
+- Generate reports.
+
+Keep the interface structured and efficient.
+
+---
+
+# 24. STUDENT AND RECRUITER MANAGEMENT
+
+Routes:
+
+- /admin/students
+- /admin/students/[studentId]
+- /admin/recruiters
+- /admin/companies
+
+Provide searchable and filterable tables.
+
+## Student management
+
+Display only fields needed for placement administration.
+
+Possible columns:
+
+- Student name.
+- Student identifier, if available.
+- Department.
+- Graduation year.
+- Profile completeness.
+- Placement status.
+
+Support profile review and authorized administrative updates.
+
+## Recruiter management
+
+Display:
+
+- Recruiter name.
+- Organization.
+- Verification status.
+- Number of active openings.
+- Recent activity.
+
+Provide approval or verification actions only if the backend supports them.
+
+## Company management
+
+Provide company information and associated recruiter accounts.
+
+Ensure organization ownership and access boundaries are enforced.
+
+Use pagination for large datasets.
+
+Do not load thousands of rows into the browser at once.
+
+---
+
+# 25. PLACEMENT DRIVES
+
+Routes:
+
+- /admin/drives
+- /admin/drives/new
+
+Create an interface for coordinating recruitment drives.
+
+Each drive should contain:
+
+- Name.
+- Participating company or companies.
+- Relevant job openings.
+- Registration or application deadlines.
+- Event dates.
+- Interview rounds.
+- Eligibility criteria, if applicable.
+- Drive status.
+
+Support draft, active, completed, and cancelled states when appropriate.
+
+Provide both list and calendar-oriented views.
+
+Display upcoming deadlines prominently without using aggressive colors or flashing warnings.
+
+Allow authorized administrators to review participation and recruitment outcomes.
+
+---
+
+# 26. PLACEMENT ANALYTICS
+
+Route: /admin/analytics
+
+Create a comprehensive but restrained analytics dashboard.
+
+Possible sections:
+
+## Recruitment overview
+
+- Applications by period.
+- Active openings.
+- Number of participating companies.
+- Interview activity.
+
+## Placement outcomes
+
+- Recorded selections.
+- Placement outcomes by department.
+- Recruitment outcomes by academic year.
+- Application-to-interview conversion.
+- Interview-to-selection conversion.
+
+## Skills intelligence
+
+- Most frequently required skills.
+- Skills associated with shortlisted candidates.
+- Common gaps between student profiles and job requirements.
+
+## Filters
+
+Provide:
+
+- Academic year.
+- Department.
+- Company.
+- Recruitment drive.
+- Date range.
+
+All metrics must be calculated from actual records or clearly documented aggregates.
+
+Distinguish missing data from zero.
+
+Avoid presenting a 100% success rate when there are no records.
+
+Use accessible charts, readable labels, and responsive layouts.
+
+---
+
+# 27. AUDIT LOGS
+
+Route: /admin/audit-logs
+
+Build an administrative audit-log viewer.
+
+Potential events:
+
+- Job published.
+- Eligibility criteria updated.
+- Candidate shortlisted.
+- Application status changed.
+- Interview scheduled.
+- Student profile updated.
+- Recruiter verified.
+- Placement drive modified.
+
+Each record should display:
+
+- Timestamp.
+- Actor.
+- Action.
+- Relevant entity.
+- Summary.
+- Additional details, if authorized.
+
+Support filtering by:
+
+- Actor.
+- Action type.
+- Entity.
+- Date range.
+
+Use server-side pagination.
+
+Audit records must come from the backend.
+
+Do not create fake logs or permit users to edit audit history through the frontend.
+
+---
+
+# 28. COMPONENT DESIGN SYSTEM
+
+Create reusable components.
+
+Suggested component structure:
+
+components/
+  layout/
+    PublicHeader.tsx
+    PublicFooter.tsx
+    StudentShell.tsx
+    RecruiterShell.tsx
+    AdminShell.tsx
+    Sidebar.tsx
+    MobileNavigation.tsx
+
+  ui/
+    Button.tsx
+    Input.tsx
+    Select.tsx
+    Badge.tsx
+    Dialog.tsx
+    DropdownMenu.tsx
+    Tooltip.tsx
+    Tabs.tsx
+    Skeleton.tsx
+    EmptyState.tsx
+    ErrorState.tsx
+    Pagination.tsx
+
+  opportunities/
+    OpportunityList.tsx
+    OpportunityCard.tsx
+    OpportunityFilters.tsx
+    EligibilitySummary.tsx
+    MatchScore.tsx
+
+  applications/
+    ApplicationTable.tsx
+    ApplicationListItem.tsx
+    ApplicationTimeline.tsx
+    ApplicationStatusBadge.tsx
+
+  resumes/
+    ResumeUploader.tsx
+    ResumePreview.tsx
+    ExtractedSkills.tsx
+
+  interviews/
+    InterviewCard.tsx
+    InterviewForm.tsx
+    InterviewCalendar.tsx
+
+  analytics/
+    MetricSummary.tsx
+    ChartContainer.tsx
+    RecruitmentFunnel.tsx
+
+  forms/
+    FormField.tsx
+    FormError.tsx
+    SaveIndicator.tsx
+
+Adapt this structure to the actual project rather than creating files mechanically.
+
+## Button variants
+
+Create a consistent button system.
+
+PRIMARY:
+- Black background.
+- White text.
+- Minimal radius.
+- Clearly visible hover state.
+- Visible keyboard focus.
+- Disabled state with reduced emphasis.
+
+SECONDARY:
+- White background.
+- Dark text.
+- Thin dark or neutral border.
+
+GHOST:
+- Transparent background.
+- Dark text.
+- Subtle neutral hover background.
+
+DANGER:
+Use restrained styling for destructive actions, with explicit confirmation where appropriate.
+
+LINK:
+Use a typographic link with a visible hover and focus state.
+
+Buttons must have correct semantic HTML and appropriate accessible names.
+
+Do not use plain text that looks like a button but has no interaction.
+
+Do not use links for actions or buttons for navigation unless there is a clear reason.
+
+## Form fields
+
+All form fields must include:
+
+- Visible labels.
+- Appropriate input types.
+- Helpful descriptions when necessary.
+- Clear error messages.
+- Focus indicators.
+- Disabled and loading states where applicable.
+
+Do not rely on placeholder text as the only label.
+
+## Tables
+
+Provide:
+
+- Clear column headings.
+- Proper text alignment.
+- Subtle row separators.
+- Hover states.
+- Empty states.
+- Loading states.
+- Error states.
+- Pagination when appropriate.
+
+Allow horizontal overflow only where necessary and intentional.
+
+For narrow screens, provide a readable stacked alternative.
+
+## Cards
+
+Cards should have:
+
+- A clear purpose.
+- Consistent padding.
+- Appropriate content hierarchy.
+- Minimal borders.
+- No unnecessary gradients.
+- No excessive shadows.
+
+Use open layouts when cards are not necessary.
+
+---
+
+# 29. RESPONSIVENESS: MANDATORY REQUIREMENT
+
+Responsive design is not an optional polish step.
+
+Every route and every significant interactive component must be checked at mobile, tablet, laptop, and large desktop sizes.
+
+Do not merely add responsive classes and assume the interface works.
+
+Use these reference viewport sizes:
+
+- Small mobile: 320 × 568
+- Standard mobile: 375 × 812
+- Large mobile: 430 × 932
+- Tablet portrait: 768 × 1024
+- Tablet landscape: 1024 × 768
+- Laptop: 1366 × 768
+- Desktop: 1440 × 900
+- Large desktop: 1920 × 1080
+
+## Mobile requirements
+
+At 320px width:
+
+- No unintended horizontal page overflow.
+- No clipped page titles.
+- No overlapping buttons.
+- No unreadable navigation.
+- No fields extending beyond the viewport.
+- No modal wider than the available screen.
+- No chart extending outside its container.
+- No inaccessible dropdown menus.
+- No content hidden behind fixed navigation.
+
+At 375–430px widths:
+
+- Maintain comfortable padding.
+- Stack columns logically.
+- Keep buttons easy to tap.
+- Ensure headings wrap naturally.
+- Make filters accessible.
+- Make tables readable through stacked layouts or deliberate horizontal scrolling.
+- Keep application actions accessible.
+
+## Tablet requirements
+
+At tablet widths:
+
+- Reflow grids appropriately.
+- Collapse the desktop sidebar when needed.
+- Avoid overly narrow content columns.
+- Ensure the calendar remains usable.
+- Prevent forms from stretching excessively.
+- Preserve clear page hierarchy.
+
+## Desktop requirements
+
+At desktop widths:
+
+- Maintain consistent content alignment.
+- Use whitespace intentionally.
+- Prevent content from becoming excessively wide.
+- Keep navigation balanced.
+- Avoid oversized empty regions.
+- Use tables and multi-column layouts where they improve productivity.
+
+## Responsive implementation
+
+Use CSS Grid, Flexbox, fluid typography, and responsive breakpoints.
+
+Prefer content-driven breakpoints over arbitrary device-specific assumptions.
+
+Use min-width: 0 where necessary to prevent flex and grid children from forcing overflow.
+
+Handle long company names, job titles, email addresses, and skill tags.
+
+Do not shrink desktop layouts until they fit mobile. Recompose the layout for the smaller screen.
+
+---
+
+# 30. RESPONSIVE AND VISUAL TESTING
+
+After implementing each major section, run the application and inspect the actual rendered interface.
+
+Use the available browser automation, screenshot, or browser inspection tools if the environment supports them.
+
+Do not claim that a viewport has been tested unless it has actually been inspected.
+
+Check at least:
+
+1. Public landing page.
+2. Login and registration.
+3. Student dashboard.
+4. Student profile.
+5. Opportunity listing and details.
+6. Application tracking.
+7. Recruiter dashboard.
+8. Job creation form.
+9. Applicant review.
+10. Interview scheduling.
+11. Administrator dashboard.
+12. Analytics.
+13. Audit logs.
+
+For each applicable route, inspect:
+
+- 320px.
+- 375px.
+- 768px.
+- 1024px.
+- 1366px.
+- 1920px.
+
+Check the following:
+
+### Layout
+
+- No unintended horizontal scrolling.
+- No overlapping elements.
+- No clipped text.
+- No awkward wrapping.
+- No excessively narrow content.
+- No inconsistent alignment.
+- No unexplained empty areas.
+
+### Navigation
+
+- Mobile menu opens and closes.
+- Active navigation is obvious.
+- All links work.
+- Protected routes behave correctly.
+- Keyboard navigation works.
+
+### Buttons and forms
+
+- Hover states are visible.
+- Focus states are accessible.
+- Disabled states work.
+- Loading states work.
+- Validation errors appear correctly.
+- Submission errors are handled.
+- Double submissions are prevented.
+
+### Data display
+
+- Long job titles wrap.
+- Empty states render properly.
+- Tables remain usable.
+- Charts resize correctly.
+- Loading skeletons fit their final layout.
+- Error states offer a useful recovery action.
+
+### Visual quality
+
+- Monochrome palette is consistent.
+- Typography is consistent.
+- Spacing follows the design system.
+- Border thickness is consistent.
+- Button heights are consistent.
+- Icons have consistent sizing.
+- Shadows are restrained.
+- No page looks like a different application.
+
+After inspection, fix the identified problems and recheck the affected viewport.
+
+Do not stop at the first successful rendering.
+
+---
+
+# 31. BACKEND INTEGRATION
+
+The frontend must be designed for real API integration.
+
+Create a centralized API layer.
+
+Suggested structure:
+
+lib/
+  api/
+    client.ts
+    auth.ts
+    students.ts
+    recruiters.ts
+    opportunities.ts
+    applications.ts
+    resumes.ts
+    matching.ts
+    interviews.ts
+    notifications.ts
+    analytics.ts
+    admin.ts
+
+  schemas/
+    auth.ts
+    student.ts
+    opportunity.ts
+    application.ts
+    interview.ts
+
+  utils/
+    dates.ts
+    formatting.ts
+    validation.ts
+
+  constants/
+    routes.ts
+    statuses.ts
+
+Adjust the structure according to the existing project.
+
+## API requirements
+
+- Use a configurable backend base URL.
+- Validate API responses where appropriate.
+- Handle authentication consistently.
+- Handle expired sessions.
+- Handle network errors.
+- Handle server validation errors.
+- Avoid duplicating request logic.
+- Avoid exposing server secrets in client bundles.
+- Use appropriate request cancellation and loading states.
+- Prevent stale requests from overwriting newer results.
+- Implement pagination and filtering through the backend where appropriate.
+
+Use environment variables such as:
+
+NEXT_PUBLIC_API_BASE_URL
+
+Only expose values that are safe for the browser.
+
+Keep private credentials server-side.
+
+## Data-fetching requirements
+
+Use TanStack Query where it provides meaningful value.
+
+Configure query keys consistently.
+
+Invalidate or update cached queries after mutations.
+
+Examples:
+
+- Publishing a job should update the recruiter job list.
+- Applying for a job should update the student's application list.
+- Shortlisting a candidate should update the relevant application data.
+- Rescheduling an interview should update interview details and calendars.
+- Updating a profile should refresh profile-dependent views.
+
+Avoid refetching every page unnecessarily.
+
+Preserve application state during navigation when appropriate.
+
+Use proper error boundaries and recoverable loading states.
+
+Do not create a frontend that silently falls back to fabricated production data when an API request fails.
+
+If mock data is necessary during development, isolate it behind an explicit development-only adapter.
+
+---
+
+# 32. ACCESSIBILITY
+
+Follow practical WCAG accessibility principles.
+
+Implement:
+
+- Semantic HTML.
+- Correct heading hierarchy.
+- Keyboard-accessible navigation.
+- Visible focus indicators.
+- Accessible form labels.
+- Screen-reader-friendly status messages.
+- Sufficient text contrast.
+- Accessible dialog behavior.
+- Escape-key handling where appropriate.
+- Focus restoration after dialogs close.
+- Reduced-motion support.
+- Accessible chart summaries.
+
+Do not communicate important information through color alone.
+
+Ensure that monochrome styling does not result in low-contrast text.
+
+Respect prefers-reduced-motion.
+
+Keep animations short and purposeful.
+
+---
+
+# 33. PERFORMANCE AND PRODUCTION QUALITY
+
+Implement:
+
+- Optimized font loading.
+- Appropriate image sizing.
+- Next.js image optimization where applicable.
+- Route-level code splitting.
+- Lazy loading for nonessential heavy components.
+- Efficient data fetching.
+- Server-side pagination for large datasets.
+- Stable React keys.
+- Minimal unnecessary client-side JavaScript.
+- Error and loading boundaries.
+- Secure handling of user-generated content.
+
+Avoid:
+
+- Massive client components.
+- Unnecessary global state.
+- Repeated API requests.
+- Unoptimized full-resolution images.
+- Excessive animations.
+- Console errors.
+- TypeScript errors.
+- Missing keys.
+- Hydration mismatches.
+- Broken links.
+- Fake functionality.
+
+Do not optimize prematurely at the expense of readability.
+
+---
+
+# 34. MICROINTERACTIONS
+
+Keep interactions subtle and professional.
+
+Appropriate examples:
+
+- A slight change in button background on hover.
+- A thin underline appearing under a navigation link.
+- A short opacity transition when a dialog opens.
+- A restrained loading indicator during submission.
+- A subtle border change when a row is selected.
+- A clear success message after a completed action.
+- A compact disclosure animation for an accordion.
+
+Avoid:
+
+- Bouncing cards.
+- Excessive parallax.
+- Animated gradients.
+- Floating decorative elements.
+- Constantly moving components.
+- Unnecessary cursor effects.
+- Long entrance animations.
+- Animations that interfere with reading.
+
+The website should feel polished, not theatrical.
+
+---
+
+# 35. EMPTY STATES, ERRORS, AND LOADING
+
+Every data-driven page must handle at least four states:
+
+1. Loading.
+2. Successful data display.
+3. Empty results.
+4. Request failure.
+
+Examples:
+
+No opportunities:
+
+"No opportunities match your current filters."
+
+Actions:
+- Clear filters.
+- View all opportunities.
+
+No applications:
+
+"You haven't applied to any opportunities yet."
+
+Action:
+- Explore opportunities.
+
+No interviews:
+
+"You have no scheduled interviews."
+
+Supporting text:
+"Your upcoming interviews will appear here when they are scheduled."
+
+No recruiter jobs:
+
+"You haven't published any openings yet."
+
+Action:
+- Create a job opening.
+
+API failure:
+
+"We couldn't load this information right now."
+
+Action:
+- Retry.
+
+Do not display a blank white page when a request fails.
+
+Do not use infinite skeleton loading when the API has returned an empty result.
+
+---
+
+# 36. SECURITY AND ROLE SEPARATION
+
+The frontend must respect the platform's permission model.
+
+Students must not be able to access recruiter-only or administrator-only screens.
+
+Recruiters must not be able to modify another organization's recruitment records.
+
+Administrators should see administrative controls only when authorized.
+
+However, the backend must enforce every permission independently.
+
+Never treat hiding a button as a security measure.
+
+Never store sensitive credentials in localStorage.
+
+Do not expose private resume URLs, authentication tokens, or internal backend secrets.
+
+Do not expose unnecessary student personal information in recruiter tables.
+
+Only show candidate information needed for the authorized recruitment task.
+
+Ensure that application status changes and other important mutations are handled by authorized API endpoints.
+
+---
+
+# 37. FINAL QUALITY CHECKLIST
+
+Before considering the frontend complete, verify the following.
+
+DESIGN
+
+- Consistent black-and-white theme.
+- Professional institutional identity.
+- High-quality typography.
+- Consistent spacing.
+- Clear page hierarchy.
+- Consistent buttons and inputs.
+- No excessive rounded cards.
+- No generic gradient-heavy SaaS styling.
+- No fake testimonials or institutional claims.
+- No fabricated recruitment statistics.
+
+FUNCTIONALITY
+
+- Navigation works.
+- Forms validate.
+- API requests are handled.
+- Authentication state is respected.
+- Role-specific routes are protected.
+- Filters work.
+- Pagination works where implemented.
+- Application statuses are accurate.
+- Match explanations use real results.
+- Interview scheduling works through the backend.
+- Empty and error states are implemented.
+
+RESPONSIVENESS
+
+- Mobile navigation works.
+- Forms fit narrow screens.
+- Tables remain readable.
+- Calendars are usable.
+- Dialogs fit the viewport.
+- Charts resize.
+- No unintended horizontal overflow.
+- Text does not overlap.
+- Actions remain accessible.
+
+ENGINEERING
+
+- TypeScript checks pass.
+- Lint checks pass.
+- Production build succeeds.
+- No unresolved imports.
+- No missing React keys.
+- No obvious accessibility errors.
+- No unexpected console errors.
+- No hardcoded secrets.
+- No fabricated production data.
+
+TESTING
+
+- Run the application.
+- Inspect the real rendered pages.
+- Test representative routes at the specified viewport sizes.
+- Fix visible defects.
+- Recheck the affected screens.
+- Document any checks that could not be performed.
+
+---
+
+# 38. IMPLEMENTATION STRATEGY
+
+Build the application incrementally in this order.
+
+PHASE 1:
+Design tokens, typography, global layout, public header, footer, and landing page.
+
+PHASE 2:
+Authentication screens and role-aware application shells.
+
+PHASE 3:
+Student dashboard, profile, resume management, opportunity discovery, and applications.
+
+PHASE 4:
+AI match insights, skill development, interviews, calendar, and notifications.
+
+PHASE 5:
+Recruiter dashboard, job management, applicant review, and interview management.
+
+PHASE 6:
+Administrator dashboard, student and recruiter management, placement drives, analytics, and audit logs.
+
+PHASE 7:
+Backend integration audit, responsive testing, accessibility checks, and production build.
+
+After each phase:
+
+1. Run the application.
+2. Inspect the implementation.
+3. Check responsive behavior.
+4. Fix visual and functional defects.
+5. Verify existing functionality has not regressed.
+
+Do not generate all pages as disconnected mockups.
+
+Shared components and consistent design tokens must make the application feel like one cohesive platform.
+
+If the available time or repository state prevents every feature from being implemented immediately, prioritize a fully functional, polished core workflow rather than presenting nonfunctional screens as finished features.
+
+---
+
+# FINAL INSTRUCTION
+
+Build CampusLink as a professional university placement platform with a distinctive black-and-white editorial design inspired by the supplied university website reference.
+
+The public website should feel welcoming, institutional, and visually memorable.
+
+The student portal should feel personal, clear, and opportunity-focused.
+
+The recruiter portal should feel efficient, structured, and data-driven.
+
+The administrator portal should feel authoritative, organized, and reliable.
+
+Every page must use the same design language while adapting to its specific purpose.
+
+Responsiveness, accessibility, backend integration, and functional correctness are mandatory.
+
+Inspect the repository first, implement the actual frontend, run the application, inspect the rendered pages at different screen sizes, and fix the issues you discover.
+
+Do not stop after generating code. Deliver the best working implementation the existing project and available environment support.
