@@ -60,13 +60,14 @@ export function InstitutionalBanner() {
           </button>
           <button
             onClick={() => navigate('/')}
+            className={`px-2 py-0.5 rounded-[2px] transition-colors ${
               !path.startsWith('/student') && !path.startsWith('/recruiter') && !path.startsWith('/admin')
-          ? 'bg-white text-black font-semibold'
-          : 'bg-neutral-800 text-neutral-300 hover:text-white'
+                ? 'bg-white text-black font-semibold'
+                : 'bg-neutral-800 text-neutral-300 hover:text-white'
             }`}
           >
-          Public
-        </button>
+            Public
+          </button>
 
         {unreadCount > 0 && (
           <button
