@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 from app.config import Settings, get_settings
+from app.rag import ResumeRAG
 from app.services.ats_service import AtsService
 from app.services.embeddings import LazyEmbedder
 from app.services.gemini_client import GeminiClient
@@ -21,6 +22,7 @@ class Services:
     settings: Settings
     gemini: GeminiClient
     embedder: LazyEmbedder
+    rag: ResumeRAG
     resumes: ResumeService
     matching: MatchService
     ats: AtsService
@@ -34,15 +36,17 @@ def get_services() -> Services:
     s = get_settings()
     gemini = GeminiClient(s)
     embedder = LazyEmbedder(s, gemini)
+    rag = ResumeRAG(s, embedder)
     cache_root = s.cache_path
     return Services(
         settings=s,
         gemini=gemini,
         embedder=embedder,
-        resumes=ResumeService(s, gemini, JsonCache(cache_root, "resume", s.cache_enabled)),
-        matching=MatchService(s, gemini, embedder, JsonCache(cache_root, "explain", s.cache_enabled)),
-        ats=AtsService(s, gemini),
-        gaps=SkillGapService(gemini),
-        builder=ResumeBuilderService(gemini),
+        rag=rag,
+        resumes=ResumeService(s, gemini, JsonCache(cache_root, "resume", s.cache_enabled), rag),
+        matching=MatchService(s, gemini, embedder, JsonCache(cache_root, "explain", s.cache_enabled), rag),
+        ats=AtsService(s, gemini, rag),
+        gaps=SkillGapService(gemini, rag),
+        builder=ResumeBuilderService(gemini, rag),
         node=NodeClient(s),
     )
