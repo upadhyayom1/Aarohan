@@ -40,12 +40,12 @@ export function LandingPage() {
               </div>
 
               <h1 className="text-5xl sm:text-7xl lg:text-[88px] font-extrabold tracking-tight text-[#111111] leading-[0.98]">
-                Where ambition <br />
-                <span className="text-[#666666] font-normal italic font-serif">meets</span> opportunity.
+                Every career <br />
+                <span className="text-[#666666] font-normal italic font-serif">begins with</span> a step.
               </h1>
 
               <p className="text-base sm:text-lg text-[#666666] max-w-xl font-normal leading-relaxed">
-                Discover meaningful career opportunities, understand your fit, and navigate every stage of recruitment through one connected university platform.
+                Discover meaningful career opportunities, understand your fit, and navigate every stage of recruitment through Aarohan.
               </p>
 
               <div className="pt-4 flex flex-wrap items-center gap-4">
@@ -483,7 +483,7 @@ export function LandingPage() {
       <section className="bg-[#111111] text-white py-20 sm:py-24">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           <span className="text-xs font-mono uppercase tracking-widest text-neutral-400">
-            OFFICIAL UNIVERSITY PLACEMENT SYSTEM
+            AAROHAN — EVERY CAREER BEGINS WITH A STEP
           </span>
           <h2 className="text-4xl sm:text-6xl font-extrabold tracking-tight max-w-2xl mx-auto">
             Your next opportunity starts here.

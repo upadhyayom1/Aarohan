@@ -12,7 +12,7 @@ export function PublicFooter() {
               Aarohan
             </span>
             <span className="text-xs font-mono uppercase tracking-widest text-[#858585] block">
-              Directorate of Career Development & Placement
+              Every career begins with a step
             </span>
             <p className="text-xs text-[#666666] max-w-sm leading-relaxed mt-2">
               An institutional platform coordinating student career readiness, corporate campus recruitment drives, and explainable qualifications matching.

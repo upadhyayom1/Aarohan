@@ -44,7 +44,15 @@ export function StudentShell({ children }: StudentShellProps) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const navGroups = [
+  const navGroups: {
+    title: string;
+    items: {
+      label: string;
+      href: string;
+      icon: React.ComponentType<{ size?: number; className?: string }>;
+      badge?: number;
+    }[];
+  }[] = [
     {
       title: 'OVERVIEW',
       items: [
@@ -67,6 +75,12 @@ export function StudentShell({ children }: StudentShellProps) {
         { label: 'Resume', href: '/student/resume', icon: FileText },
         { label: 'Interviews', href: '/student/interviews', icon: Briefcase },
         { label: 'Calendar', href: '/student/calendar', icon: Calendar },
+        {
+          label: 'Notifications',
+          href: '/student/notifications',
+          icon: Bell,
+          badge: unreadCount > 0 ? unreadCount : undefined,
+        },
       ],
     },
     {
@@ -79,7 +93,6 @@ export function StudentShell({ children }: StudentShellProps) {
 
   return (
     <div className="min-h-screen bg-white text-[#111111] flex flex-col">
-
       {/* ── Top Header Bar (Desktop + Mobile) ── */}
       <header className="sticky top-0 z-50 bg-white border-b border-[#E4E4E1] px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Left: hamburger (mobile) + branding */}
@@ -96,7 +109,7 @@ export function StudentShell({ children }: StudentShellProps) {
               Aarohan
             </span>
             <span className="text-[9px] font-mono uppercase text-[#858585] tracking-widest hidden sm:block">
-              Student Workspace
+              Every career begins with a step
             </span>
           </Link>
         </div>
@@ -220,7 +233,10 @@ export function StudentShell({ children }: StudentShellProps) {
                 {/* Footer link to full page */}
                 <div className="border-t border-[#E4E4E1] bg-[#FAFAF9]">
                   <button
-                    onClick={() => { setNotifOpen(false); navigate('/student/notifications'); }}
+                    onClick={() => {
+                      setNotifOpen(false);
+                      navigate('/student/notifications');
+                    }}
                     className="w-full text-center text-[11px] font-mono font-bold text-[#111111] py-3 hover:bg-[#F5F5F3] transition-colors"
                   >
                     View all notifications →
@@ -234,7 +250,6 @@ export function StudentShell({ children }: StudentShellProps) {
 
       {/* ── Body row: Sidebar + Main ── */}
       <div className="flex flex-1 min-h-0">
-
         {/* Desktop Sidebar (and mobile drawer overlay) */}
         <aside
           className={`fixed md:sticky top-14 h-[calc(100vh-3.5rem)] w-64 shrink-0 bg-[#FAFAF9] border-r border-[#E4E4E1] z-40 flex flex-col justify-between transition-transform duration-200 ${
@@ -260,14 +275,25 @@ export function StudentShell({ children }: StudentShellProps) {
                         key={item.href}
                         to={item.href}
                         onClick={() => setMobileDrawerOpen(false)}
-                        className={`flex items-center gap-2.5 px-3 py-2 text-xs font-mono tracking-tight rounded-[2px] transition-colors ${
+                        className={`flex items-center justify-between px-3 py-2 text-xs font-mono tracking-tight rounded-[2px] transition-colors ${
                           isActive
                             ? 'bg-[#111111] text-white font-medium shadow-xs'
                             : 'text-[#444444] hover:text-[#111111] hover:bg-[#F5F5F3]'
                         }`}
                       >
-                        <Icon size={14} className={isActive ? 'text-white' : 'text-[#858585]'} />
-                        <span>{item.label}</span>
+                        <div className="flex items-center gap-2.5">
+                          <Icon size={14} className={isActive ? 'text-white' : 'text-[#858585]'} />
+                          <span>{item.label}</span>
+                        </div>
+                        {item.badge !== undefined && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                              isActive ? 'bg-white text-black' : 'bg-[#111111] text-white'
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}

@@ -1,4 +1,4 @@
-# CampusLink — Complete API Contract
+# Aarohan — Complete API Contract
 
 **Version:** 1.0 (Frozen at Minute 20)  
 **Base URL:** `http://localhost:8000/api/v1`  

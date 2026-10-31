@@ -19,11 +19,11 @@ export function AboutPage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#111111] leading-tight">
-            Connecting academic excellence with meaningful industry careers.
+            Every career begins with a step.
           </h1>
 
           <p className="text-base sm:text-lg text-[#666666] leading-relaxed">
-            Aarohan was established by the university Directorate of Career Development & Corporate Relations to establish a transparent, objective, and explainable placement ecosystem.
+            Aarohan was established by the university Directorate of Career Development & Corporate Relations to establish a transparent, objective, and explainable placement ecosystem connecting academic excellence with meaningful industry careers.
           </p>
         </div>
       </section>

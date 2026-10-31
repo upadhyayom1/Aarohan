@@ -111,8 +111,8 @@ export function RecruiterShell({ children }: { children: ReactNode }) {
                       to={item.href}
                       onClick={() => setMobileDrawerOpen(false)}
                       className={`flex items-center justify-between px-3 py-2 text-xs font-mono tracking-tight rounded-[2px] transition-colors ${isActive
-                          ? 'bg-[#111111] text-white font-medium shadow-xs'
-                          : 'text-[#444444] hover:text-[#111111] hover:bg-[#F5F5F3]'
+                        ? 'bg-[#111111] text-white font-medium shadow-xs'
+                        : 'text-[#444444] hover:text-[#111111] hover:bg-[#F5F5F3]'
                         }`}
                     >
                       <div className="flex items-center gap-2.5">

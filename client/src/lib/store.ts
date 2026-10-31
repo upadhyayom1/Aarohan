@@ -746,7 +746,7 @@ class CampusStore {
   private loadFromStorage() {
     if (typeof window === 'undefined') return;
     try {
-      const raw = localStorage.getItem('aarohan_state');
+      const raw = localStorage.getItem('aarohan_state') || localStorage.getItem('campuslink_state');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed.currentUser) this.currentUser = parsed.currentUser;
@@ -857,7 +857,7 @@ class CampusStore {
           this.studentProfile.resume.parsedEducation = `${this.studentProfile.degree} in ${this.studentProfile.branch}, ${this.studentProfile.institution} (CGPA: ${this.studentProfile.cgpa})`;
           this.studentProfile.resume.parsedProjects = this.studentProfile.projects.map(p => p.title);
           this.studentProfile.resume.parsedExperience = this.studentProfile.experience.map(e => `${e.position} at ${e.organization}`).join('; ');
-          
+
           this.addNotification({
             userId: this.currentUser.id,
             title: 'Resume Processing Completed',
@@ -1203,6 +1203,7 @@ class CampusStore {
   public resetToDefaults() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('aarohan_state');
+      localStorage.removeItem('campuslink_state');
     }
     this.currentUser = INITIAL_USER_STUDENT;
     this.studentProfile = INITIAL_STUDENT_PROFILE;
