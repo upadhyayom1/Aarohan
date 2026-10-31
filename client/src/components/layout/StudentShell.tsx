@@ -34,15 +34,24 @@ export function StudentShell({ children }: StudentShellProps) {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click or Escape key
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
       }
     }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setNotifOpen(false);
+      }
+    }
     document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const navGroups: {
@@ -273,10 +282,10 @@ export function StudentShell({ children }: StudentShellProps) {
                         key={item.href}
                         to={item.href}
                         onClick={() => setMobileDrawerOpen(false)}
-                        className={`flex items-center justify-between px-3 py-2 text-xs font-mono tracking-tight rounded-[2px] transition-colors ${
+                        className={`flex items-center justify-between px-3 py-2 text-xs font-mono tracking-tight rounded-[3px] transition-all duration-150 ${
                           isActive
                             ? 'bg-[#111111] text-white font-medium shadow-xs'
-                            : 'text-[#444444] hover:text-[#111111] hover:bg-[#F5F5F3]'
+                            : 'text-[#444444] hover:text-[#111111] hover:bg-[#F0F0EE]'
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
@@ -301,19 +310,44 @@ export function StudentShell({ children }: StudentShellProps) {
           </div>
 
           {/* Bottom Student Profile Summary */}
-          <div className="p-4 border-t border-[#E4E4E1] bg-white">
-            <div className="flex items-center justify-between mb-2">
-              <div className="truncate">
-                <span className="text-xs font-bold text-[#111111] block truncate">
-                  {studentProfile.fullName}
-                </span>
+          <div className="p-3.5 border-t border-[#E4E4E1] bg-white">
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <Link to="/student/profile" className="shrink-0 group" title="View profile">
+                <div className="w-9 h-9 rounded-full border border-[#D1D1CE] overflow-hidden bg-[#F5F5F3] flex items-center justify-center transition-transform group-hover:scale-105">
+                  {studentProfile.avatar ? (
+                    <img
+                      src={studentProfile.avatar}
+                      alt={studentProfile.fullName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-mono font-bold text-[#111111]">
+                      {studentProfile.fullName
+                        .split(' ')
+                        .map(n => n[0])
+                        .join('')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </Link>
+              <div className="min-w-0 flex-1 truncate">
+                <div className="flex items-center justify-between gap-1">
+                  <Link
+                    to="/student/profile"
+                    className="text-xs font-bold text-[#111111] hover:underline block truncate"
+                  >
+                    {studentProfile.fullName}
+                  </Link>
+                  <span className="text-[10px] font-mono bg-[#F5F5F3] border border-[#E4E4E1] px-1.5 py-0.2 rounded-[2px] text-[#111111] font-bold shrink-0">
+                    {studentProfile.cgpa.toFixed(2)}
+                  </span>
+                </div>
                 <span className="text-[10px] font-mono text-[#858585] block truncate">
-                  {studentProfile.branch.slice(0, 24)}
+                  {studentProfile.branch.slice(0, 22)}
                 </span>
               </div>
-              <span className="text-[10px] font-mono bg-[#F5F5F3] border border-[#E4E4E1] px-1.5 py-0.5 rounded-[2px] text-[#111111] font-bold">
-                {studentProfile.cgpa.toFixed(2)}
-              </span>
             </div>
             <button
               onClick={() => navigate('/login')}

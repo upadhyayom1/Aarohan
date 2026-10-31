@@ -15,6 +15,7 @@ export interface StudentProfile {
   fullName: string;
   email: string;
   phone: string;
+  avatar?: string;
   portfolioUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;

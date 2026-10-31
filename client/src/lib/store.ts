@@ -41,6 +41,7 @@ export const INITIAL_STUDENT_PROFILE: StudentProfile = {
   fullName: 'Aditi Rao',
   email: 'aditi.rao@campus.edu',
   phone: '+1 (555) 234-8901',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
   portfolioUrl: 'https://aditirao.dev',
   githubUrl: 'https://github.com/aditirao',
   linkedinUrl: 'https://linkedin.com/in/aditirao',

@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useCampusStore } from '../../lib/useStore';
 import { Button, Input, Textarea, FormField } from '../../components/ui';
-import { CheckCircle2, Plus, Trash2, Save, Undo } from 'lucide-react';
+import { CheckCircle2, Plus, Trash2, Save, Undo, Camera, Upload, User as UserIcon } from 'lucide-react';
 
 export function StudentProfilePage() {
   const { studentProfile, actions } = useCampusStore();
   const [formData, setFormData] = useState(studentProfile);
   const [newSkill, setNewSkill] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isDirty = JSON.stringify(formData) !== JSON.stringify(studentProfile);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, avatar: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setFormData(prev => ({ ...prev, avatar: '' }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +111,58 @@ export function StudentProfilePage() {
             <p className="text-xs text-[#858585] mt-0.5">
               Contact channels verified for recruiter interview coordination.
             </p>
+          </div>
+
+          {/* Profile Photo Upload */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-4 border border-[#E4E4E1] bg-[#FAFAF9] rounded-[3px]">
+            <div className="relative w-20 h-20 rounded-full border border-[#D1D1CE] overflow-hidden bg-white shrink-0 flex items-center justify-center">
+              {formData.avatar ? (
+                <img
+                  src={formData.avatar}
+                  alt={formData.fullName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <UserIcon size={32} className="text-[#858585]" />
+              )}
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#111111]">
+                Candidate Profile Photo
+              </div>
+              <p className="text-[11px] text-[#666666] leading-relaxed">
+                Appears on your university dossier and sidebar avatar. Recommended: Square image, PNG, JPG, or WebP up to 5MB.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoUpload}
+                  accept="image/png, image/jpeg, image/webp"
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  icon={<Camera size={13} />}
+                >
+                  Upload New Photo
+                </Button>
+                {formData.avatar && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemovePhoto}
+                    className="text-[#858585] hover:text-[#111111]"
+                  >
+                    Remove
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

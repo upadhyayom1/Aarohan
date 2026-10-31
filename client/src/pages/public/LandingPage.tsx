@@ -81,7 +81,7 @@ export function LandingPage() {
                 <img
                   src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=900&q=80"
                   alt="University students collaborating on campus"
-                  className="w-full h-[460px] object-cover filter grayscale contrast-105 group-hover:grayscale-0 transition-all duration-700"
+                  className="w-full h-[460px] object-cover transition-all duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
@@ -230,7 +230,7 @@ export function LandingPage() {
                     <img
                       src={col.image}
                       alt={col.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 filter grayscale contrast-105 group-hover:grayscale-0"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute top-3 left-3 bg-[#111111] text-white text-xs font-mono font-bold px-2 py-0.5 rounded-[2px]">
                       {col.step}
@@ -472,14 +472,14 @@ export function LandingPage() {
                   <img
                     src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=500&q=80"
                     alt="Technical interview preparation"
-                    className="w-full h-full object-cover filter grayscale contrast-110 hover:grayscale-0 transition-all duration-300"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <div className="h-32 rounded-[3px] overflow-hidden border border-[#E4E4E1]">
                   <img
                     src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=500&q=80"
                     alt="Team engineering discussion"
-                    className="w-full h-full object-cover filter grayscale contrast-110 hover:grayscale-0 transition-all duration-300"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </div>
