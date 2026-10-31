@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
 import { calculateMatch, checkEligibility } from '../../lib/matching';
+import { api, MatchResult, ApiError } from '../../lib/api';
 import { Button, StatusBadge, Dialog } from '../../components/ui';
 import {
   ArrowLeft,
@@ -15,6 +16,8 @@ import {
   ShieldCheck,
   Share2,
   FileText,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 
 export function OpportunityDetailPage() {
@@ -22,6 +25,11 @@ export function OpportunityDetailPage() {
   const { jobs, studentProfile, applications, currentUser, actions } = useCampusStore();
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [applySuccessMessage, setApplySuccessMessage] = useState<string | null>(null);
+  const [applyErrorMessage, setApplyErrorMessage] = useState<string | null>(null);
+  const [eligibilityFailures, setEligibilityFailures] = useState<string[] | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [aiMatch, setAiMatch] = useState<MatchResult | null>(null);
+  const [isLoadingAiMatch, setIsLoadingAiMatch] = useState(false);
 
   const job = useMemo(() => {
     return jobs.find(j => j.id === params.jobId) || jobs[0];
@@ -41,15 +49,75 @@ export function OpportunityDetailPage() {
     return calculateMatch(studentProfile, job);
   }, [studentProfile, job]);
 
-  const handleApply = () => {
-    const res = actions.applyToJob(job.id, match.overallScore);
-    if (res.success) {
-      setApplySuccessMessage('Your formal application dossier has been submitted to the employer.');
+  // Request AI Match from Python AI Server on mount
+  useEffect(() => {
+    let active = true;
+    if (!studentProfile.id || !job.id) return;
+
+    const fetchAiMatch = async () => {
+      setIsLoadingAiMatch(true);
+      try {
+        const res = await api.ai.matchResume(studentProfile.id, job.id);
+        if (active && res) {
+          setAiMatch(res);
+        }
+      } catch (err) {
+        console.debug('AI match fetch fallback to local:', err);
+      } finally {
+        if (active) setIsLoadingAiMatch(false);
+      }
+    };
+
+    fetchAiMatch();
+    return () => {
+      active = false;
+    };
+  }, [studentProfile.id, job.id]);
+
+  const handleApply = async () => {
+    setIsApplying(true);
+    setApplyErrorMessage(null);
+    setEligibilityFailures(null);
+
+    const matchScore = aiMatch ? aiMatch.match_score : match.overallScore;
+
+    try {
+      // 1. Submit application to Node backend
+      await api.applications.apply(job.id);
+
+      // 2. Also inform local store & trigger background AI match update
+      actions.applyToJob(job.id, matchScore);
+      api.ai.matchResume(studentProfile.id, job.id).catch(() => null);
+      actions.loadStudentPortalData();
+
+      setApplySuccessMessage('Your formal application dossier has been submitted to the recruitment team.');
       setApplyModalOpen(false);
-    } else {
-      alert(res.message);
+    } catch (err: any) {
+      console.warn('Backend application submission:', err);
+      if (err instanceof ApiError) {
+        if (err.eligibility_reasons && err.eligibility_reasons.length > 0) {
+          setEligibilityFailures(err.eligibility_reasons);
+          setApplyErrorMessage('Application rejected: You do not meet institutional eligibility requirements for this role.');
+        } else {
+          setApplyErrorMessage(err.message || 'Server rejected application');
+        }
+      } else {
+        // Fallback for offline demo mode
+        const res = actions.applyToJob(job.id, matchScore);
+        if (res.success) {
+          setApplySuccessMessage('Your application dossier has been submitted (local demo mode).');
+          setApplyModalOpen(false);
+        } else {
+          setApplyErrorMessage(res.message);
+        }
+      }
+    } finally {
+      setIsApplying(false);
     }
   };
+
+  const displayedScore = aiMatch ? aiMatch.match_score : match.overallScore;
+  const displayedExplanation = aiMatch?.explanation || match.matchExplanation;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -148,6 +216,22 @@ export function OpportunityDetailPage() {
         </div>
       )}
 
+      {applyErrorMessage && (
+        <div className="mb-8 p-4 border border-[#111111] bg-neutral-50 text-xs font-mono text-[#111111] space-y-2">
+          <div className="flex items-center gap-2 font-bold">
+            <AlertCircle size={16} />
+            <span>{applyErrorMessage}</span>
+          </div>
+          {eligibilityFailures && eligibilityFailures.length > 0 && (
+            <ul className="list-disc list-inside space-y-1 text-[#444444] pt-1">
+              {eligibilityFailures.map((reason, i) => (
+                <li key={i}>{reason}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Left Column: Job Spec & Requirements */}
@@ -229,57 +313,31 @@ export function OpportunityDetailPage() {
               )}
             </div>
           </div>
-
-          {/* Placement Eligibility Breakdown */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-bold uppercase font-mono tracking-wider text-[#111111] border-b border-[#E4E4E1] pb-2">
-              Official Placement Eligibility Criteria
-            </h2>
-            <div className="border border-[#E4E4E1] p-5 bg-[#FAFAF9] space-y-3 font-mono text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <span className="text-[#858585] block">Minimum Required CGPA</span>
-                  <strong className="text-sm text-[#111111]">{job.minCgpa.toFixed(2)}</strong>
-                </div>
-                <div>
-                  <span className="text-[#858585] block">Max Active Backlogs Allowed</span>
-                  <strong className="text-sm text-[#111111]">{job.maxBacklogs}</strong>
-                </div>
-                <div>
-                  <span className="text-[#858585] block">Eligible Graduation Cohort(s)</span>
-                  <strong className="text-sm text-[#111111]">{job.eligibleGradYears.join(', ')}</strong>
-                </div>
-                <div>
-                  <span className="text-[#858585] block">Eligible Departments</span>
-                  <strong className="text-sm text-[#111111]">{job.eligibleBranches.join(', ')}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right Aside: AI Match & Candidacy Dossier */}
+        {/* Right Column: AI Match Score & Eligibility Audit */}
         <div className="lg:col-span-4 space-y-6">
-          {/* AI Match Box */}
-          <div className="border border-[#222222] bg-[#FAFAF9] p-6 space-y-5 rounded-[2px]">
-            <div className="flex items-center justify-between border-b border-[#E4E4E1] pb-3">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585]">
-                AI MATCH INSIGHTS
+          {/* Match Score Card */}
+          <div className="border border-[#222222] p-6 space-y-4 bg-[#FAFAF9]">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585] flex items-center gap-1.5">
+                <Sparkles size={12} className="text-[#111111]" />
+                {aiMatch ? 'AI NEURAL FIT' : 'COMPUTED MATCH FIT'}
               </span>
-              <span className="text-xs font-mono font-bold bg-[#111111] text-white px-2 py-0.5 rounded-[2px]">
-                {match.overallScore}% MATCH
+              <span className="text-xl font-mono font-extrabold text-[#111111]">
+                {displayedScore}% MATCH
               </span>
             </div>
 
             <div>
               <div className="w-full bg-[#E4E4E1] h-2 rounded-[1px] overflow-hidden mb-2">
                 <div
-                  className="bg-[#111111] h-full"
-                  style={{ width: `${match.overallScore}%` }}
+                  className="bg-[#111111] h-full transition-all duration-300"
+                  style={{ width: `${displayedScore}%` }}
                 />
               </div>
               <p className="text-xs text-[#666666] leading-relaxed">
-                {match.matchExplanation}
+                {displayedExplanation}
               </p>
             </div>
 
@@ -339,14 +397,14 @@ export function OpportunityDetailPage() {
                   className="w-full"
                   onClick={() => setApplyModalOpen(true)}
                 >
-                  Submit Application Dossier
+                  Apply for this Opening
                 </Button>
               ) : (
                 <button
                   disabled
-                  className="w-full py-2.5 bg-[#F5F5F3] text-[#858585] border border-[#E4E4E1] text-xs font-mono rounded-[2px] cursor-not-allowed"
+                  className="w-full py-2.5 bg-[#E4E4E1] text-[#858585] text-xs font-mono cursor-not-allowed rounded-[2px]"
                 >
-                  Ineligible for this Drive
+                  Not Eligible per Criteria
                 </button>
               )}
             </div>
@@ -379,11 +437,11 @@ export function OpportunityDetailPage() {
         description="Review your student dossier before transmitting to the employer recruitment team."
         footer={
           <>
-            <Button variant="secondary" size="sm" onClick={() => setApplyModalOpen(false)}>
+            <Button variant="secondary" size="sm" onClick={() => setApplyModalOpen(false)} disabled={isApplying}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={handleApply}>
-              Confirm & Submit
+            <Button variant="primary" size="sm" onClick={handleApply} disabled={isApplying}>
+              {isApplying ? 'Transmitting...' : 'Confirm & Submit'}
             </Button>
           </>
         }
@@ -400,7 +458,7 @@ export function OpportunityDetailPage() {
             <ul className="space-y-1 text-[#666666] list-disc list-inside">
               <li>Verified Academic Transcript (CGPA: {studentProfile.cgpa.toFixed(2)})</li>
               <li>Active Resume: {studentProfile.resume?.fileName || 'Aditi_Rao_Resume_2026.pdf'}</li>
-              <li>{studentProfile.skills.length} Technical Skills & 3 Projects</li>
+              <li>{studentProfile.skills.length} Technical Skills & {studentProfile.projects.length} Projects</li>
               <li>Department: {studentProfile.branch}</li>
             </ul>
           </div>

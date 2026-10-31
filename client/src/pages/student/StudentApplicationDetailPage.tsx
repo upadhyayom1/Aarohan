@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { Button, StatusBadge, Dialog } from '../../components/ui';
 import {
   ArrowLeft,
@@ -11,16 +12,64 @@ import {
   Sparkles,
   AlertTriangle,
   FileText,
+  RefreshCw,
 } from 'lucide-react';
 
 export function StudentApplicationDetailPage() {
   const { params, navigate } = useRouter();
   const { applications, jobs, actions } = useCampusStore();
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [backendApp, setBackendApp] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch live application details from Node backend
+  useEffect(() => {
+    let active = true;
+    if (!params.applicationId) return;
+
+    const fetchDetail = async () => {
+      setIsLoading(true);
+      try {
+        const res = await api.applications.getById(params.applicationId!);
+        if (active && res) {
+          setBackendApp(res);
+        }
+      } catch (err) {
+        console.debug('Application detail fetch fallback to store:', err);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    fetchDetail();
+    return () => {
+      active = false;
+    };
+  }, [params.applicationId]);
 
   const app = useMemo(() => {
-    return applications.find(a => a.id === params.applicationId) || applications[0];
-  }, [applications, params.applicationId]);
+    const fromStore = applications.find(a => a.id === params.applicationId) || applications[0];
+    if (backendApp) {
+      return {
+        ...fromStore,
+        id: backendApp.id,
+        status: (backendApp.status === 'interview_scheduled'
+          ? 'Interview Scheduled'
+          : backendApp.status === 'shortlisted'
+          ? 'Shortlisted'
+          : backendApp.status === 'selected'
+          ? 'Selected'
+          : backendApp.status === 'rejected' || backendApp.status === 'not_selected'
+          ? 'Rejected'
+          : backendApp.status === 'withdrawn'
+          ? 'Withdrawn'
+          : 'Under Review') as any,
+        matchScore: backendApp.matchResult?.match_score ?? backendApp.match_score ?? fromStore.matchScore,
+        recruiterNotes: backendApp.notes || backendApp.recruiterNotes || fromStore.recruiterNotes,
+      };
+    }
+    return fromStore;
+  }, [applications, params.applicationId, backendApp]);
 
   const job = useMemo(() => {
     return jobs.find(j => j.id === app?.jobId);
@@ -33,8 +82,6 @@ export function StudentApplicationDetailPage() {
     { title: 'Interview Scheduled', desc: 'Interview slots booked and confirmed' },
     { title: 'Selected', desc: 'Final placement offer extended' },
   ];
-
-  const currentStageIndex = stages.findIndex(s => s.title === app.status);
 
   const handleWithdraw = () => {
     actions.withdrawApplication(app.id);
@@ -55,9 +102,16 @@ export function StudentApplicationDetailPage() {
       <div className="border border-[#222222] bg-[#FAFAF9] p-6 sm:p-8 rounded-[2px]">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="space-y-2">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585] block">
-              OFFICIAL PLACEMENT APPLICATION DOSSIER • {app.id}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585]">
+                OFFICIAL PLACEMENT APPLICATION DOSSIER • {app.id}
+              </span>
+              {isLoading && (
+                <span className="text-[10px] font-mono text-[#858585] flex items-center gap-1">
+                  <RefreshCw size={10} className="animate-spin" /> Live Data
+                </span>
+              )}
+            </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
               {app.jobTitle}
             </h1>
@@ -111,7 +165,7 @@ export function StudentApplicationDetailPage() {
           {app.recruiterNotes && (
             <div className="border border-[#222222] bg-[#FAFAF9] p-6 space-y-3 font-mono text-xs">
               <span className="text-[10px] uppercase tracking-widest text-[#858585] block">
-                RECRUITER REVIEW NOTES
+                RECRUITER REVIEW NOTES & AI ASSESSMENT
               </span>
               <p className="text-sm text-[#111111] leading-relaxed">
                 "{app.recruiterNotes}"

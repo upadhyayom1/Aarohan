@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { Button, StatusBadge, Dialog } from '../../components/ui';
 import {
   Calendar,
@@ -11,12 +12,48 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldCheck,
+  RefreshCw,
 } from 'lucide-react';
 
 export function StudentInterviewsPage() {
   const { navigate } = useRouter();
-  const { interviews, studentProfile } = useCampusStore();
+  const { interviews, studentProfile, actions } = useCampusStore();
   const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Sync interviews from Node backend on mount
+  useEffect(() => {
+    let active = true;
+    const fetchInterviews = async () => {
+      try {
+        const res = await api.interviews.getMy();
+        if (active && res && Array.isArray(res.interviews)) {
+          actions.syncInterviews(res.interviews);
+        }
+      } catch (err) {
+        console.debug('Interviews fetch fallback to store:', err);
+      }
+    };
+
+    fetchInterviews();
+    return () => {
+      active = false;
+    };
+  }, [actions]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await api.interviews.getMy();
+      if (res && Array.isArray(res.interviews)) {
+        actions.syncInterviews(res.interviews);
+      }
+    } catch (err) {
+      console.warn('Interviews refresh failed:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const studentInterviews = useMemo(() => {
     return interviews.filter(i => i.studentId === studentProfile.id);
@@ -32,7 +69,7 @@ export function StudentInterviewsPage() {
       <div className="border-b border-[#E4E4E1] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <span className="text-[11px] font-mono uppercase tracking-widest text-[#858585] block mb-1">
-            CAMPUS RECRUITMENT INTERVIEW DESK
+            CAMPUS RECRUITMENT INTERVIEW DESK (NODE.JS BACKEND)
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
             Scheduled Interviews
@@ -42,11 +79,22 @@ export function StudentInterviewsPage() {
           </p>
         </div>
 
-        <Link to="/student/calendar">
-          <Button variant="secondary" size="sm" icon={<Calendar size={14} />}>
-            Open Placement Calendar
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            icon={<RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />}
+          >
+            {isRefreshing ? 'Syncing...' : 'Refresh Schedule'}
           </Button>
-        </Link>
+          <Link to="/student/calendar">
+            <Button variant="secondary" size="sm" icon={<Calendar size={14} />}>
+              Open Placement Calendar
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {studentInterviews.length === 0 ? (

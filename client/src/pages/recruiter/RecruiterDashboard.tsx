@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
 import { Button, StatusBadge, MetricSummary } from '../../components/ui';
@@ -10,17 +10,35 @@ import {
   ChevronRight,
   Sparkles,
   Building,
+  RefreshCw,
 } from 'lucide-react';
 
 export function RecruiterDashboard() {
   const { navigate } = useRouter();
-  const { currentUser, jobs, applications, interviews } = useCampusStore();
+  const { currentUser, jobs, applications, interviews, actions } = useCampusStore();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const recruiterCompany = currentUser.organization || 'Apex Systems';
 
+  // Load recruiter portal data on mount
+  useEffect(() => {
+    actions.loadRecruiterPortalData();
+  }, [actions]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await actions.loadRecruiterPortalData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // Filter jobs published by or relevant to this recruiter's company
   const companyJobs = useMemo(() => {
-    return jobs.filter(j => j.company.toLowerCase() === recruiterCompany.toLowerCase() || j.company.includes('Apex'));
+    return jobs.filter(
+      j => j.company.toLowerCase() === recruiterCompany.toLowerCase() || j.company.includes('Apex')
+    );
   }, [jobs, recruiterCompany]);
 
   const activeJobs = companyJobs.filter(j => j.status === 'Active');
@@ -61,11 +79,22 @@ export function RecruiterDashboard() {
           </p>
         </div>
 
-        <Link to="/recruiter/jobs/new">
-          <Button variant="primary" size="md" icon={<PlusCircle size={15} />}>
-            Post Campus Vacancy
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            icon={<RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />}
+          >
+            {isRefreshing ? 'Syncing...' : 'Sync Portal'}
           </Button>
-        </Link>
+          <Link to="/recruiter/jobs/new">
+            <Button variant="primary" size="md" icon={<PlusCircle size={15} />}>
+              Post Campus Vacancy
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Summary Metrics */}
@@ -123,34 +152,43 @@ export function RecruiterDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E4E4E1]">
-              {companyJobs.map(job => {
-                const jobApps = companyApps.filter(a => a.jobId === job.id);
-                const jobShortlisted = jobApps.filter(
-                  a => a.status === 'Shortlisted' || a.status === 'Interview Scheduled' || a.status === 'Selected'
-                );
+              {companyJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-[#858585]">
+                    No campus vacancies published yet. Click "Post Campus Vacancy" to begin.
+                  </td>
+                </tr>
+              ) : (
+                companyJobs.map(job => {
+                  const jobApps = companyApps.filter(a => a.jobId === job.id);
+                  const jobShortlisted = jobApps.filter(
+                    a => a.status === 'Shortlisted' || a.status === 'Interview Scheduled' || a.status === 'Selected'
+                  );
+                  const countToDisplay = job.applicantsCount || jobApps.length;
 
-                return (
-                  <tr key={job.id} className="hover:bg-[#F5F5F3] transition-colors">
-                    <td className="py-3.5 px-4">
-                      <strong className="text-sm text-[#111111] block">{job.title}</strong>
-                      <span className="text-[10px] text-[#858585]">{job.location} ({job.workArrangement})</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <StatusBadge status={job.status} />
-                    </td>
-                    <td className="py-3.5 px-4 text-[#666666]">{job.deadline}</td>
-                    <td className="py-3.5 px-4 font-bold text-[#111111]">{jobApps.length}</td>
-                    <td className="py-3.5 px-4 font-bold text-[#111111]">{jobShortlisted.length}</td>
-                    <td className="py-3.5 px-4 text-right">
-                      <Link to={`/recruiter/jobs/${job.id}/applicants`}>
-                        <Button variant="secondary" size="sm">
-                          Review Applicants ({jobApps.length})
-                        </Button>
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
+                  return (
+                    <tr key={job.id} className="hover:bg-[#F5F5F3] transition-colors">
+                      <td className="py-3.5 px-4">
+                        <strong className="text-sm text-[#111111] block">{job.title}</strong>
+                        <span className="text-[10px] text-[#858585]">{job.location} ({job.workArrangement})</span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <StatusBadge status={job.status} />
+                      </td>
+                      <td className="py-3.5 px-4 text-[#666666]">{job.deadline}</td>
+                      <td className="py-3.5 px-4 font-bold text-[#111111]">{countToDisplay}</td>
+                      <td className="py-3.5 px-4 font-bold text-[#111111]">{jobShortlisted.length}</td>
+                      <td className="py-3.5 px-4 text-right">
+                        <Link to={`/recruiter/jobs/${job.id}/applicants`}>
+                          <Button variant="secondary" size="sm">
+                            Review Applicants ({countToDisplay})
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -169,33 +207,41 @@ export function RecruiterDashboard() {
                 Recent Applicant Dossiers
               </h3>
             </div>
-            <Link to="/recruiter/jobs/job_apex_sde/applicants" className="text-xs font-mono font-bold text-[#111111] hover:underline">
-              Applicant Review Hub →
-            </Link>
+            {companyJobs[0] && (
+              <Link to={`/recruiter/jobs/${companyJobs[0].id}/applicants`} className="text-xs font-mono font-bold text-[#111111] hover:underline">
+                Applicant Review Hub →
+              </Link>
+            )}
           </div>
 
           <div className="divide-y divide-[#E4E4E1]">
-            {companyApps.slice(0, 4).map(app => (
-              <div
-                key={app.id}
-                onClick={() => navigate(`/recruiter/jobs/${app.jobId}/applicants`)}
-                className="py-3 flex items-center justify-between gap-4 font-mono text-xs hover:bg-[#FAFAF9] p-2 cursor-pointer transition-colors"
-              >
-                <div>
-                  <strong className="text-sm text-[#111111] block">{app.studentName}</strong>
-                  <span className="text-[10px] text-[#666666]">
-                    {app.jobTitle} • {app.studentBranch.slice(0, 24)}... (CGPA: {app.studentCgpa.toFixed(2)})
-                  </span>
-                </div>
+            {companyApps.length === 0 ? (
+              <p className="text-xs font-mono text-[#858585] py-4 text-center">
+                No candidate dossiers received yet.
+              </p>
+            ) : (
+              companyApps.slice(0, 4).map(app => (
+                <div
+                  key={app.id}
+                  onClick={() => navigate(`/recruiter/jobs/${app.jobId}/applicants`)}
+                  className="py-3 flex items-center justify-between gap-4 font-mono text-xs hover:bg-[#FAFAF9] p-2 cursor-pointer transition-colors"
+                >
+                  <div>
+                    <strong className="text-sm text-[#111111] block">{app.studentName}</strong>
+                    <span className="text-[10px] text-[#666666]">
+                      {app.jobTitle} • {app.studentBranch ? app.studentBranch.slice(0, 24) : 'Engineering'}... (CGPA: {app.studentCgpa.toFixed(2)})
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-[11px] font-bold bg-[#F5F5F3] px-2 py-0.5 border border-[#E4E4E1]">
-                    {app.matchScore}% Fit
-                  </span>
-                  <StatusBadge status={app.status} />
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-[11px] font-bold bg-[#F5F5F3] px-2 py-0.5 border border-[#E4E4E1]">
+                      {app.matchScore}% Fit
+                    </span>
+                    <StatusBadge status={app.status} />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

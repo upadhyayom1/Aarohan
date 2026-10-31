@@ -173,7 +173,7 @@ class AtsService:
                 "missing_keywords": f.missing_keywords,
                 "target_job": f"{job.title} at {job.company}" if job else None,
             }
-            context = self.rag.skill_evidence(pdf, f.missing_keywords[:6], relax=0.85) if self.rag is not None else {}
+            context = self.rag.skill_evidence(pdf, f.missing_keywords[:6], relax=0.0) if self.rag is not None else {}
             if context:
                 payload["resume_context_for_missing_keywords"] = context
             try:
