@@ -41,6 +41,11 @@ enum ApplicationStatus {
   not_selected
 }
 
+enum InterviewMode {
+  online
+  on_campus
+}
+
 model User {
   id             String          @id @default(uuid())
   name           String
@@ -113,10 +118,26 @@ model Application {
   atsResult          Json?             @map("ats_result")
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
+  interview          Interview?
 
   job     Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
   student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([jobId, studentId])
   @@map("applications")
+}
+
+model Interview {
+  id            String        @id @default(uuid())
+  applicationId String        @unique @map("application_id")
+  scheduledAt   DateTime      @map("scheduled_at")
+  mode          InterviewMode @default(online)
+  location      String
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("interviews")
 }
