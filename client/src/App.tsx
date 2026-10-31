@@ -54,6 +54,11 @@ function AppRouter() {
   const { path } = useRouter();
   const { currentUser, actions } = useCampusStore();
 
+  // Restore authenticated session from backend token on mount
+  React.useEffect(() => {
+    actions.checkAuthSession();
+  }, [actions]);
+
   // Keep active role aligned when navigating directly via URL
   React.useEffect(() => {
     if (path.startsWith('/admin') && currentUser.role !== 'admin') {

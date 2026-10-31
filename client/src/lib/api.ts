@@ -4,7 +4,8 @@
  */
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL) ||
+  (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
   (typeof window !== 'undefined' && window.location.origin ? `${window.location.origin}/api/v1` : 'http://localhost:8000/api/v1');
 
 export interface ApiErrorResponse {
@@ -31,29 +32,56 @@ export class ApiError extends Error {
 }
 
 // Token storage helpers
-const TOKEN_KEY = 'campuslink_token';
-const ROLE_KEY = 'campuslink_role';
+const TOKEN_KEY = 'aarohan_token';
+const LEGACY_TOKEN_KEY = 'campuslink_token';
+const ROLE_KEY = 'aarohan_role';
+const LEGACY_ROLE_KEY = 'campuslink_role';
+
+const getStorage = (): Storage | null => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return window.localStorage;
+  }
+  if (typeof globalThis !== 'undefined') {
+    try {
+      const s = (globalThis as any).localStorage;
+      if (s && typeof s.getItem === 'function') return s;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
 
 export const getAuthToken = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(TOKEN_KEY);
+  const storage = getStorage();
+  if (!storage) return null;
+  return storage.getItem(TOKEN_KEY) || storage.getItem(LEGACY_TOKEN_KEY);
 };
 
 export const setAuthToken = (token: string, role?: string): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(TOKEN_KEY, token);
-  if (role) localStorage.setItem(ROLE_KEY, role);
+  const storage = getStorage();
+  if (!storage) return;
+  storage.setItem(TOKEN_KEY, token);
+  storage.setItem(LEGACY_TOKEN_KEY, token);
+  if (role) {
+    storage.setItem(ROLE_KEY, role);
+    storage.setItem(LEGACY_ROLE_KEY, role);
+  }
 };
 
 export const clearAuthToken = (): void => {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(ROLE_KEY);
+  const storage = getStorage();
+  if (!storage) return;
+  storage.removeItem(TOKEN_KEY);
+  storage.removeItem(LEGACY_TOKEN_KEY);
+  storage.removeItem(ROLE_KEY);
+  storage.removeItem(LEGACY_ROLE_KEY);
 };
 
 export const getStoredRole = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(ROLE_KEY);
+  const storage = getStorage();
+  if (!storage) return null;
+  return storage.getItem(ROLE_KEY) || storage.getItem(LEGACY_ROLE_KEY);
 };
 
 /**

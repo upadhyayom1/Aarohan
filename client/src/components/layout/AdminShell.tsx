@@ -20,7 +20,7 @@ import {
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { path, navigate } = useRouter();
-  const { currentUser, drives, applications } = useCampusStore();
+  const { currentUser, drives, applications, actions } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const activeDrivesCount = drives.filter(d => d.status === 'Active').length;
@@ -160,7 +160,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </div>
           </div>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => {
+              actions.logout();
+              navigate('/login');
+            }}
             className="w-full flex items-center justify-center gap-1.5 text-[11px] font-mono text-[#666666] hover:text-[#111111] py-1.5 border border-[#E4E4E1] rounded-[2px] hover:bg-[#F5F5F3] transition-colors cursor-pointer"
           >
             <LogOut size={12} />

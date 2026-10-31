@@ -6,22 +6,10 @@ import {
 
 export async function getAnalytics(req, res, next) {
   try {
-    const [
-      totalApplications,
-      selectedCount,
-      interviewCount,
-      shortlistedCount,
-      appliedCount,
-      allApplications,
-      activeJobs,
-    ] = await Promise.all([
-      prisma.application.count(),
-      prisma.application.count({ where: { status: 'selected' } }),
-      prisma.application.count({ where: { status: 'interview_scheduled' } }),
-      prisma.application.count({ where: { status: 'shortlisted' } }),
-      prisma.application.count({ where: { status: 'applied' } }),
+    const [allApplications, activeJobs] = await Promise.all([
       prisma.application.findMany({
-        include: {
+        select: {
+          status: true,
           student: { select: { branch: true } },
         },
       }),
@@ -30,6 +18,19 @@ export async function getAnalytics(req, res, next) {
         select: { requiredSkills: true },
       }),
     ]);
+
+    const totalApplications = allApplications.length;
+    let selectedCount = 0;
+    let interviewCount = 0;
+    let shortlistedCount = 0;
+    let appliedCount = 0;
+
+    for (const app of allApplications) {
+      if (app.status === 'selected') selectedCount++;
+      else if (app.status === 'interview_scheduled') interviewCount++;
+      else if (app.status === 'shortlisted') shortlistedCount++;
+      else if (app.status === 'applied') appliedCount++;
+    }
 
     // Compute Department Performance
     const deptStats = {};
@@ -426,23 +427,25 @@ export async function getAllRecruiters(req, res, next) {
 
 export async function getAdminStats(req, res, next) {
   try {
-    const [
-      totalStudents,
-      studentsPlaced,
-      totalJobs,
-      openJobs,
-      totalApplications,
-      shortlisted,
-      interviewsScheduled,
-    ] = await Promise.all([
+    const [totalStudents, allJobs, allApplications] = await Promise.all([
       prisma.studentProfile.count(),
-      prisma.application.count({ where: { status: 'selected' } }),
-      prisma.job.count(),
-      prisma.job.count({ where: { status: 'open' } }),
-      prisma.application.count(),
-      prisma.application.count({ where: { status: 'shortlisted' } }),
-      prisma.application.count({ where: { status: 'interview_scheduled' } }),
+      prisma.job.findMany({ select: { status: true } }),
+      prisma.application.findMany({ select: { status: true } }),
     ]);
+
+    const totalJobs = allJobs.length;
+    const openJobs = allJobs.filter(j => j.status === 'open').length;
+
+    const totalApplications = allApplications.length;
+    let studentsPlaced = 0;
+    let shortlisted = 0;
+    let interviewsScheduled = 0;
+
+    for (const app of allApplications) {
+      if (app.status === 'selected') studentsPlaced++;
+      else if (app.status === 'shortlisted') shortlisted++;
+      else if (app.status === 'interview_scheduled') interviewsScheduled++;
+    }
 
     return res.status(200).json({
       total_students: totalStudents,

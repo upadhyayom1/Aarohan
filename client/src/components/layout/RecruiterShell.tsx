@@ -18,7 +18,7 @@ import {
 
 export function RecruiterShell({ children }: { children: ReactNode }) {
   const { path, navigate } = useRouter();
-  const { currentUser, jobs } = useCampusStore();
+  const { currentUser, jobs, actions } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const activeJobsCount = jobs.filter(j => j.status === 'Active').length;
@@ -151,7 +151,10 @@ export function RecruiterShell({ children }: { children: ReactNode }) {
             </div>
           </div>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => {
+              actions.logout();
+              navigate('/login');
+            }}
             className="w-full flex items-center justify-center gap-1.5 text-[11px] font-mono text-[#666666] hover:text-[#111111] py-1.5 border border-[#E4E4E1] rounded-[2px] hover:bg-[#F5F5F3] transition-colors cursor-pointer"
           >
             <LogOut size={12} />

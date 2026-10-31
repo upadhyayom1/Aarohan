@@ -10,6 +10,7 @@ import {
   SkillResource,
   UserRole,
 } from '../types';
+import { api, getAuthToken, setAuthToken, clearAuthToken } from './api';
 
 export const INITIAL_USER_STUDENT: User = {
   id: 'usr_student_1',
@@ -815,6 +816,80 @@ class CampusStore {
       this.currentUser = INITIAL_USER_ADMIN;
     }
     this.notify();
+  }
+
+  // Authentication & Session Management
+  public setAuthSession(user: Partial<User> & { role: UserRole }, token?: string) {
+    if (token) {
+      setAuthToken(token, user.role);
+    }
+
+    let base = INITIAL_USER_STUDENT;
+    if (user.role === 'recruiter') base = INITIAL_USER_RECRUITER;
+    else if (user.role === 'admin') base = INITIAL_USER_ADMIN;
+
+    this.currentUser = {
+      ...base,
+      ...user,
+      id: user.id || base.id,
+      name: user.name || base.name,
+      email: user.email || base.email,
+      role: user.role,
+    };
+
+    if (user.role === 'student') {
+      this.studentProfile = {
+        ...this.studentProfile,
+        fullName: user.name || this.studentProfile.fullName,
+        email: user.email || this.studentProfile.email,
+      };
+    }
+
+    this.addAuditLog(
+      this.currentUser.name,
+      this.currentUser.role,
+      'AUTH_LOGIN',
+      `Session ${this.currentUser.email}`,
+      'Authenticated successfully into portal session.'
+    );
+
+    this.notify();
+  }
+
+  public clearAuthSession() {
+    clearAuthToken();
+    this.currentUser = INITIAL_USER_STUDENT;
+    this.notify();
+  }
+
+  public async checkAuthSession(): Promise<User | null> {
+    const token = getAuthToken();
+    if (!token) return null;
+
+    try {
+      const me = await api.auth.getMe();
+      if (me && me.role) {
+        this.setAuthSession({
+          id: me.id,
+          name: me.name,
+          email: me.email,
+          role: me.role as UserRole,
+        }, token);
+        return this.currentUser;
+      }
+      return null;
+    } catch {
+      clearAuthToken();
+      return null;
+    }
+  }
+
+  public login(user: Partial<User> & { role: UserRole }, token: string) {
+    this.setAuthSession(user, token);
+  }
+
+  public logout() {
+    this.clearAuthSession();
   }
 
   // Student Profile Updates
