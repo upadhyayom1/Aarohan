@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import { useRouter } from '../../lib/router';
-import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { Button, Input, Textarea, FormField } from '../../components/ui';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
 export function AdminNewDrivePage() {
   const { navigate } = useRouter();
-  const { actions } = useCampusStore();
 
   const [name, setName] = useState('');
-  const [companiesText, setCompaniesText] = useState('Apex Systems, Veritas Technologies, Horizon AI Labs');
-  const [registrationDeadline, setRegistrationDeadline] = useState('2026-12-01');
-  const [eventStartDate, setEventStartDate] = useState('2026-12-10');
-  const [eventEndDate, setEventEndDate] = useState('2026-12-20');
-  const [minCgpa, setMinCgpa] = useState<number>(7.5);
+  const [companiesText, setCompaniesText] = useState('');
+  const [registrationDeadline, setRegistrationDeadline] = useState('');
+  const [eventStartDate, setEventStartDate] = useState('');
+  const [eventEndDate, setEventEndDate] = useState('');
+  const [minCgpa, setMinCgpa] = useState<number>(7.0);
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       setError('Drive name is required.');
@@ -28,22 +28,39 @@ export function AdminNewDrivePage() {
       setError('At least one participating corporate partner is required.');
       return;
     }
+    if (!registrationDeadline) {
+      setError('Registration deadline is required.');
+      return;
+    }
+    if (!eventStartDate || !eventEndDate) {
+      setError('Event start and end dates are required.');
+      return;
+    }
 
-    actions.createDrive({
-      name: name.trim(),
-      companies,
-      jobOpeningsCount: 10,
-      registrationDeadline,
-      eventStartDate,
-      eventEndDate,
-      rounds: ['Online Assessment', 'Technical Evaluation', 'HR Discussion'],
-      eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Data Science'],
-      minCgpa,
-      status: 'Active',
-      description: description.trim(),
-    });
+    try {
+      setSubmitting(true);
+      setError(null);
 
-    navigate('/admin/drives');
+      await api.admin.createDrive({
+        name: name.trim(),
+        companies,
+        job_openings_count: 0,
+        registration_deadline: registrationDeadline,
+        event_start_date: eventStartDate,
+        event_end_date: eventEndDate,
+        rounds: ['Assessment', 'Technical', 'HR'],
+        eligible_branches: ['CSE', 'IT', 'ECE', 'EE', 'ME'],
+        min_cgpa: minCgpa,
+        status: 'Active',
+        description: description.trim() || undefined,
+      });
+
+      navigate('/admin/drives');
+    } catch (err: any) {
+      setError(err?.message || 'Failed to initialize placement drive');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -69,7 +86,7 @@ export function AdminNewDrivePage() {
       </div>
 
       {error && (
-        <div className="p-3 border border-[#111111] bg-[#FAFAF9] text-xs font-mono flex items-center gap-2">
+        <div className="p-3 border border-red-500 bg-red-50 text-xs font-mono flex items-center gap-2 text-red-700">
           <AlertCircle size={15} />
           <span>{error}</span>
         </div>
@@ -87,6 +104,7 @@ export function AdminNewDrivePage() {
 
           <FormField label="Participating Corporate Partners" required hint="Comma separated">
             <Input
+              placeholder="e.g. Google, Microsoft, Amazon"
               value={companiesText}
               onChange={e => setCompaniesText(e.target.value)}
             />
@@ -118,31 +136,38 @@ export function AdminNewDrivePage() {
             </FormField>
           </div>
 
-          <FormField label="Minimum Required CGPA Threshold" required>
+          <FormField label="Institutional Minimum CGPA Threshold" required>
             <Input
               type="number"
               step="0.1"
+              min="0"
+              max="10"
               value={minCgpa}
               onChange={e => setMinCgpa(parseFloat(e.target.value) || 0)}
             />
           </FormField>
 
-          <FormField label="Institutional Briefing / Scope">
+          <FormField label="Consortium Description & Schedule Briefing">
             <Textarea
-              rows={3}
-              placeholder="Outline the drive scope and participating department eligibility..."
+              rows={4}
+              placeholder="Outline participation policies, interview schedule milestones, and company briefing requirements..."
               value={description}
               onChange={e => setDescription(e.target.value)}
             />
           </FormField>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button variant="secondary" size="md" onClick={() => navigate('/admin/drives')}>
-            Cancel
+        <div className="flex items-center gap-3">
+          <Button type="submit" variant="primary" size="md" disabled={submitting}>
+            {submitting ? 'Publishing Placement Drive...' : 'Publish Placement Drive'}
           </Button>
-          <Button variant="primary" size="md" type="submit">
-            Publish Placement Drive
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            onClick={() => navigate('/admin/drives')}
+          >
+            Cancel
           </Button>
         </div>
       </form>
