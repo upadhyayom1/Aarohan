@@ -27,6 +27,32 @@ enum Branch {
   OTHER
 }
 
+enum JobStatus {
+  open
+  closed
+}
+
+enum ApplicationStatus {
+  applied
+  shortlisted
+  interview_scheduled
+  selected
+  rejected
+  not_selected
+}
+
+enum InterviewMode {
+  online
+  on_campus
+}
+
+enum DriveStatus {
+  Draft
+  Active
+  Completed
+  Cancelled
+}
+
 model User {
   id             String          @id @default(uuid())
   name           String
@@ -36,30 +62,131 @@ model User {
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
   studentProfile StudentProfile?
+  jobs           Job[]           @relation("RecruiterJobs")
 
   @@map("users")
 }
 
 model StudentProfile {
-  id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
+  id              String        @id @default(uuid())
+  userId          String        @unique @map("user_id")
   name            String
   branch          Branch
   cgpa            Float
-  graduationYear  Int      @map("graduation_year")
-  backlogs        Int      @default(0)
+  graduationYear  Int           @map("graduation_year")
+  backlogs        Int           @default(0)
   skills          String[]
-  projects        Json     @default("[]")
-  resumeUploaded  Boolean  @default(false) @map("resume_uploaded")
-  resumeUrl       String?  @map("resume_url")
-  resumePath      String?  @map("resume_path")
-  resumeText      String?  @map("resume_text")
-  resumeAnalysis  Json?    @map("resume_analysis")
-  profileComplete Boolean  @default(false) @map("profile_complete")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  projects        Json          @default("[]")
+  resumeUploaded  Boolean       @default(false) @map("resume_uploaded")
+  resumeUrl       String?       @map("resume_url")
+  resumePath      String?       @map("resume_path")
+  resumeText      String?       @map("resume_text")
+  resumeAnalysis  Json?         @map("resume_analysis")
+  profileComplete Boolean       @default(false) @map("profile_complete")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  applications    Application[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("student_profiles")
+}
+
+model Job {
+  id               String        @id @default(uuid())
+  title            String
+  company          String
+  description      String
+  requiredSkills   String[]      @map("required_skills")
+  eligibleBranches Branch[]      @map("eligible_branches")
+  minCgpa          Float         @map("min_cgpa")
+  graduationYear   Int           @map("graduation_year")
+  maxBacklogs      Int           @map("max_backlogs")
+  deadline         DateTime
+  status           JobStatus     @default(open)
+  recruiterId      String        @map("recruiter_id")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  applications     Application[]
+
+  recruiter User @relation("RecruiterJobs", fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
+}
+
+model Application {
+  id                 String            @id @default(uuid())
+  jobId              String            @map("job_id")
+  studentId          String            @map("student_id")
+  status             ApplicationStatus @default(applied)
+  eligible           Boolean           @default(true)
+  eligibilityReasons String[]          @map("eligibility_reasons")
+  matchResult        Json              @map("match_result")
+  atsResult          Json?             @map("ats_result")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+  interview          Interview?
+
+  job     Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, studentId])
+  @@map("applications")
+}
+
+model Interview {
+  id            String        @id @default(uuid())
+  applicationId String        @unique @map("application_id")
+  scheduledAt   DateTime      @map("scheduled_at")
+  mode          InterviewMode @default(online)
+  location      String
+  notes         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("interviews")
+}
+
+model PlacementDrive {
+  id                   String      @id @default(uuid())
+  name                 String
+  companies            String[]
+  jobOpeningsCount     Int         @default(0) @map("job_openings_count")
+  registrationDeadline DateTime    @map("registration_deadline")
+  eventStartDate       DateTime    @map("event_start_date")
+  eventEndDate         DateTime    @map("event_end_date")
+  rounds               String[]
+  eligibleBranches     String[]    @map("eligible_branches")
+  minCgpa              Float       @default(0.0) @map("min_cgpa")
+  status               DriveStatus @default(Active)
+  description          String?
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+
+  @@map("placement_drives")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actor     String
+  actorRole Role     @default(admin) @map("actor_role")
+  action    String
+  entity    String
+  summary   String
+  details   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}
+
+model InstitutionalSettings {
+  id                 String   @id @default("default")
+  placementYear      String   @default("2026–2027") @map("placement_year")
+  defaultMinCgpa     Float    @default(7.0) @map("default_min_cgpa")
+  maxBacklogsAllowed Int      @default(0) @map("max_backlogs_allowed")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("institutional_settings")
 }
