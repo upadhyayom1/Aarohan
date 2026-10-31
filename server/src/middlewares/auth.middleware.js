@@ -53,3 +53,15 @@ export const authenticate = async (req, res, next) => {
   }
 };
 
+export const authorizeRole = (...allowedRoles) => (req, res, next) => {
+  if (!req.user || !allowedRoles.includes(req.user.role)) {
+    return res.status(403).json({
+      code: 'FORBIDDEN',
+      message: `Access denied. Requires one of: [${allowedRoles.join(', ')}]`,
+      details: {},
+    });
+  }
+  next();
+};
+
+
