@@ -34,8 +34,8 @@ export function InstitutionalBanner() {
           <button
             onClick={() => handleRoleSwitch('student')}
             className={`px-2 py-0.5 rounded-[2px] transition-colors ${currentUser.role === 'student' && path.startsWith('/student')
-                ? 'bg-white text-black font-semibold'
-                : 'bg-neutral-800 text-neutral-300 hover:text-white'
+              ? 'bg-white text-black font-semibold'
+              : 'bg-neutral-800 text-neutral-300 hover:text-white'
               }`}
           >
             Student
@@ -43,8 +43,8 @@ export function InstitutionalBanner() {
           <button
             onClick={() => handleRoleSwitch('recruiter')}
             className={`px-2 py-0.5 rounded-[2px] transition-colors ${currentUser.role === 'recruiter' && path.startsWith('/recruiter')
-                ? 'bg-white text-black font-semibold'
-                : 'bg-neutral-800 text-neutral-300 hover:text-white'
+              ? 'bg-white text-black font-semibold'
+              : 'bg-neutral-800 text-neutral-300 hover:text-white'
               }`}
           >
             Recruiter
@@ -52,18 +52,18 @@ export function InstitutionalBanner() {
           <button
             onClick={() => handleRoleSwitch('admin')}
             className={`px-2 py-0.5 rounded-[2px] transition-colors ${currentUser.role === 'admin' && path.startsWith('/admin')
-                ? 'bg-white text-black font-semibold'
-                : 'bg-neutral-800 text-neutral-300 hover:text-white'
+              ? 'bg-white text-black font-semibold'
+              : 'bg-neutral-800 text-neutral-300 hover:text-white'
               }`}
           >
             Admin
           </button>
           <button
             onClick={() => navigate('/')}
-              !path.startsWith('/student') && !path.startsWith('/recruiter') && !path.startsWith('/admin')
-          ? 'bg-white text-black font-semibold'
-          : 'bg-neutral-800 text-neutral-300 hover:text-white'
-            }`}
+            className={`px-2 py-0.5 rounded-[2px] transition-colors ${!path.startsWith('/student') && !path.startsWith('/recruiter') && !path.startsWith('/admin')
+                  ? 'bg-white text-black font-semibold'
+                  : 'bg-neutral-800 text-neutral-300 hover:text-white'
+              }`}
           >
           Public
         </button>
