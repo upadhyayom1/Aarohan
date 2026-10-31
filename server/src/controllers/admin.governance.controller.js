@@ -6,18 +6,16 @@ import {
 
 export async function getAnalytics(req, res, next) {
   try {
-    const [allApplications, activeJobs] = await Promise.all([
-      prisma.application.findMany({
-        select: {
-          status: true,
-          student: { select: { branch: true } },
-        },
-      }),
-      prisma.job.findMany({
-        where: { status: 'open' },
-        select: { requiredSkills: true },
-      }),
-    ]);
+    const allApplications = await prisma.application.findMany({
+      select: {
+        status: true,
+        student: { select: { branch: true } },
+      },
+    });
+    const activeJobs = await prisma.job.findMany({
+      where: { status: 'open' },
+      select: { requiredSkills: true },
+    });
 
     const totalApplications = allApplications.length;
     let selectedCount = 0;
@@ -427,11 +425,9 @@ export async function getAllRecruiters(req, res, next) {
 
 export async function getAdminStats(req, res, next) {
   try {
-    const [totalStudents, allJobs, allApplications] = await Promise.all([
-      prisma.studentProfile.count(),
-      prisma.job.findMany({ select: { status: true } }),
-      prisma.application.findMany({ select: { status: true } }),
-    ]);
+    const totalStudents = await prisma.studentProfile.count();
+    const allJobs = await prisma.job.findMany({ select: { status: true } });
+    const allApplications = await prisma.application.findMany({ select: { status: true } });
 
     const totalJobs = allJobs.length;
     const openJobs = allJobs.filter(j => j.status === 'open').length;
