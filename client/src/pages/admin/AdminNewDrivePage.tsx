@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { useRouter } from '../../lib/router';
-import { useCampusStore } from '../../lib/useStore';
 import { api } from '../../lib/api';
 import { Button, Input, Textarea, FormField } from '../../components/ui';
 import { ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
 
 export function AdminNewDrivePage() {
   const { navigate } = useRouter();
-  const { actions } = useCampusStore();
 
   const [name, setName] = useState('');
-  const [companiesText, setCompaniesText] = useState('Apex Systems, Veritas Technologies, Horizon AI Labs');
-  const [registrationDeadline, setRegistrationDeadline] = useState('2026-12-01');
-  const [eventStartDate, setEventStartDate] = useState('2026-12-10');
-  const [eventEndDate, setEventEndDate] = useState('2026-12-20');
-  const [minCgpa, setMinCgpa] = useState<number>(7.5);
+  const [companiesText, setCompaniesText] = useState('');
+  const [registrationDeadline, setRegistrationDeadline] = useState('');
+  const [eventStartDate, setEventStartDate] = useState('');
+  const [eventEndDate, setEventEndDate] = useState('');
+  const [minCgpa, setMinCgpa] = useState<number>(7.0);
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -30,43 +28,31 @@ export function AdminNewDrivePage() {
       setError('At least one participating corporate partner is required.');
       return;
     }
+    if (!registrationDeadline) {
+      setError('Registration deadline is required.');
+      return;
+    }
+    if (!eventStartDate || !eventEndDate) {
+      setError('Event start and end dates are required.');
+      return;
+    }
 
     try {
       setSubmitting(true);
       setError(null);
 
-      // Attempt backend persistence
-      try {
-        await api.admin.createDrive({
-          name: name.trim(),
-          companies,
-          job_openings_count: 10,
-          registration_deadline: registrationDeadline,
-          event_start_date: eventStartDate,
-          event_end_date: eventEndDate,
-          rounds: ['Online Assessment', 'Technical Evaluation', 'HR Discussion'],
-          eligible_branches: ['Computer Science & Engineering', 'Information Technology', 'Data Science'],
-          min_cgpa: minCgpa,
-          status: 'Active',
-          description: description.trim(),
-        });
-      } catch (backendErr: any) {
-        console.warn('Backend drive creation returned error, synchronizing with local store:', backendErr);
-      }
-
-      // Also update local store for instant UI reactivity
-      actions.createDrive({
+      await api.admin.createDrive({
         name: name.trim(),
         companies,
-        jobOpeningsCount: 10,
-        registrationDeadline,
-        eventStartDate,
-        eventEndDate,
-        rounds: ['Online Assessment', 'Technical Evaluation', 'HR Discussion'],
-        eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Data Science'],
-        minCgpa,
+        job_openings_count: 0,
+        registration_deadline: registrationDeadline,
+        event_start_date: eventStartDate,
+        event_end_date: eventEndDate,
+        rounds: ['Assessment', 'Technical', 'HR'],
+        eligible_branches: ['CSE', 'IT', 'ECE', 'EE', 'ME'],
+        min_cgpa: minCgpa,
         status: 'Active',
-        description: description.trim(),
+        description: description.trim() || undefined,
       });
 
       navigate('/admin/drives');
@@ -100,7 +86,7 @@ export function AdminNewDrivePage() {
       </div>
 
       {error && (
-        <div className="p-3 border border-[#111111] bg-[#FAFAF9] text-xs font-mono flex items-center gap-2">
+        <div className="p-3 border border-red-500 bg-red-50 text-xs font-mono flex items-center gap-2 text-red-700">
           <AlertCircle size={15} />
           <span>{error}</span>
         </div>
@@ -118,6 +104,7 @@ export function AdminNewDrivePage() {
 
           <FormField label="Participating Corporate Partners" required hint="Comma separated">
             <Input
+              placeholder="e.g. Google, Microsoft, Amazon"
               value={companiesText}
               onChange={e => setCompaniesText(e.target.value)}
             />
@@ -153,6 +140,8 @@ export function AdminNewDrivePage() {
             <Input
               type="number"
               step="0.1"
+              min="0"
+              max="10"
               value={minCgpa}
               onChange={e => setMinCgpa(parseFloat(e.target.value) || 0)}
             />

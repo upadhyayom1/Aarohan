@@ -328,41 +328,13 @@ export const api = {
       return request<any>(`/admin/placements${qs ? `?${qs}` : ''}`);
     },
 
-    getAuditLogs: (params?: { page?: number; limit?: number; role?: string; search?: string }) => {
+    getAuditLogs: (params?: { page?: number; limit?: number }) => {
       const query = new URLSearchParams();
       if (params?.page) query.set('page', params.page.toString());
       if (params?.limit) query.set('limit', params.limit.toString());
-      if (params?.role) query.set('role', params.role);
-      if (params?.search) query.set('search', params.search);
       const qs = query.toString();
       return request<any>(`/admin/audit-logs${qs ? `?${qs}` : ''}`);
     },
-
-    getSettings: () =>
-      request<{
-        placement_year: string;
-        default_min_cgpa: number;
-        max_backlogs_allowed: number;
-        updated_at: string;
-      }>('/admin/settings'),
-
-    updateSettings: (data: {
-      placement_year: string;
-      default_min_cgpa: number;
-      max_backlogs_allowed: number;
-    }) =>
-      request<{
-        message: string;
-        settings: {
-          placement_year: string;
-          default_min_cgpa: number;
-          max_backlogs_allowed: number;
-          updated_at: string;
-        };
-      }>('/admin/settings', {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      }),
   },
 };
 

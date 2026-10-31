@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useCampusStore } from '../../lib/useStore';
 import { api } from '../../lib/api';
-import { Button, Input, Select } from '../../components/ui';
-import { Search, Loader2 } from 'lucide-react';
+import { Input, Select } from '../../components/ui';
+import { Loader2 } from 'lucide-react';
 
 export function AdminAuditLogsPage() {
-  const store = useCampusStore();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,10 +22,8 @@ export function AdminAuditLogsPage() {
           setLogs(res.logs);
         }
       } catch (err) {
-        console.warn('Backend audit logs unavailable, falling back to local store', err);
-        if (mounted && store.auditLogs) {
-          setLogs(store.auditLogs);
-        }
+        console.warn('Backend audit logs error:', err);
+        if (mounted) setLogs([]);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -39,25 +35,6 @@ export function AdminAuditLogsPage() {
       clearTimeout(timer);
     };
   }, [roleFilter, searchQuery]);
-
-  const displayLogs = useMemo(() => {
-    const list = logs.length > 0 ? logs : store.auditLogs;
-    return list.filter(log => {
-      const actorRole = (log.actor_role || log.actorRole || '').toLowerCase();
-      if (roleFilter !== 'All' && actorRole !== roleFilter.toLowerCase()) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const actor = (log.actor || '').toLowerCase();
-        const action = (log.action || '').toLowerCase();
-        const entity = (log.entity || '').toLowerCase();
-        const summary = (log.summary || '').toLowerCase();
-        if (!actor.includes(q) && !action.includes(q) && !entity.includes(q) && !summary.includes(q)) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [logs, store.auditLogs, roleFilter, searchQuery]);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -104,12 +81,12 @@ export function AdminAuditLogsPage() {
       {/* Audit Registry Table */}
       <div className="border border-[#222222] bg-white">
         {loading ? (
-          <div className="py-16 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
+          <div className="py-20 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
             <Loader2 className="animate-spin text-[#111111]" size={18} />
-            <span>Retrieving institutional governance audit trail...</span>
+            <span>Retrieving institutional governance audit trail from database...</span>
           </div>
-        ) : displayLogs.length === 0 ? (
-          <div className="py-12 text-center text-xs font-mono text-[#858585]">
+        ) : logs.length === 0 ? (
+          <div className="py-16 text-center text-xs font-mono text-[#858585]">
             No governance events logged matching criteria.
           </div>
         ) : (
@@ -125,11 +102,11 @@ export function AdminAuditLogsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E4E4E1]">
-                {displayLogs.map(log => {
+                {logs.map(log => {
                   const id = log.id;
                   const ts = log.timestamp || 'Just now';
                   const actor = log.actor || 'System';
-                  const role = log.actor_role || log.actorRole || 'admin';
+                  const role = log.actor_role || 'admin';
                   const action = log.action || 'MUTATION';
                   const entity = log.entity || 'General';
                   const summary = log.summary || log.details || 'System operation executed';

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter } from '../../lib/router';
-import { useCampusStore } from '../../lib/useStore';
-import { Button, Input, Select, StatusBadge } from '../../components/ui';
+import { Button, Input, Select } from '../../components/ui';
 import api from '../../lib/api';
-import { Search, Download, GraduationCap, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 
 interface StudentRosterItem {
   id: string;
@@ -12,7 +10,6 @@ interface StudentRosterItem {
   branch: string;
   cgpa: number;
   cohort: number;
-  backlogs?: number;
   appliedCount: number;
   shortlistedCount: number;
   resumeUploaded: boolean;
@@ -20,7 +17,6 @@ interface StudentRosterItem {
 }
 
 export function AdminStudentsPage() {
-  const { studentProfile, applications } = useCampusStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [liveStudents, setLiveStudents] = useState<StudentRosterItem[]>([]);
@@ -28,21 +24,22 @@ export function AdminStudentsPage() {
 
   useEffect(() => {
     let isMounted = true;
+    setLoading(true);
     api.admin
       .getStudents()
       .then((res) => {
         if (!isMounted) return;
-        if (res?.students && res.students.length > 0) {
+        if (res?.students) {
           const mapped: StudentRosterItem[] = res.students.map((s, index) => ({
             id: s.id,
             name: s.name,
-            studentId: `STU-2022-${s.branch}-${String(index + 1).padStart(3, '0')}`,
+            studentId: `STU-${s.graduation_year || 2027}-${s.branch}-${String(index + 1).padStart(3, '0')}`,
             branch: s.branch,
-            cgpa: s.cgpa,
-            cohort: s.graduation_year,
-            appliedCount: s.applications_count,
-            shortlistedCount: s.shortlisted_count,
-            resumeUploaded: s.resume_uploaded,
+            cgpa: typeof s.cgpa === 'number' ? s.cgpa : 0,
+            cohort: s.graduation_year || 2027,
+            appliedCount: s.applications_count || 0,
+            shortlistedCount: s.shortlisted_count || 0,
+            resumeUploaded: Boolean(s.resume_uploaded),
             status:
               s.shortlisted_count > 0
                 ? 'Shortlisted'
@@ -55,6 +52,7 @@ export function AdminStudentsPage() {
       })
       .catch((err) => {
         console.warn('Failed to load students from backend API:', err);
+        if (isMounted) setLiveStudents([]);
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -65,54 +63,11 @@ export function AdminStudentsPage() {
     };
   }, []);
 
-  const roster: StudentRosterItem[] = useMemo(() => {
-    if (liveStudents.length > 0) {
-      return liveStudents;
-    }
-    // Fallback sample cohort
-    return [
-      {
-        id: studentProfile.id,
-        name: studentProfile.fullName,
-        studentId: 'STU-2022-CSE-042',
-        branch: studentProfile.branch,
-        cgpa: studentProfile.cgpa,
-        cohort: studentProfile.graduationYear,
-        appliedCount: applications.filter(a => a.studentId === studentProfile.id).length,
-        shortlistedCount: 1,
-        resumeUploaded: true,
-        status: 'Active Candidacy',
-      },
-      {
-        id: 'stu_dev_sharma',
-        name: 'Dev Sharma',
-        studentId: 'STU-2022-CSE-018',
-        branch: 'CSE',
-        cgpa: 9.30,
-        cohort: 2026,
-        appliedCount: 5,
-        shortlistedCount: 2,
-        resumeUploaded: true,
-        status: 'Shortlisted',
-      },
-      {
-        id: 'stu_priya_nair',
-        name: 'Priya Nair',
-        studentId: 'STU-2022-IT-089',
-        branch: 'IT',
-        cgpa: 8.42,
-        cohort: 2026,
-        appliedCount: 3,
-        shortlistedCount: 0,
-        resumeUploaded: true,
-        status: 'Under Review',
-      },
-    ];
-  }, [liveStudents, studentProfile, applications]);
-
   const filteredRoster = useMemo(() => {
-    return roster.filter(s => {
-      if (departmentFilter !== 'All' && s.branch !== departmentFilter) return false;
+    return liveStudents.filter(s => {
+      if (departmentFilter !== 'All' && s.branch !== departmentFilter) {
+        return false;
+      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         if (!s.name.toLowerCase().includes(q) && !s.studentId.toLowerCase().includes(q)) {
@@ -121,7 +76,7 @@ export function AdminStudentsPage() {
       }
       return true;
     });
-  }, [roster, departmentFilter, searchQuery]);
+  }, [liveStudents, departmentFilter, searchQuery]);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -175,40 +130,51 @@ export function AdminStudentsPage() {
 
       {/* Table */}
       <div className="border border-[#E4E4E1] bg-white">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left font-mono text-xs">
-            <thead className="bg-[#FAFAF9] border-b border-[#E4E4E1] text-[#858585] uppercase">
-              <tr>
-                <th className="py-3 px-4">Student Name</th>
-                <th className="py-3 px-4">ID Number</th>
-                <th className="py-3 px-4">Department</th>
-                <th className="py-3 px-4">CGPA</th>
-                <th className="py-3 px-4">Cohort</th>
-                <th className="py-3 px-4">Applications</th>
-                <th className="py-3 px-4">Shortlisted</th>
-                <th className="py-3 px-4 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E4E4E1]">
-              {filteredRoster.map(s => (
-                <tr key={s.id} className="hover:bg-[#F5F5F3] transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-[#111111]">{s.name}</td>
-                  <td className="py-3.5 px-4 text-[#858585]">{s.studentId}</td>
-                  <td className="py-3.5 px-4 text-[#444444]">{s.branch}</td>
-                  <td className="py-3.5 px-4 font-bold text-[#111111]">{s.cgpa.toFixed(2)}</td>
-                  <td className="py-3.5 px-4 text-[#666666]">{s.cohort}</td>
-                  <td className="py-3.5 px-4">{s.appliedCount} submitted</td>
-                  <td className="py-3.5 px-4 font-bold text-[#111111]">{s.shortlistedCount}</td>
-                  <td className="py-3.5 px-4 text-right">
-                    <span className="text-[10px] uppercase font-bold bg-[#FAFAF9] border border-[#222222] px-2 py-0.5 rounded-[2px]">
-                      {s.status}
-                    </span>
-                  </td>
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
+            <Loader2 className="animate-spin text-[#111111]" size={18} />
+            <span>Retrieving student records from database...</span>
+          </div>
+        ) : filteredRoster.length === 0 ? (
+          <div className="py-16 text-center text-xs font-mono text-[#858585]">
+            No student records found in the database matching criteria.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left font-mono text-xs">
+              <thead className="bg-[#FAFAF9] border-b border-[#E4E4E1] text-[#858585] uppercase">
+                <tr>
+                  <th className="py-3 px-4">Student Name</th>
+                  <th className="py-3 px-4">ID Number</th>
+                  <th className="py-3 px-4">Department</th>
+                  <th className="py-3 px-4">CGPA</th>
+                  <th className="py-3 px-4">Cohort</th>
+                  <th className="py-3 px-4">Applications</th>
+                  <th className="py-3 px-4">Shortlisted</th>
+                  <th className="py-3 px-4 text-right">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-[#E4E4E1]">
+                {filteredRoster.map(s => (
+                  <tr key={s.id} className="hover:bg-[#F5F5F3] transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-[#111111]">{s.name}</td>
+                    <td className="py-3.5 px-4 text-[#858585]">{s.studentId}</td>
+                    <td className="py-3.5 px-4 text-[#444444]">{s.branch}</td>
+                    <td className="py-3.5 px-4 font-bold text-[#111111]">{s.cgpa.toFixed(2)}</td>
+                    <td className="py-3.5 px-4 text-[#666666]">{s.cohort}</td>
+                    <td className="py-3.5 px-4">{s.appliedCount} submitted</td>
+                    <td className="py-3.5 px-4 font-bold text-[#111111]">{s.shortlistedCount}</td>
+                    <td className="py-3.5 px-4 text-right">
+                      <span className="text-[10px] uppercase font-bold bg-[#FAFAF9] border border-[#222222] px-2 py-0.5 rounded-[2px]">
+                        {s.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

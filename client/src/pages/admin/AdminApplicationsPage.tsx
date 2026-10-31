@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useCampusStore } from '../../lib/useStore';
 import { api } from '../../lib/api';
-import { Button, Input, Select, StatusBadge } from '../../components/ui';
-import { Search, Loader2 } from 'lucide-react';
+import { Input, Select, StatusBadge } from '../../components/ui';
+import { Loader2 } from 'lucide-react';
 
 export function AdminApplicationsPage() {
-  const store = useCampusStore();
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,10 +19,8 @@ export function AdminApplicationsPage() {
           setApplications(res.applications);
         }
       } catch (err) {
-        console.warn('Backend admin applications unavailable, falling back to local store', err);
-        if (mounted && store.applications) {
-          setApplications(store.applications);
-        }
+        console.warn('Backend admin applications error:', err);
+        if (mounted) setApplications([]);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -36,8 +32,7 @@ export function AdminApplicationsPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    const list = applications.length > 0 ? applications : store.applications;
-    return list.filter(a => {
+    return applications.filter(a => {
       const rawStatus = (a.status || '').toLowerCase();
       const rawFilter = statusFilter.toLowerCase();
       if (statusFilter !== 'All') {
@@ -52,8 +47,8 @@ export function AdminApplicationsPage() {
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const candidate = (a.student_name || a.studentName || '').toLowerCase();
-        const title = (a.job_title || a.jobTitle || '').toLowerCase();
+        const candidate = (a.student_name || '').toLowerCase();
+        const title = (a.job_title || '').toLowerCase();
         const comp = (a.company || '').toLowerCase();
         if (!candidate.includes(q) && !title.includes(q) && !comp.includes(q)) {
           return false;
@@ -61,7 +56,7 @@ export function AdminApplicationsPage() {
       }
       return true;
     });
-  }, [applications, store.applications, statusFilter, searchQuery]);
+  }, [applications, statusFilter, searchQuery]);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -111,12 +106,12 @@ export function AdminApplicationsPage() {
       {/* Table */}
       <div className="border border-[#E4E4E1] bg-white">
         {loading ? (
-          <div className="py-12 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
+          <div className="py-20 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
             <Loader2 className="animate-spin text-[#111111]" size={18} />
-            <span>Loading university application dossiers...</span>
+            <span>Loading university application dossiers from database...</span>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-12 text-center text-xs font-mono text-[#858585]">
+          <div className="py-16 text-center text-xs font-mono text-[#858585]">
             No applications found matching the selected filters.
           </div>
         ) : (
@@ -136,14 +131,14 @@ export function AdminApplicationsPage() {
               <tbody className="divide-y divide-[#E4E4E1]">
                 {filtered.map(app => {
                   const id = app.id;
-                  const name = app.student_name || app.studentName || 'Student';
+                  const name = app.student_name || 'Candidate';
                   const comp = app.company || '—';
-                  const job = app.job_title || app.jobTitle || 'Role';
+                  const job = app.job_title || 'Role';
                   const cgpa = typeof app.student_cgpa === 'number'
                     ? app.student_cgpa.toFixed(2)
-                    : (typeof app.studentCgpa === 'number' ? app.studentCgpa.toFixed(2) : '—');
+                    : '—';
                   const status = app.status || 'applied';
-                  const updated = app.latest_update_date || app.latestUpdateDate || app.applied_date || app.appliedDate || '—';
+                  const updated = app.latest_update_date || app.applied_date || '—';
 
                   return (
                     <tr key={id} className="hover:bg-[#F5F5F3]">
@@ -155,7 +150,9 @@ export function AdminApplicationsPage() {
                       <td className="py-3.5 px-4">
                         <StatusBadge status={status} />
                       </td>
-                      <td className="py-3.5 px-4 text-right text-[#666666]">{typeof updated === 'string' && updated.includes('T') ? updated.split('T')[0] : updated}</td>
+                      <td className="py-3.5 px-4 text-right text-[#666666]">
+                        {typeof updated === 'string' && updated.includes('T') ? updated.split('T')[0] : updated}
+                      </td>
                     </tr>
                   );
                 })}

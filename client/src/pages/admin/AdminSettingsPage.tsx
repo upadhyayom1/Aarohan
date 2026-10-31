@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useCampusStore } from '../../lib/useStore';
 import { api } from '../../lib/api';
 import { Button, Input, FormField } from '../../components/ui';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
@@ -25,7 +24,7 @@ export function AdminSettingsPage() {
           if (res.max_backlogs_allowed !== undefined) setMaxBacklogsAllowed(res.max_backlogs_allowed.toString());
         }
       } catch (err) {
-        console.warn('Backend settings unavailable, using defaults', err);
+        console.warn('Backend settings fetch error:', err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -51,9 +50,6 @@ export function AdminSettingsPage() {
     } catch (err: any) {
       console.warn('Backend settings update error:', err);
       setError(err?.message || 'Failed to update institutional policies');
-      // Still show success locally if admin is testing offline
-      setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 3000);
     } finally {
       setSaving(false);
     }
@@ -88,9 +84,9 @@ export function AdminSettingsPage() {
       )}
 
       {loading ? (
-        <div className="py-12 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
+        <div className="py-20 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2">
           <Loader2 className="animate-spin text-[#111111]" size={18} />
-          <span>Loading institutional policy parameters...</span>
+          <span>Loading institutional policy parameters from database...</span>
         </div>
       ) : (
         <form onSubmit={handleSave} className="space-y-6 max-w-xl">

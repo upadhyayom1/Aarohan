@@ -42,6 +42,7 @@ import { RecruiterSettingsPage } from './pages/recruiter/RecruiterSettingsPage';
 // Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminStudentsPage } from './pages/admin/AdminStudentsPage';
+import { AdminRecruitersPage } from './pages/admin/AdminRecruitersPage';
 import { AdminDrivesPage } from './pages/admin/AdminDrivesPage';
 import { AdminNewDrivePage } from './pages/admin/AdminNewDrivePage';
 import { AdminApplicationsPage } from './pages/admin/AdminApplicationsPage';
@@ -145,7 +146,7 @@ function AppRouter() {
     if (path === '/admin/students') {
       content = <AdminStudentsPage />;
     } else if (path === '/admin/recruiters' || path === '/admin/companies') {
-      content = <RecruiterJobsPage />;
+      content = <AdminRecruitersPage />;
     } else if (path === '/admin/drives/new') {
       content = <AdminNewDrivePage />;
     } else if (path === '/admin/drives') {
