@@ -87,6 +87,14 @@ class Settings(BaseSettings):
     warmup_models: bool = False
     match_batch_limit: int = 100
 
+    # RAG over the resume (grounding snippets for LLM prompts; never changes scores)
+    rag_enabled: bool = True
+    rag_chunk_words: int = 90
+    rag_chunk_overlap: int = 15
+    rag_snippet_chars: int = 320
+    rag_max_snippets: int = 8
+    rag_index_cache: int = 64
+
     # cache
     cache_dir: str = ".cache"
     cache_enabled: bool = True
