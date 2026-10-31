@@ -361,3 +361,101 @@ export async function getStudentById(req, res, next) {
     next(error);
   }
 }
+
+export async function getAllStudents(req, res, next) {
+  try {
+    const students = await prisma.studentProfile.findMany({
+      include: {
+        applications: {
+          select: { status: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const formatted = students.map((s) => ({
+      id: s.id,
+      name: s.name,
+      branch: s.branch,
+      cgpa: s.cgpa,
+      graduation_year: s.graduationYear,
+      resume_uploaded: s.resumeUploaded,
+      applications_count: s.applications.length,
+      shortlisted_count: s.applications.filter(
+        (a) => a.status === 'shortlisted' || a.status === 'selected'
+      ).length,
+    }));
+
+    return res.status(200).json({
+      total: formatted.length,
+      students: formatted,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getAllRecruiters(req, res, next) {
+  try {
+    const recruiters = await prisma.user.findMany({
+      where: { role: 'recruiter' },
+      include: {
+        jobs: {
+          select: { company: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const formatted = recruiters.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      company: r.jobs[0]?.company || 'Accredited Partner',
+      jobs_posted: r.jobs.length,
+    }));
+
+    return res.status(200).json({
+      total: formatted.length,
+      recruiters: formatted,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getAdminStats(req, res, next) {
+  try {
+    const [
+      totalStudents,
+      studentsPlaced,
+      totalJobs,
+      openJobs,
+      totalApplications,
+      shortlisted,
+      interviewsScheduled,
+    ] = await Promise.all([
+      prisma.studentProfile.count(),
+      prisma.application.count({ where: { status: 'selected' } }),
+      prisma.job.count(),
+      prisma.job.count({ where: { status: 'open' } }),
+      prisma.application.count(),
+      prisma.application.count({ where: { status: 'shortlisted' } }),
+      prisma.application.count({ where: { status: 'interview_scheduled' } }),
+    ]);
+
+    return res.status(200).json({
+      total_students: totalStudents,
+      students_placed: studentsPlaced,
+      total_jobs: totalJobs,
+      open_jobs: openJobs,
+      total_applications: totalApplications,
+      shortlisted: shortlisted,
+      interviews_scheduled: interviewsScheduled,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+

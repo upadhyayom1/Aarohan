@@ -19,12 +19,20 @@ import {
   getCompanies,
   getRecruiterById,
   getStudentById,
+  getAllStudents,
+  getAllRecruiters,
+  getAdminStats,
 } from '../controllers/admin.governance.controller.js';
 
 const router = Router();
 
 // All admin routes require authentication and role: admin
 router.use(authenticate, requireRole('admin'));
+
+// ── Contract Section 8 Core Endpoints ───────────────────
+router.get('/students', getAllStudents);
+router.get('/recruiters', getAllRecruiters);
+router.get('/stats', getAdminStats);
 
 // ── P0: Core Functionality ──────────────────────────────
 router.get('/drives', getDrives);

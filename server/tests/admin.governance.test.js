@@ -188,4 +188,60 @@ test('Admin Advanced & Governance API Suite (P1 & P2)', async (t) => {
       assert.ok(Array.isArray(body.applications));
     }
   });
+
+  // ── 8. Contract Section 8 Core Endpoints ───────────────
+
+  await t.test('GET /admin/students: lists all student records', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/admin/students`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.ok(typeof body.total === 'number');
+    assert.ok(Array.isArray(body.students));
+    if (body.students.length > 0) {
+      const first = body.students[0];
+      assert.ok(first.id);
+      assert.ok(first.name);
+      assert.ok(first.branch);
+      assert.ok(typeof first.cgpa === 'number');
+      assert.ok(typeof first.graduation_year === 'number');
+      assert.ok(typeof first.applications_count === 'number');
+      assert.ok(typeof first.shortlisted_count === 'number');
+    }
+  });
+
+  await t.test('GET /admin/recruiters: lists all recruiter records', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/admin/recruiters`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.ok(typeof body.total === 'number');
+    assert.ok(Array.isArray(body.recruiters));
+    if (body.recruiters.length > 0) {
+      const first = body.recruiters[0];
+      assert.ok(first.id);
+      assert.ok(first.name);
+      assert.ok(first.email);
+      assert.ok(first.company);
+      assert.ok(typeof first.jobs_posted === 'number');
+    }
+  });
+
+  await t.test('GET /admin/stats: returns platform statistics', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/admin/stats`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.ok(typeof body.total_students === 'number');
+    assert.ok(typeof body.students_placed === 'number');
+    assert.ok(typeof body.total_jobs === 'number');
+    assert.ok(typeof body.open_jobs === 'number');
+    assert.ok(typeof body.total_applications === 'number');
+    assert.ok(typeof body.shortlisted === 'number');
+    assert.ok(typeof body.interviews_scheduled === 'number');
+  });
 });
+
