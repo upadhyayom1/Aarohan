@@ -1,8 +1,29 @@
 import React, { useState } from 'react';
 import { useRouter } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api, ApiError } from '../../lib/api';
 import { Button, Input, Textarea, Select, FormField } from '../../components/ui';
-import { ArrowLeft, CheckCircle2, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, Plus, Trash2, RefreshCw } from 'lucide-react';
+
+const BRANCH_CODE_MAP: Record<string, string> = {
+  'Computer Science & Engineering': 'CSE',
+  'Information Technology': 'IT',
+  'Electrical & Computer Engineering': 'ECE',
+  'Mechanical Engineering': 'ME',
+  'Data Science': 'CSE',
+  'Biomedical Engineering': 'OTHER',
+  'CSE': 'CSE',
+  'IT': 'IT',
+  'ECE': 'ECE',
+  'EE': 'EE',
+  'ME': 'ME',
+  'CE': 'CE',
+  'CH': 'CH',
+  'MCA': 'MCA',
+  'MBA': 'MBA',
+  'PHD_CS': 'PHD_CS',
+  'OTHER': 'OTHER',
+};
 
 export function RecruiterNewJobPage() {
   const { navigate } = useRouter();
@@ -40,6 +61,7 @@ export function RecruiterNewJobPage() {
   const [gradYears, setGradYears] = useState<number[]>([2026]);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const availableBranches = [
     'Computer Science & Engineering',
@@ -74,8 +96,10 @@ export function RecruiterNewJobPage() {
     }
   };
 
-  const handlePublish = (e: React.FormEvent) => {
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
+
     if (!title.trim()) {
       setErrorMessage('Role title is required.');
       return;
@@ -89,31 +113,96 @@ export function RecruiterNewJobPage() {
       return;
     }
 
-    const newJob = actions.createJob({
-      title: title.trim(),
-      company: currentUser.organization || 'Apex Systems',
-      companyInitials: (currentUser.organization || 'AS').slice(0, 2).toUpperCase(),
-      location,
-      workArrangement,
-      employmentType,
-      salaryRange,
-      deadline,
-      description: description.trim(),
-      responsibilities: responsibilitiesText.split('\n').filter(s => s.trim()),
-      requiredQualifications: qualificationsText.split('\n').filter(s => s.trim()),
-      requiredSkills,
-      preferredSkills,
-      eligibleBranches: selectedBranches,
-      eligibleGradYears: gradYears,
-      minCgpa,
-      maxBacklogs,
-      status: 'Active',
-      recruiterId: currentUser.id,
-      recruiterName: currentUser.name,
-      recruiterEmail: currentUser.email,
-    });
+    // Map branches to validated enum codes
+    const mappedBranches = Array.from(
+      new Set(
+        selectedBranches
+          .map(b => BRANCH_CODE_MAP[b] || 'CSE')
+          .filter(Boolean)
+      )
+    );
 
-    navigate(`/recruiter/jobs/${newJob.id}/applicants`);
+    setIsPublishing(true);
+
+    const companyName = currentUser.organization || 'Apex Systems';
+
+    const payload = {
+      title: title.trim(),
+      company: companyName,
+      description: description.trim(),
+      required_skills: requiredSkills,
+      eligible_branches: mappedBranches.length > 0 ? mappedBranches : ['CSE'],
+      min_cgpa: Number(minCgpa),
+      graduation_year: Number(gradYears[0] || 2026),
+      max_backlogs: Number(maxBacklogs),
+      deadline: new Date(deadline).toISOString(),
+    };
+
+    try {
+      // 1. Create on Node.js backend
+      const createdJob = await api.jobs.create(payload);
+
+      // 2. Add to store
+      actions.createJob({
+        title: createdJob.title || title.trim(),
+        company: createdJob.company || companyName,
+        companyInitials: (createdJob.company || companyName).slice(0, 2).toUpperCase(),
+        location,
+        workArrangement,
+        employmentType,
+        salaryRange,
+        deadline,
+        description: description.trim(),
+        responsibilities: responsibilitiesText.split('\n').filter(s => s.trim()),
+        requiredQualifications: qualificationsText.split('\n').filter(s => s.trim()),
+        requiredSkills,
+        preferredSkills,
+        eligibleBranches: selectedBranches,
+        eligibleGradYears: gradYears,
+        minCgpa,
+        maxBacklogs,
+        status: 'Active',
+        recruiterId: currentUser.id,
+        recruiterName: currentUser.name,
+        recruiterEmail: currentUser.email,
+      });
+
+      await actions.loadRecruiterPortalData();
+      navigate(`/recruiter/jobs/${createdJob.id}/applicants`);
+    } catch (err: any) {
+      console.warn('Backend job creation error:', err);
+      if (err instanceof ApiError) {
+        setErrorMessage(err.message || 'Server rejected job creation');
+      } else {
+        // Fallback for demo mode
+        const localJob = actions.createJob({
+          title: title.trim(),
+          company: companyName,
+          companyInitials: companyName.slice(0, 2).toUpperCase(),
+          location,
+          workArrangement,
+          employmentType,
+          salaryRange,
+          deadline,
+          description: description.trim(),
+          responsibilities: responsibilitiesText.split('\n').filter(s => s.trim()),
+          requiredQualifications: qualificationsText.split('\n').filter(s => s.trim()),
+          requiredSkills,
+          preferredSkills,
+          eligibleBranches: selectedBranches,
+          eligibleGradYears: gradYears,
+          minCgpa,
+          maxBacklogs,
+          status: 'Active',
+          recruiterId: currentUser.id,
+          recruiterName: currentUser.name,
+          recruiterEmail: currentUser.email,
+        });
+        navigate(`/recruiter/jobs/${localJob.id}/applicants`);
+      }
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
@@ -130,7 +219,7 @@ export function RecruiterNewJobPage() {
       {/* Header */}
       <div className="border-b border-[#E4E4E1] pb-6">
         <span className="text-[11px] font-mono uppercase tracking-widest text-[#858585] block mb-1">
-          CAMPUS RECRUITMENT CREATION
+          CAMPUS RECRUITMENT CREATION (NODE.JS BACKEND)
         </span>
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
           Post New Campus Vacancy
@@ -148,73 +237,79 @@ export function RecruiterNewJobPage() {
       )}
 
       <form onSubmit={handlePublish} className="space-y-12 max-w-4xl">
-        {/* SECTION A: BASIC INFORMATION */}
+        {/* SECTION A: BASIC ROLE ATTRIBUTES */}
         <div className="border border-[#E4E4E1] bg-white p-6 sm:p-8 space-y-6">
           <div className="border-b border-[#E4E4E1] pb-3">
             <h2 className="text-sm font-bold uppercase font-mono tracking-wider text-[#111111]">
-              Section A: Basic Information
+              Section A: Basic Opportunity Specifications
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <FormField label="Job / Role Title" required>
+          <div className="space-y-4">
+            <FormField label="Position Title" required>
+              <Input
+                placeholder="e.g. Associate Software Engineer — Core Platform"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+              />
+            </FormField>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Hiring Organization" required>
                 <Input
-                  placeholder="e.g. Software Development Engineer I"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
+                  value={currentUser.organization || 'Apex Systems'}
+                  disabled
+                  className="bg-[#F5F5F3]"
+                />
+              </FormField>
+
+              <FormField label="Work Location / Region" required>
+                <Input
+                  value={location}
+                  onChange={e => setLocation(e.target.value)}
                 />
               </FormField>
             </div>
 
-            <FormField label="Location">
-              <Input
-                placeholder="e.g. Cambridge, MA"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-              />
-            </FormField>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <FormField label="Work Arrangement" required>
+                <Select
+                  value={workArrangement}
+                  onChange={e => setWorkArrangement(e.target.value as any)}
+                >
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="On-site">On-site</option>
+                  <option value="Remote">Remote</option>
+                </Select>
+              </FormField>
 
-            <FormField label="Work Arrangement">
-              <Select
-                value={workArrangement}
-                onChange={e => setWorkArrangement(e.target.value as any)}
-              >
-                <option value="Hybrid">Hybrid</option>
-                <option value="On-site">On-site</option>
-                <option value="Remote">Remote</option>
-              </Select>
-            </FormField>
+              <FormField label="Employment Type" required>
+                <Select
+                  value={employmentType}
+                  onChange={e => setEmploymentType(e.target.value as any)}
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Co-op">Co-op</option>
+                </Select>
+              </FormField>
 
-            <FormField label="Employment Type">
-              <Select
-                value={employmentType}
-                onChange={e => setEmploymentType(e.target.value as any)}
-              >
-                <option value="Full-time">Full-time</option>
-                <option value="Internship">Internship</option>
-                <option value="Co-op">Co-op</option>
-              </Select>
-            </FormField>
-
-            <FormField label="Compensation / Salary Range">
-              <Input
-                placeholder="e.g. $115,000 – $130,000 / yr"
-                value={salaryRange}
-                onChange={e => setSalaryRange(e.target.value)}
-              />
-            </FormField>
-
-            <div className="md:col-span-2">
-              <FormField label="Role Overview / Description" required>
-                <Textarea
-                  rows={4}
-                  placeholder="Describe the team, mission, and day-to-day engineering challenges..."
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
+              <FormField label="Annual Compensation Range">
+                <Input
+                  value={salaryRange}
+                  onChange={e => setSalaryRange(e.target.value)}
                 />
               </FormField>
             </div>
+
+            <FormField label="Role Summary & Department Overview" required>
+              <Textarea
+                rows={4}
+                placeholder="Detail the core missions, tech stack, and responsibilities for this opening..."
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+              />
+            </FormField>
           </div>
         </div>
 
@@ -222,23 +317,22 @@ export function RecruiterNewJobPage() {
         <div className="border border-[#E4E4E1] bg-white p-6 sm:p-8 space-y-6">
           <div className="border-b border-[#E4E4E1] pb-3">
             <h2 className="text-sm font-bold uppercase font-mono tracking-wider text-[#111111]">
-              Section B: Responsibilities & Qualifications
+              Section B: Candidate Expectations
             </h2>
-            <p className="text-xs text-[#858585] mt-0.5">Enter one bullet per line.</p>
           </div>
 
-          <div className="space-y-6">
-            <FormField label="Key Responsibilities">
+          <div className="space-y-4">
+            <FormField label="Core Responsibilities (One per line)">
               <Textarea
-                rows={3}
+                rows={4}
                 value={responsibilitiesText}
                 onChange={e => setResponsibilitiesText(e.target.value)}
               />
             </FormField>
 
-            <FormField label="Required Qualifications">
+            <FormField label="Required Qualifications (One per line)">
               <Textarea
-                rows={3}
+                rows={4}
                 value={qualificationsText}
                 onChange={e => setQualificationsText(e.target.value)}
               />
@@ -246,121 +340,151 @@ export function RecruiterNewJobPage() {
           </div>
         </div>
 
-        {/* SECTION C: SKILLS */}
+        {/* SECTION C: TECHNICAL COMPETENCIES */}
         <div className="border border-[#E4E4E1] bg-white p-6 sm:p-8 space-y-6">
           <div className="border-b border-[#E4E4E1] pb-3">
             <h2 className="text-sm font-bold uppercase font-mono tracking-wider text-[#111111]">
-              Section C: Technical Competencies
+              Section C: Technical Skill Match Indexing
             </h2>
           </div>
 
           <div className="space-y-6">
-            <div>
-              <FormField label="Core Required Skills" required hint="Used directly for semantic AI match">
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Add required skill (e.g. React, Python)..."
-                    value={newSkill}
-                    onChange={e => setNewSkill(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddSkill();
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="secondary" onClick={handleAddSkill}>
-                    Add
-                  </Button>
-                </div>
-              </FormField>
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {requiredSkills.map(s => (
-                  <span key={s} className="bg-white border border-[#111111] px-2.5 py-0.5 text-xs font-mono flex items-center gap-1.5">
-                    {s}
-                    <button type="button" onClick={() => setRequiredSkills(requiredSkills.filter(i => i !== s))}>✕</button>
+            {/* Required skills */}
+            <div className="space-y-2">
+              <span className="text-xs font-mono font-bold text-[#111111] block">
+                Mandatory Required Skills ({requiredSkills.length})
+              </span>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {requiredSkills.map(skill => (
+                  <span
+                    key={skill}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-[#111111] text-[#111111] font-mono text-xs rounded-[2px]"
+                  >
+                    <span>{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => setRequiredSkills(requiredSkills.filter(s => s !== skill))}
+                      className="hover:text-red-600"
+                    >
+                      <Trash2 size={12} />
+                    </button>
                   </span>
                 ))}
               </div>
+              <div className="flex gap-2 max-w-sm">
+                <Input
+                  placeholder="Add skill (e.g. Python, Docker)..."
+                  value={newSkill}
+                  onChange={e => setNewSkill(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddSkill();
+                    }
+                  }}
+                />
+                <Button type="button" variant="secondary" size="sm" onClick={handleAddSkill}>
+                  Add
+                </Button>
+              </div>
             </div>
 
-            <div>
-              <FormField label="Preferred / Secondary Skills">
-                <div className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Add preferred skill (e.g. Docker, GraphQL)..."
-                    value={newPrefSkill}
-                    onChange={e => setNewPrefSkill(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddPrefSkill();
-                      }
-                    }}
-                  />
-                  <Button type="button" variant="secondary" onClick={handleAddPrefSkill}>
-                    Add
-                  </Button>
-                </div>
-              </FormField>
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {preferredSkills.map(s => (
-                  <span key={s} className="bg-[#FAFAF9] border border-[#E4E4E1] text-[#666666] px-2.5 py-0.5 text-xs font-mono flex items-center gap-1.5">
-                    {s}
-                    <button type="button" onClick={() => setPreferredSkills(preferredSkills.filter(i => i !== s))}>✕</button>
+            {/* Preferred skills */}
+            <div className="space-y-2 pt-4 border-t border-[#E4E4E1]">
+              <span className="text-xs font-mono font-bold text-[#666666] block">
+                Preferred / Nice-to-Have Skills ({preferredSkills.length})
+              </span>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {preferredSkills.map(skill => (
+                  <span
+                    key={skill}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FAFAF9] border border-[#E4E4E1] text-[#666666] font-mono text-xs rounded-[2px]"
+                  >
+                    <span>{skill}</span>
+                    <button
+                      type="button"
+                      onClick={() => setPreferredSkills(preferredSkills.filter(s => s !== skill))}
+                      className="hover:text-red-600"
+                    >
+                      <Trash2 size={12} />
+                    </button>
                   </span>
                 ))}
+              </div>
+              <div className="flex gap-2 max-w-sm">
+                <Input
+                  placeholder="Add preferred skill..."
+                  value={newPrefSkill}
+                  onChange={e => setNewPrefSkill(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddPrefSkill();
+                    }
+                  }}
+                />
+                <Button type="button" variant="secondary" size="sm" onClick={handleAddPrefSkill}>
+                  Add
+                </Button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* SECTION D: ELIGIBILITY */}
+        {/* SECTION D: ELIGIBILITY & ACADEMIC FILTERS */}
         <div className="border border-[#E4E4E1] bg-white p-6 sm:p-8 space-y-6">
           <div className="border-b border-[#E4E4E1] pb-3">
             <h2 className="text-sm font-bold uppercase font-mono tracking-wider text-[#111111]">
-              Section D: Placement Eligibility Thresholds
+              Section D: Institutional Eligibility Rules
             </h2>
-            <p className="text-xs text-[#858585] mt-0.5">Enforced automatically upon candidate submission.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField label="Minimum CGPA Cutoff" required hint="e.g. 7.50">
-              <Input
-                type="number"
-                step="0.05"
-                min="0"
-                max="10"
-                value={minCgpa}
-                onChange={e => setMinCgpa(parseFloat(e.target.value) || 0)}
-              />
-            </FormField>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField label="Minimum Cumulative GPA" required>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0.0"
+                  max="10.0"
+                  value={minCgpa}
+                  onChange={e => setMinCgpa(parseFloat(e.target.value) || 0)}
+                />
+              </FormField>
 
-            <FormField label="Maximum Active Backlogs Permitted" required>
-              <Input
-                type="number"
-                min="0"
-                value={maxBacklogs}
-                onChange={e => setMaxBacklogs(parseInt(e.target.value) || 0)}
-              />
-            </FormField>
+              <FormField label="Maximum Allowed Active Backlogs" required>
+                <Input
+                  type="number"
+                  min="0"
+                  value={maxBacklogs}
+                  onChange={e => setMaxBacklogs(parseInt(e.target.value) || 0)}
+                />
+              </FormField>
+            </div>
 
-            <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-[#111111] block">
-                Eligible Departments / Branches
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+            <div className="space-y-2">
+              <span className="text-xs font-mono text-[#858585] block">
+                Eligible Engineering & Academic Departments:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
                 {availableBranches.map(branch => {
                   const checked = selectedBranches.includes(branch);
                   return (
-                    <label key={branch} className="flex items-center gap-2 p-2 border border-[#E4E4E1] cursor-pointer bg-[#FAFAF9]">
+                    <label
+                      key={branch}
+                      className={`flex items-center gap-2 p-3 border cursor-pointer transition-colors ${
+                        checked ? 'border-[#111111] bg-[#FAFAF9]' : 'border-[#E4E4E1]'
+                      }`}
+                    >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={() => handleToggleBranch(branch)}
                         className="accent-black"
                       />
-                      <span>{branch}</span>
+                      <span className={checked ? 'text-[#111111] font-medium' : 'text-[#666666]'}>
+                        {branch}
+                      </span>
                     </label>
                   );
                 })}
@@ -393,8 +517,14 @@ export function RecruiterNewJobPage() {
           <Button variant="secondary" size="md" onClick={() => navigate('/recruiter/jobs')}>
             Cancel
           </Button>
-          <Button variant="primary" size="md" type="submit">
-            Publish Campus Vacancy
+          <Button variant="primary" size="md" type="submit" disabled={isPublishing}>
+            {isPublishing ? (
+              <span className="inline-flex items-center gap-1.5">
+                <RefreshCw size={14} className="animate-spin" /> Publishing...
+              </span>
+            ) : (
+              'Publish Campus Vacancy'
+            )}
           </Button>
         </div>
       </form>

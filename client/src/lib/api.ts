@@ -559,6 +559,22 @@ export const api = {
         body: JSON.stringify({ student_id: studentId, job_id: jobId }),
       }),
 
+    matchJobApplicants: (jobId: string, explain: boolean = false) =>
+      aiRequest<{
+        job_id: string;
+        total: number;
+        results: Array<{
+          application_id: string;
+          student_id: string;
+          student_name: string;
+          status: string;
+          match_result: MatchResult;
+        }>;
+      }>(`/match-job-applicants?explain=${explain}`, {
+        method: 'POST',
+        body: JSON.stringify({ job_id: jobId }),
+      }),
+
     getSkillDemand: (params?: { limit?: number; open_only?: boolean }) => {
       const query = new URLSearchParams();
       if (params?.limit) query.set('limit', params.limit.toString());

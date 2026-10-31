@@ -948,7 +948,7 @@ class CampusStore {
         eligibleGradYears: [j.graduation_year || 2026],
         minCgpa: j.min_cgpa ?? 7.0,
         maxBacklogs: j.max_backlogs ?? 0,
-        applicantsCount: existing?.applicantsCount || 0,
+        applicantsCount: j.applicant_count ?? existing?.applicantsCount ?? 0,
         shortlistedCount: existing?.shortlistedCount || 0,
         status: (j.status === 'open' ? 'Active' : 'Closed') as any,
         recruiterId: j.recruiter_id,
@@ -1062,6 +1062,58 @@ class CampusStore {
       if (ivRes && Array.isArray(ivRes.interviews)) this.syncInterviews(ivRes.interviews);
     } catch (e) {
       console.warn('loadStudentPortalData error:', e);
+    }
+  }
+
+  public async loadRecruiterPortalData() {
+    const token = getAuthToken();
+    if (!token) return;
+
+    try {
+      const jobsRes = await api.jobs.list({ open_only: false }).catch(() => null);
+      if (jobsRes && Array.isArray(jobsRes.jobs)) {
+        this.syncJobs(jobsRes.jobs);
+
+        const recruiterCompany = (this.currentUser.organization || 'Apex Systems').toLowerCase();
+        const relevantJobs = jobsRes.jobs.filter(
+          (j: any) => j.company.toLowerCase() === recruiterCompany || j.company.toLowerCase().includes('apex')
+        );
+
+        if (relevantJobs.length > 0) {
+          const allApps: any[] = [];
+          await Promise.all(
+            relevantJobs.map(async (job: any) => {
+              try {
+                const appRes = await api.jobs.getApplicants(job.id);
+                if (appRes && Array.isArray(appRes.applicants)) {
+                  appRes.applicants.forEach((app: any) => {
+                    allApps.push({
+                      id: app.application_id,
+                      job_id: job.id,
+                      jobTitle: job.title,
+                      company: job.company,
+                      student_id: app.student.id,
+                      student: app.student,
+                      status: app.status,
+                      created_at: app.applied_at,
+                      matchResult: app.match_result,
+                      match_score: app.match_result?.match_score,
+                    });
+                  });
+                }
+              } catch {
+                // Ignore per-job applicant lookup errors
+              }
+            })
+          );
+
+          if (allApps.length > 0) {
+            this.syncApplications(allApps);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('loadRecruiterPortalData error:', e);
     }
   }
 

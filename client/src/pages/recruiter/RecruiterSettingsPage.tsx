@@ -1,17 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { Button, Input, FormField } from '../../components/ui';
-import { Building, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Building, CheckCircle2, ShieldCheck, RefreshCw } from 'lucide-react';
 
 export function RecruiterSettingsPage() {
-  const { currentUser } = useCampusStore();
+  const { currentUser, actions } = useCampusStore();
   const [orgName, setOrgName] = useState(currentUser.organization || 'Apex Systems');
   const [contactName, setContactName] = useState(currentUser.name);
   const [contactEmail, setContactEmail] = useState(currentUser.email);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const fetchAuthMe = async () => {
+      setIsLoadingAuth(true);
+      try {
+        const me = await api.auth.getMe();
+        if (active && me) {
+          if (me.name) setContactName(me.name);
+          if (me.email) setContactEmail(me.email);
+        }
+      } catch (err) {
+        console.debug('Auth me lookup offline fallback:', err);
+      } finally {
+        if (active) setIsLoadingAuth(false);
+      }
+    };
+
+    fetchAuthMe();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    actions.setAuthSession({
+      ...currentUser,
+      organization: orgName,
+      name: contactName,
+      email: contactEmail,
+    });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };

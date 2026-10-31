@@ -27,6 +27,7 @@ export function useCampusStore() {
         storeVersion.login(user, token),
       logout: () => storeVersion.logout(),
       loadStudentPortalData: () => storeVersion.loadStudentPortalData(),
+      loadRecruiterPortalData: () => storeVersion.loadRecruiterPortalData(),
       syncStudentProfile: (p: any) => storeVersion.syncStudentProfile(p),
       syncJobs: (j: any[]) => storeVersion.syncJobs(j),
       syncApplications: (a: any[]) => storeVersion.syncApplications(a),
