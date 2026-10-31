@@ -27,6 +27,11 @@ enum Branch {
   OTHER
 }
 
+enum JobStatus {
+  open
+  closed
+}
+
 model User {
   id             String          @id @default(uuid())
   name           String
@@ -36,6 +41,7 @@ model User {
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
   studentProfile StudentProfile?
+  jobs           Job[]           @relation("RecruiterJobs")
 
   @@map("users")
 }
@@ -62,4 +68,25 @@ model StudentProfile {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("student_profiles")
+}
+
+model Job {
+  id               String    @id @default(uuid())
+  title            String
+  company          String
+  description      String
+  requiredSkills   String[]  @map("required_skills")
+  eligibleBranches Branch[]  @map("eligible_branches")
+  minCgpa          Float     @map("min_cgpa")
+  graduationYear   Int       @map("graduation_year")
+  maxBacklogs      Int       @map("max_backlogs")
+  deadline         DateTime
+  status           JobStatus @default(open)
+  recruiterId      String    @map("recruiter_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  recruiter User @relation("RecruiterJobs", fields: [recruiterId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
 }
