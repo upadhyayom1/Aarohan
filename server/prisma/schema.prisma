@@ -13,15 +13,53 @@ enum Role {
   admin
 }
 
+enum Branch {
+  CSE
+  IT
+  ECE
+  EE
+  ME
+  CE
+  CH
+  MCA
+  MBA
+  PHD_CS
+  OTHER
+}
+
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(student)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id             String          @id @default(uuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           Role            @default(student)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  studentProfile StudentProfile?
 
   @@map("users")
 }
 
+model StudentProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  name            String
+  branch          Branch
+  cgpa            Float
+  graduationYear  Int      @map("graduation_year")
+  backlogs        Int      @default(0)
+  skills          String[]
+  projects        Json     @default("[]")
+  resumeUploaded  Boolean  @default(false) @map("resume_uploaded")
+  resumeUrl       String?  @map("resume_url")
+  resumePath      String?  @map("resume_path")
+  resumeText      String?  @map("resume_text")
+  resumeAnalysis  Json?    @map("resume_analysis")
+  profileComplete Boolean  @default(false) @map("profile_complete")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
