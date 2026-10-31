@@ -2,11 +2,11 @@
   "name": "server",
   "version": "1.0.0",
   "description": "Backend API server for CampusLink",
-  "main": "src/index.ts",
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
@@ -29,18 +29,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/morgan": "^1.9.9",
-    "@types/multer": "^1.4.12",
-    "@types/node": "^22.13.9",
-    "@types/pdf-parse": "^1.1.4",
-    "@types/pg": "^8.11.11",
-    "prisma": "^6.4.1",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "nodemon": "^3.1.9",
+    "prisma": "^6.4.1"
   }
 }
-
