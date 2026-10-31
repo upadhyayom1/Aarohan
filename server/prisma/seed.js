@@ -7,51 +7,48 @@ async function main() {
   const defaultPassword = await bcrypt.hash('Password@123', 10);
 
   // 1. Ensure default admin user exists
-  let admin = await prisma.user.findFirst({
+  const admin = await prisma.user.upsert({
     where: { email: 'admin@aarohan.edu' },
+    update: {
+      password: defaultPassword,
+      role: 'admin',
+      name: 'Directorate Central Administrator',
+    },
+    create: {
+      name: 'Directorate Central Administrator',
+      email: 'admin@aarohan.edu',
+      password: defaultPassword,
+      role: 'admin',
+    },
   });
-
-  if (!admin) {
-    admin = await prisma.user.create({
-      data: {
-        name: 'Directorate Central Administrator',
-        email: 'admin@aarohan.edu',
-        password: defaultPassword,
-        role: 'admin',
-      },
-    });
-    console.log('Created default admin user: admin@aarohan.edu');
-  }
+  console.log('Upserted default admin user: admin@aarohan.edu / Password@123');
 
   // 2. Ensure recruiter exists
-  let recruiter = await prisma.user.findFirst({
+  const recruiter = await prisma.user.upsert({
     where: { email: 'recruiter@apexsystems.com' },
+    update: {
+      password: defaultPassword,
+      role: 'recruiter',
+      name: 'Ananya Verma',
+    },
+    create: {
+      name: 'Ananya Verma',
+      email: 'recruiter@apexsystems.com',
+      password: defaultPassword,
+      role: 'recruiter',
+    },
   });
-
-  if (!recruiter) {
-    recruiter = await prisma.user.create({
-      data: {
-        name: 'Ananya Verma',
-        email: 'recruiter@apexsystems.com',
-        password: defaultPassword,
-        role: 'recruiter',
-      },
-    });
-    console.log('Created recruiter: recruiter@apexsystems.com');
-  }
+  console.log('Upserted recruiter: recruiter@apexsystems.com / Password@123');
 
   // 3. Ensure jobs exist
-  const existingJobsCount = await prisma.job.count();
-  let jobApex;
-  let jobHorizon;
-
-  if (existingJobsCount === 0) {
+  let jobApex = await prisma.job.findFirst({ where: { company: 'Apex Systems' } });
+  if (!jobApex) {
     jobApex = await prisma.job.create({
       data: {
         title: 'Software Development Engineer I',
         company: 'Apex Systems',
         description: 'Design and build high-performance microservices and cloud systems.',
-        requiredSkills: ['Python', 'SQL', 'FastAPI', 'Docker'],
+        requiredSkills: ['Python', 'SQL', 'FastAPI', 'Docker', 'PostgreSQL'],
         eligibleBranches: ['CSE', 'IT', 'ECE'],
         minCgpa: 7.5,
         graduationYear: 2027,
@@ -61,13 +58,16 @@ async function main() {
         recruiterId: recruiter.id,
       },
     });
+  }
 
+  let jobHorizon = await prisma.job.findFirst({ where: { company: 'Horizon AI Labs' } });
+  if (!jobHorizon) {
     jobHorizon = await prisma.job.create({
       data: {
         title: 'Machine Learning Research Engineer',
         company: 'Horizon AI Labs',
         description: 'Conduct foundational AI modeling, evaluation, and latency optimization.',
-        requiredSkills: ['Python', 'PyTorch', 'Transformers', 'CUDA'],
+        requiredSkills: ['Python', 'PyTorch', 'Transformers', 'CUDA', 'FastAPI'],
         eligibleBranches: ['CSE', 'IT'],
         minCgpa: 8.0,
         graduationYear: 2027,
@@ -77,10 +77,6 @@ async function main() {
         recruiterId: recruiter.id,
       },
     });
-    console.log('Created sample jobs.');
-  } else {
-    jobApex = await prisma.job.findFirst({ where: { company: 'Apex Systems' } });
-    jobHorizon = await prisma.job.findFirst({ where: { company: 'Horizon AI Labs' } });
   }
 
   // 4. Ensure students exist with profiles
@@ -117,94 +113,90 @@ async function main() {
 
   const studentProfiles = [];
   for (const s of sampleStudents) {
-    let u = await prisma.user.findFirst({ where: { email: s.email } });
-    if (!u) {
-      u = await prisma.user.create({
-        data: {
-          name: s.name,
-          email: s.email,
-          password: defaultPassword,
-          role: 'student',
-        },
-      });
-    }
+    const u = await prisma.user.upsert({
+      where: { email: s.email },
+      update: {
+        password: defaultPassword,
+        role: 'student',
+        name: s.name,
+      },
+      create: {
+        name: s.name,
+        email: s.email,
+        password: defaultPassword,
+        role: 'student',
+      },
+    });
 
-    let sp = await prisma.studentProfile.findUnique({ where: { userId: u.id } });
-    if (!sp) {
-      sp = await prisma.studentProfile.create({
-        data: {
-          userId: u.id,
-          name: s.name,
-          branch: s.branch,
-          cgpa: s.cgpa,
-          graduationYear: 2027,
-          backlogs: 0,
-          skills: s.skills,
-          profileComplete: true,
-        },
-      });
-    }
+    const sp = await prisma.studentProfile.upsert({
+      where: { userId: u.id },
+      update: {
+        name: s.name,
+        branch: s.branch,
+        cgpa: s.cgpa,
+        skills: s.skills,
+        profileComplete: true,
+      },
+      create: {
+        userId: u.id,
+        name: s.name,
+        branch: s.branch,
+        cgpa: s.cgpa,
+        graduationYear: 2027,
+        backlogs: 0,
+        skills: s.skills,
+        profileComplete: true,
+      },
+    });
     studentProfiles.push(sp);
   }
-  console.log(`Ensured ${studentProfiles.length} student profiles.`);
+  console.log(`Upserted ${studentProfiles.length} students (Dev Sharma, Aisha Khan, Priya Nair, Siddharth Rao) with Password@123.`);
 
   // 5. Seed Applications if none exist
   const existingAppCount = await prisma.application.count();
   if (existingAppCount === 0 && jobApex && jobHorizon) {
-    // Dev Sharma -> Apex Systems (selected)
-    await prisma.application.create({
-      data: {
-        jobId: jobApex.id,
-        studentId: studentProfiles[0].id,
-        status: 'selected',
-        eligible: true,
-        eligibilityReasons: [],
-        matchResult: { match_score: 95, explanation: 'Full stack skill fit' },
-      },
+    await prisma.application.createMany({
+      data: [
+        {
+          jobId: jobApex.id,
+          studentId: studentProfiles[0].id,
+          status: 'selected',
+          eligible: true,
+          eligibilityReasons: [],
+          matchResult: { match_score: 95, explanation: 'Full stack skill fit' },
+        },
+        {
+          jobId: jobHorizon.id,
+          studentId: studentProfiles[1].id,
+          status: 'selected',
+          eligible: true,
+          eligibilityReasons: [],
+          matchResult: { match_score: 92, explanation: 'Strong PyTorch and CUDA research background' },
+        },
+        {
+          jobId: jobApex.id,
+          studentId: studentProfiles[2].id,
+          status: 'shortlisted',
+          eligible: true,
+          eligibilityReasons: [],
+          matchResult: { match_score: 84, explanation: 'Solid backend and database fundamentals' },
+        },
+        {
+          jobId: jobApex.id,
+          studentId: studentProfiles[3].id,
+          status: 'interview_scheduled',
+          eligible: true,
+          eligibilityReasons: [],
+          matchResult: { match_score: 78, explanation: 'Meets minimum CGPA and core Python qualification' },
+        },
+      ],
     });
-
-    // Aisha Khan -> Horizon AI Labs (selected)
-    await prisma.application.create({
-      data: {
-        jobId: jobHorizon.id,
-        studentId: studentProfiles[1].id,
-        status: 'selected',
-        eligible: true,
-        eligibilityReasons: [],
-        matchResult: { match_score: 92, explanation: 'Strong PyTorch and CUDA research background' },
-      },
-    });
-
-    // Priya Nair -> Apex Systems (shortlisted)
-    await prisma.application.create({
-      data: {
-        jobId: jobApex.id,
-        studentId: studentProfiles[2].id,
-        status: 'shortlisted',
-        eligible: true,
-        eligibilityReasons: [],
-        matchResult: { match_score: 84, explanation: 'Solid backend and database fundamentals' },
-      },
-    });
-
-    // Siddharth Rao -> Apex Systems (interview_scheduled)
-    await prisma.application.create({
-      data: {
-        jobId: jobApex.id,
-        studentId: studentProfiles[3].id,
-        status: 'interview_scheduled',
-        eligible: true,
-        eligibilityReasons: [],
-        matchResult: { match_score: 78, explanation: 'Meets minimum CGPA and core Python qualification' },
-      },
-    });
-
     console.log('Seeded sample candidate applications.');
   }
 
   // 6. Seed placement drives if none exist
-  const count = await prisma.placementDrive.count();
-  if (count === 0) {
+  const driveCount = await prisma.placementDrive.count();
+  if (driveCount === 0) {
     await prisma.placementDrive.createMany({
       data: [
         {
@@ -249,6 +241,57 @@ async function main() {
       ],
     });
     console.log('Seeded initial placement drives.');
+  }
+
+  // 7. Seed Institutional Settings if none exist
+  await prisma.institutionalSettings.upsert({
+    where: { id: 'default' },
+    update: {
+      placementYear: '2026–2027',
+      defaultMinCgpa: 7.0,
+      maxBacklogsAllowed: 0,
+    },
+    create: {
+      id: 'default',
+      placementYear: '2026–2027',
+      defaultMinCgpa: 7.0,
+      maxBacklogsAllowed: 0,
+    },
+  });
+  console.log('Seeded institutional policy settings.');
+
+  // 8. Seed Initial Audit Logs if none exist
+  const auditCount = await prisma.auditLog.count();
+  if (auditCount === 0) {
+    await prisma.auditLog.createMany({
+      data: [
+        {
+          actor: 'Directorate Central Administrator',
+          actorRole: 'admin',
+          action: 'SYSTEM_INITIALIZATION',
+          entity: 'DirectorateRegistry:default',
+          summary: 'Initialized placement portal security, access controls, and academic parameters.',
+          details: 'Campus placement platform AY 2026–2027 online and verified.',
+        },
+        {
+          actor: 'Directorate Central Administrator',
+          actorRole: 'admin',
+          action: 'PUBLISH_DRIVE',
+          entity: 'PlacementDrive:AutumnTech2026',
+          summary: 'Published Autumn Technology & Engineering Placement Drive 2026.',
+          details: '4 partner employers confirmed for class of 2027.',
+        },
+        {
+          actor: 'Ananya Verma',
+          actorRole: 'recruiter',
+          action: 'POST_JOB',
+          entity: 'Job:SDE1_Apex',
+          summary: 'Created job opening for Software Development Engineer I at Apex Systems.',
+          details: 'Criteria: CSE/IT/ECE, Min CGPA 7.5.',
+        },
+      ],
+    });
+    console.log('Seeded initial governance audit trail.');
   }
 
   console.log('Seeding completed successfully.');
