@@ -128,3 +128,4 @@ test('Authentication API Suite (/api/v1/auth)', async (t) => {
     assert.equal(body.role, 'student');
   });
 });
+
