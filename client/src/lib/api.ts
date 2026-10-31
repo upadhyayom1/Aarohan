@@ -403,7 +403,125 @@ export const api = {
     },
   },
 
-  // 8. AI Endpoints (Port 8001 AI Server)
+  // 8. Admin Endpoints
+  admin: {
+    getStudents: () =>
+      request<{
+        total: number;
+        students: Array<{
+          id: string;
+          name: string;
+          branch: string;
+          cgpa: number;
+          graduation_year: number;
+          resume_uploaded: boolean;
+          applications_count: number;
+          shortlisted_count: number;
+        }>;
+      }>('/admin/students'),
+
+    getRecruiters: () =>
+      request<{
+        total: number;
+        recruiters: Array<{
+          id: string;
+          name: string;
+          email: string;
+          company: string;
+          jobs_posted: number;
+        }>;
+      }>('/admin/recruiters'),
+
+    getStats: () =>
+      request<{
+        total_students: number;
+        students_placed: number;
+        total_jobs: number;
+        open_jobs: number;
+        total_applications: number;
+        shortlisted: number;
+        interviews_scheduled: number;
+      }>('/admin/stats'),
+
+    getAnalytics: () =>
+      request<{
+        kpis: {
+          total_applications: number;
+          interview_conversion_rate: number;
+          selection_conversion_rate: number;
+          department_breadth: number;
+        };
+        department_performance: Array<{
+          branch: string;
+          applicants: number;
+          placed: number;
+          rate: number;
+        }>;
+        in_demand_skills: Array<{ skill: string; count: number }>;
+        hiring_funnel: {
+          applied: number;
+          under_review: number;
+          shortlisted: number;
+          interview_scheduled: number;
+          selected: number;
+        };
+      }>('/admin/analytics'),
+
+    getDrives: () => request<{ total: number; drives: any[] }>('/admin/drives'),
+
+    createDrive: (data: any) =>
+      request<any>('/admin/drives', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    getApplications: (params?: { page?: number; limit?: number; status?: string }) => {
+      const query = new URLSearchParams();
+      if (params?.page) query.set('page', params.page.toString());
+      if (params?.limit) query.set('limit', params.limit.toString());
+      if (params?.status) query.set('status', params.status);
+      const qs = query.toString();
+      return request<any>(`/admin/applications${qs ? `?${qs}` : ''}`);
+    },
+
+    getPlacements: (params?: { branch?: string }) => {
+      const query = new URLSearchParams();
+      if (params?.branch) query.set('branch', params.branch);
+      const qs = query.toString();
+      return request<any>(`/admin/placements${qs ? `?${qs}` : ''}`);
+    },
+
+    getAuditLogs: (params?: { page?: number; limit?: number; role?: string; search?: string }) => {
+      const query = new URLSearchParams();
+      if (params?.page) query.set('page', params.page.toString());
+      if (params?.limit) query.set('limit', params.limit.toString());
+      if (params?.role) query.set('role', params.role);
+      if (params?.search) query.set('search', params.search);
+      const qs = query.toString();
+      return request<any>(`/admin/audit-logs${qs ? `?${qs}` : ''}`);
+    },
+
+    getSettings: () =>
+      request<{
+        placement_year?: string;
+        default_min_cgpa?: number;
+        max_backlogs_allowed?: number;
+        [key: string]: any;
+      }>('/admin/settings'),
+
+    updateSettings: (data: {
+      placement_year?: string;
+      default_min_cgpa?: number;
+      max_backlogs_allowed?: number;
+      [key: string]: any;
+    }) =>
+      request<any>('/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+  },
+
+  // 9. AI Endpoints (Port 8001 AI Server)
   ai: {
     analyzeResume: (studentId: string) =>
       aiRequest<ResumeAnalysis>('/analyze-resume', {
