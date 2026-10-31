@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
-import { Button, Input, FormField } from '../../components/ui';
+import { Button, Input, FormField, AarohanLogo } from '../../components/ui';
 import { Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export function LoginPage() {
@@ -94,6 +94,12 @@ export function LoginPage() {
       <div className="lg:w-1/2 p-8 sm:p-16 flex items-center justify-center bg-white">
         <div className="w-full max-w-md space-y-8">
           <div>
+            <div className="flex items-center gap-3 mb-4">
+              <AarohanLogo size={36} />
+              <span className="font-mono text-sm font-bold uppercase tracking-widest text-[#858585]">
+                Aarohan Portal
+              </span>
+            </div>
             <h1 className="text-2xl font-bold tracking-tight text-[#111111]">
               Sign in to Aarohan
             </h1>
