@@ -316,8 +316,11 @@ export function StudentShell({ children }: StudentShellProps) {
               </span>
             </div>
             <button
-              onClick={() => navigate('/login')}
-              className="w-full flex items-center justify-center gap-1.5 text-[11px] font-mono text-[#666666] hover:text-[#111111] py-1.5 border border-[#E4E4E1] rounded-[2px] hover:bg-[#F5F5F3] transition-colors"
+              onClick={() => {
+                actions.logout();
+                navigate('/login');
+              }}
+              className="w-full flex items-center justify-center gap-1.5 text-[11px] font-mono text-[#666666] hover:text-[#111111] py-1.5 border border-[#E4E4E1] rounded-[2px] hover:bg-[#F5F5F3] transition-colors cursor-pointer"
             >
               <LogOut size={12} />
               <span>Sign Out</span>
