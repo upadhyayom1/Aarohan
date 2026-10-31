@@ -1,16 +1,52 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { ApplicationStatus } from '../../types';
 import { Button, Input, Select, StatusBadge, MetricSummary } from '../../components/ui';
-import { Search, ChevronRight, Filter, Building, Calendar } from 'lucide-react';
+import { Search, ChevronRight, Filter, Building, Calendar, RefreshCw } from 'lucide-react';
 
 export function StudentApplicationsPage() {
   const { navigate } = useRouter();
-  const { applications, studentProfile } = useCampusStore();
+  const { applications, studentProfile, actions } = useCampusStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Sync applications from Node backend on mount
+  useEffect(() => {
+    let active = true;
+    const fetchApps = async () => {
+      try {
+        const res = await api.applications.getMy();
+        if (active && res && Array.isArray(res.applications)) {
+          actions.syncApplications(res.applications);
+        }
+      } catch (err) {
+        console.debug('Applications fetch fallback:', err);
+      }
+    };
+
+    fetchApps();
+    return () => {
+      active = false;
+    };
+  }, [actions]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await api.applications.getMy();
+      if (res && Array.isArray(res.applications)) {
+        actions.syncApplications(res.applications);
+      }
+    } catch (err) {
+      console.warn('Manual refresh failed:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const studentApps = useMemo(() => {
     return applications.filter(a => a.studentId === studentProfile.id);
@@ -50,7 +86,7 @@ export function StudentApplicationsPage() {
       <div className="border-b border-[#E4E4E1] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <span className="text-[11px] font-mono uppercase tracking-widest text-[#858585] block mb-1">
-            CANDIDACY RECRUITMENT TRACKER
+            CANDIDACY RECRUITMENT TRACKER (NODE.JS BACKEND)
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
             My Applications
@@ -60,11 +96,22 @@ export function StudentApplicationsPage() {
           </p>
         </div>
 
-        <Link to="/student/opportunities">
-          <Button variant="primary" size="sm">
-            Find New Openings
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            icon={<RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />}
+          >
+            {isRefreshing ? 'Syncing...' : 'Refresh Status'}
           </Button>
-        </Link>
+          <Link to="/student/opportunities">
+            <Button variant="primary" size="sm">
+              Find New Openings
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Summary Counts Bar */}

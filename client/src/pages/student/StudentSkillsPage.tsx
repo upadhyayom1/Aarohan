@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useCampusStore } from '../../lib/useStore';
+import { api, SkillDemandItem } from '../../lib/api';
 import { Button } from '../../components/ui';
 import {
   BookOpen,
@@ -8,14 +9,41 @@ import {
   Bookmark,
   GraduationCap,
   Sparkles,
+  TrendingUp,
+  RefreshCw,
 } from 'lucide-react';
 
 export function StudentSkillsPage() {
   const { studentProfile, jobs, skillResources, actions } = useCampusStore();
   const [filterType, setFilterType] = useState<'All' | 'Saved' | 'Completed'>('All');
+  const [aiDemandSkills, setAiDemandSkills] = useState<SkillDemandItem[]>([]);
+  const [isLoadingDemand, setIsLoadingDemand] = useState(false);
 
-  // Compute market demand across campus openings
-  const marketDemand = useMemo(() => {
+  // Fetch AI server's live recruitment skill demand
+  useEffect(() => {
+    let active = true;
+    const fetchDemand = async () => {
+      setIsLoadingDemand(true);
+      try {
+        const res = await api.ai.getSkillDemand({ limit: 20, open_only: true });
+        if (active && res && Array.isArray(res.skills)) {
+          setAiDemandSkills(res.skills);
+        }
+      } catch (err) {
+        console.debug('AI Skill demand fallback to local jobs:', err);
+      } finally {
+        if (active) setIsLoadingDemand(false);
+      }
+    };
+
+    fetchDemand();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Fallback compute market demand across campus openings if AI not loaded
+  const fallbackMarketDemand = useMemo(() => {
     const counts = new Map<string, number>();
     jobs.forEach(j => {
       j.requiredSkills.forEach(s => counts.set(s, (counts.get(s) || 0) + 1));
@@ -28,9 +56,22 @@ export function StudentSkillsPage() {
     return new Set(studentProfile.skills.map(s => s.toLowerCase()));
   }, [studentProfile.skills]);
 
+  // Determine missing skills based on either AI demand or fallback demand
   const missingMarketSkills = useMemo(() => {
-    return marketDemand.filter(([skill]) => !studentSkillsSet.has(skill.toLowerCase()));
-  }, [marketDemand, studentSkillsSet]);
+    if (aiDemandSkills.length > 0) {
+      return aiDemandSkills.filter(
+        item => !studentSkillsSet.has(item.skill.toLowerCase())
+      );
+    }
+    return fallbackMarketDemand
+      .filter(([skill]) => !studentSkillsSet.has(skill.toLowerCase()))
+      .map(([skill, count]) => ({
+        skill,
+        jobs_requiring: count,
+        students_with_skill: 0,
+        gap: count,
+      }));
+  }, [aiDemandSkills, fallbackMarketDemand, studentSkillsSet]);
 
   const filteredResources = useMemo(() => {
     return skillResources.filter(r => {
@@ -46,13 +87,13 @@ export function StudentSkillsPage() {
       <div className="border-b border-[#E4E4E1] pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <span className="text-[11px] font-mono uppercase tracking-widest text-[#858585] block mb-1">
-            CAREER ADVANCEMENT & CURRICULUM
+            CAREER ADVANCEMENT & CURRICULUM INTELLIGENCE
           </span>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111111]">
-            Skill Development & Resources
+            Skill Development & Market Demand
           </h1>
           <p className="text-sm text-[#666666] mt-1 max-w-xl">
-            Targeted learning pathways curated from identified campus recruitment demands to close technical competency gaps.
+            Targeted learning pathways curated from institutional AI analytics across campus recruitment postings.
           </p>
         </div>
 
@@ -74,13 +115,20 @@ export function StudentSkillsPage() {
 
       {/* Market Skill Matrix */}
       <div className="border border-[#222222] bg-[#FAFAF9] p-6 space-y-6 rounded-[2px]">
-        <div>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585] block">
-            CAMPUS RECRUITMENT MARKET DEMAND
-          </span>
-          <h2 className="text-lg font-bold text-[#111111]">
-            Skills Required by Participating Employers
-          </h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-[#858585] block">
+              CAMPUS RECRUITMENT MARKET DEMAND (AI ANALYTICS)
+            </span>
+            <h2 className="text-lg font-bold text-[#111111]">
+              Skills Required by Participating Corporate Partners
+            </h2>
+          </div>
+          {isLoadingDemand && (
+            <span className="text-xs font-mono text-[#858585] flex items-center gap-1">
+              <RefreshCw size={11} className="animate-spin" /> Updating Analytics
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
@@ -101,12 +149,12 @@ export function StudentSkillsPage() {
           {/* Underrepresented / In Demand */}
           <div className="p-4 bg-white border border-[#E4E4E1] space-y-2">
             <span className="text-[10px] text-[#858585] font-bold uppercase block">
-              In-Demand Missing Competencies ({missingMarketSkills.length})
+              In-Demand Identified Gaps ({missingMarketSkills.length})
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {missingMarketSkills.map(([skill, count]) => (
-                <span key={skill} className="bg-white border border-[#E4E4E1] text-[#666666] px-2 py-0.5">
-                  {skill} ({count} openings)
+              {missingMarketSkills.map(item => (
+                <span key={item.skill} className="bg-white border border-[#E4E4E1] text-[#666666] px-2 py-0.5">
+                  {item.skill} ({item.jobs_requiring} openings)
                 </span>
               ))}
             </div>

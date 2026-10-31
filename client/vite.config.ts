@@ -37,6 +37,12 @@ export default defineConfig(() => {
           changeOrigin: true,
           secure: false,
         },
+        '/ai-api': {
+          target: process.env.VITE_AI_URL || 'http://localhost:8001',
+          changeOrigin: true,
+          secure: false,
+          rewrite: (path) => path.replace(/^\/ai-api/, ''),
+        },
       },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       hmr: process.env.DISABLE_HMR !== 'true',

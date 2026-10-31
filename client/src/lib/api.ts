@@ -8,6 +8,105 @@ const API_BASE_URL =
   (typeof process !== 'undefined' && process.env?.VITE_API_BASE_URL) ||
   (typeof window !== 'undefined' && window.location.origin ? `${window.location.origin}/api/v1` : 'http://localhost:8000/api/v1');
 
+const AI_BASE_URL =
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_AI_BASE_URL) ||
+  (typeof process !== 'undefined' && process.env?.VITE_AI_BASE_URL) ||
+  'http://localhost:8001/api/v1/ai';
+
+export interface ResumeAnalysis {
+  skills: string[];
+  education: Array<{
+    degree?: string;
+    branch?: string;
+    institution?: string;
+    graduation_year?: number;
+    cgpa?: number;
+  }>;
+  experience: Array<{
+    company?: string;
+    role?: string;
+    duration?: string;
+    description?: string;
+  }>;
+  projects: Array<{
+    title?: string;
+    description?: string;
+    tech_stack?: string[];
+  }>;
+  summary: string;
+}
+
+export interface MatchResult {
+  match_score: number;
+  matched_skills: string[];
+  missing_skills: string[];
+  explanation: string;
+  eligible: boolean;
+  eligibility_reasons: string[];
+  keyword_score?: number;
+  semantic_score?: number;
+  breakdown?: {
+    skill_score?: number;
+    context_score?: number;
+    evidence_score?: number;
+    keyword_score?: number;
+    semantic_score?: number;
+  };
+}
+
+export interface AtsResult {
+  ats_score: number;
+  missing_keywords: string[];
+  improvement_suggestions: string[];
+  formatting_feedback: string[];
+  overall_feedback: string;
+  overall_score?: number;
+}
+
+export interface SkillRecommendation {
+  skill: string;
+  why: string;
+  learn_from: string;
+  estimated_time: string;
+}
+
+export interface SkillGapResult {
+  missing_skills: string[];
+  recommendations: SkillRecommendation[];
+  job_id?: string;
+  job_title?: string;
+  company?: string;
+}
+
+export interface SkillDemandItem {
+  skill: string;
+  jobs_requiring: number;
+  students_with_skill: number;
+  gap: number;
+}
+
+export interface SkillDemandResult {
+  open_jobs_only: boolean;
+  skills: SkillDemandItem[];
+}
+
+export interface MatchComparison {
+  student_id: string;
+  job_id: string;
+  embedding_backend: string;
+  keyword_matched: string[];
+  semantic_matched: string[];
+  found_only_by_semantic: string[];
+  keyword_score: number;
+  semantic_score: number;
+}
+
+export interface BuildResumeResult {
+  markdown: string;
+  sections: Record<string, string>;
+  suggestions: string[];
+}
+
 export interface ApiErrorResponse {
   code: string;
   message: string;
@@ -128,6 +227,42 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new ApiError(response.status, data);
   }
 
+  return data as T;
+}
+
+/**
+ * AI Service Request Wrapper (FastAPI Port 8001)
+ */
+async function aiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const token = getAuthToken();
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${AI_BASE_URL}${cleanEndpoint}`;
+
+  const headers = new Headers(options.headers || {});
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, { ...options, headers });
+  } catch (netErr) {
+    // If direct connection fails (e.g. CORS/network), try through Vite dev proxy
+    if (typeof window !== 'undefined' && !url.includes('/ai-api')) {
+      const proxyUrl = `/ai-api/api/v1/ai${cleanEndpoint}`;
+      response = await fetch(proxyUrl, { ...options, headers });
+    } else {
+      throw netErr;
+    }
+  }
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new ApiError(response.status, data);
+  }
   return data as T;
 }
 
@@ -265,6 +400,53 @@ export const api = {
       if (params?.past !== undefined) query.set('past', params.past.toString());
       const qs = query.toString();
       return request<{ interviews: any[] }>(`/interviews/my${qs ? `?${qs}` : ''}`);
+    },
+  },
+
+  // 8. AI Endpoints (Port 8001 AI Server)
+  ai: {
+    analyzeResume: (studentId: string) =>
+      aiRequest<ResumeAnalysis>('/analyze-resume', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId }),
+      }),
+
+    matchResume: (studentId: string, jobId: string) =>
+      aiRequest<MatchResult>('/match-resume', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId, job_id: jobId }),
+      }),
+
+    getAtsAnalysis: (studentId: string, jobId?: string) =>
+      aiRequest<AtsResult>('/ats-analysis', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId, job_id: jobId || null }),
+      }),
+
+    getSkillGaps: (studentId: string, jobId: string) =>
+      aiRequest<SkillGapResult>('/skill-gaps', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId, job_id: jobId }),
+      }),
+
+    buildResume: (studentId: string) =>
+      aiRequest<BuildResumeResult>('/build-resume', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId }),
+      }),
+
+    compareMatching: (studentId: string, jobId: string) =>
+      aiRequest<any>('/compare-matching', {
+        method: 'POST',
+        body: JSON.stringify({ student_id: studentId, job_id: jobId }),
+      }),
+
+    getSkillDemand: (params?: { limit?: number; open_only?: boolean }) => {
+      const query = new URLSearchParams();
+      if (params?.limit) query.set('limit', params.limit.toString());
+      if (params?.open_only !== undefined) query.set('open_only', params.open_only.toString());
+      const qs = query.toString();
+      return aiRequest<any>(`/analytics/skill-demand${qs ? `?${qs}` : ''}`);
     },
   },
 };

@@ -59,6 +59,13 @@ function AppRouter() {
     actions.checkAuthSession();
   }, [actions]);
 
+  // Sync live backend data when in student portal
+  React.useEffect(() => {
+    if (currentUser.role === 'student' || path.startsWith('/student')) {
+      actions.loadStudentPortalData();
+    }
+  }, [currentUser.role, path, actions]);
+
   // Keep active role aligned when navigating directly via URL
   React.useEffect(() => {
     if (path.startsWith('/admin') && currentUser.role !== 'admin') {

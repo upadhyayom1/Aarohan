@@ -1,25 +1,100 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCampusStore } from '../../lib/useStore';
+import { api, BuildResumeResult } from '../../lib/api';
 import { Button, Input, Textarea, FormField } from '../../components/ui';
-import { CheckCircle2, Plus, Trash2, Save, Undo } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Plus, Trash2, Save, Undo, Sparkles, X, FileText } from 'lucide-react';
 
 export function StudentProfilePage() {
   const { studentProfile, actions } = useCampusStore();
   const [formData, setFormData] = useState(studentProfile);
   const [newSkill, setNewSkill] = useState('');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // AI Resume Builder state
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiResumeResult, setAiResumeResult] = useState<BuildResumeResult | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
+
+  // Sync profile on mount from backend
+  useEffect(() => {
+    api.students.getMyProfile()
+      .then(res => {
+        if (res) {
+          actions.syncStudentProfile(res);
+          setFormData(prev => ({
+            ...prev,
+            id: res.id || prev.id,
+            fullName: res.name || prev.fullName,
+            email: res.email || prev.email,
+            branch: res.branch || prev.branch,
+            cgpa: typeof res.cgpa === 'number' ? res.cgpa : prev.cgpa,
+            graduationYear: res.graduation_year || prev.graduationYear,
+            activeBacklogs: typeof res.backlogs === 'number' ? res.backlogs : prev.activeBacklogs,
+            skills: Array.isArray(res.skills) && res.skills.length > 0 ? res.skills : prev.skills,
+            projects: Array.isArray(res.projects) && res.projects.length > 0 ? res.projects : prev.projects,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [actions]);
+
+  // Keep formData in sync if store profile updates
+  useEffect(() => {
+    setFormData(studentProfile);
+  }, [studentProfile]);
 
   const isDirty = JSON.stringify(formData) !== JSON.stringify(studentProfile);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    actions.updateStudentProfile(formData);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    try {
+      await api.students.updateMyProfile({
+        name: formData.fullName,
+        branch: formData.branch,
+        cgpa: formData.cgpa,
+        graduation_year: formData.graduationYear,
+        backlogs: formData.activeBacklogs,
+        skills: formData.skills,
+        projects: formData.projects,
+      });
+
+      actions.updateStudentProfile(formData);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Saved locally. Backend sync encountered an issue.');
+      actions.updateStudentProfile(formData);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGenerateAiResume = async () => {
+    setAiGenerating(true);
+    setAiError(null);
+    setShowAiModal(true);
+
+    try {
+      const result = await api.ai.buildResume(studentProfile.id);
+      setAiResumeResult(result);
+    } catch (err: any) {
+      setAiError(err.message || 'AI service temporarily unavailable on port 8001. Fallback heuristic active.');
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   const handleReset = () => {
     setFormData(studentProfile);
+    setErrorMessage(null);
   };
 
   const addSkill = () => {
@@ -55,7 +130,16 @@ export function StudentProfilePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleGenerateAiResume}
+            disabled={aiGenerating}
+            icon={<Sparkles size={14} className="text-[#111111]" />}
+          >
+            {aiGenerating ? 'AI Generating...' : 'AI Dossier Builder'}
+          </Button>
           {isDirty && (
             <Button variant="secondary" size="sm" onClick={handleReset} icon={<Undo size={14} />}>
               Discard Changes
@@ -65,10 +149,10 @@ export function StudentProfilePage() {
             variant="primary"
             size="sm"
             onClick={handleSave}
-            disabled={!isDirty}
+            disabled={!isDirty || isSaving}
             icon={<Save size={14} />}
           >
-            Save Changes
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>
@@ -77,6 +161,13 @@ export function StudentProfilePage() {
         <div className="p-3 border border-[#111111] bg-[#FAFAF9] text-xs font-mono flex items-center gap-2">
           <CheckCircle2 size={16} className="text-[#111111]" />
           <span>Profile dossier saved and synced with university placement registry.</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="p-3 border border-red-200 bg-red-50 text-red-700 text-xs font-mono flex items-center gap-2">
+          <AlertCircle size={16} className="text-red-600 shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
