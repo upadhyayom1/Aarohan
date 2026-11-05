@@ -148,6 +148,9 @@ export function calculateMatch(
 
   const overallScore = Math.min(100, skillFitScore + academicFitScore + experienceFitScore);
 
+  const category =
+    overallScore >= 80 ? ('High Alignment' as const) : overallScore >= 60 ? ('Moderate Alignment' as const) : ('Developing Fit' as const);
+
   // Generate transparent human-readable explanation
   let matchExplanation = '';
   if (overallScore >= 80) {
@@ -161,6 +164,7 @@ export function calculateMatch(
   return {
     jobId: job.id,
     overallScore,
+    category,
     isEligible: eligibility.isEligible,
     eligibilityReasons: eligibility.reasons,
     matchedSkills,

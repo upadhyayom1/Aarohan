@@ -292,7 +292,14 @@ export function StudentMatchesPage() {
             {/* Score & Explanation */}
             <div className="space-y-2">
               <div className="flex items-baseline justify-between font-mono">
-                <span className="text-xs uppercase text-[#858585]">Total Suitability Index</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs uppercase text-[#858585]">Total Suitability Index</span>
+                  {selectedItem.match.category && (
+                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 border border-[#111111] bg-white text-[#111111] font-semibold rounded-[2px]">
+                      {selectedItem.match.category}
+                    </span>
+                  )}
+                </div>
                 <span className="text-3xl font-extrabold text-[#111111]">
                   {displayedScore} / 100
                 </span>

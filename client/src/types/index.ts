@@ -15,6 +15,7 @@ export interface StudentProfile {
   fullName: string;
   email: string;
   phone: string;
+  avatar?: string;
   portfolioUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
@@ -191,6 +192,7 @@ export interface SkillResource {
 export interface MatchResult {
   jobId: string;
   overallScore: number;
+  category?: 'High Alignment' | 'Moderate Alignment' | 'Developing Fit';
   isEligible: boolean;
   eligibilityReasons: { rule: string; passed: boolean; message: string }[];
   matchedSkills: string[];

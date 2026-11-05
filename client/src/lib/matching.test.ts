@@ -55,8 +55,8 @@ test('checkEligibility correctly rejects low CGPA or ineligible branch', () => {
 test('calculateMatch returns high score when required skills directly match', () => {
   const student: StudentProfile = {
     id: 's-1',
-    fullName: 'Aditi Rao',
-    email: 'aditi.rao@univ.edu',
+    fullName: 'Adya Tripathi',
+    email: 'adya.20253026@mnnit.ac.in',
     phone: '+1 555-0192',
     institution: 'State Institute of Technology',
     degree: 'B.Tech',

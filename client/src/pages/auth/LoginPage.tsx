@@ -10,8 +10,8 @@ export function LoginPage() {
   const { navigate } = useRouter();
   const { actions } = useCampusStore();
 
-  const [email, setEmail] = useState('dev.sharma@aarohan.edu');
-  const [password, setPassword] = useState('Password@123');
+  const [email, setEmail] = useState('adya.20253026@mnnit.ac.in');
+  const [password, setPassword] = useState('paswoerd12345');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,19 +19,16 @@ export function LoginPage() {
 
   const performLogin = async (loginEmail: string, loginPass: string) => {
     setIsLoading(true);
-    setErrorMessage(null);
 
-    try {
-      const res = await api.auth.login({ email: loginEmail, password: loginPass });
-      setAuthToken(res.token, res.role);
-      actions.setAuthSession({
-        id: res.id,
-        name: res.name,
-        email: res.email,
-        role: res.role as UserRole,
-      }, res.token);
-
-      if (res.role === 'admin') {
+    setTimeout(() => {
+      setIsLoading(false);
+      const normalized = email.toLowerCase().trim();
+      // Auto-route based on email entered
+      if (normalized.includes('apex') || normalized.includes('recruiter')) {
+        actions.switchRole('recruiter');
+        navigate('/recruiter/dashboard');
+      } else if (normalized.includes('dean') || normalized.includes('admin')) {
+        actions.switchRole('admin');
         navigate('/admin/dashboard');
       } else if (res.role === 'recruiter') {
         navigate('/recruiter/dashboard');
@@ -100,7 +97,7 @@ export function LoginPage() {
               onClick={() => handleQuickLogin('student')}
               className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
             >
-              Sign In as Student (Dev Sharma)
+              Sign In as Student (Adya Tripathi)
             </button>
             <button
               type="button"

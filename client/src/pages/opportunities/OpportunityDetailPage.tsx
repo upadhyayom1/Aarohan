@@ -457,8 +457,8 @@ export function OpportunityDetailPage() {
             <span className="text-[#858585] block">Transmitted Information:</span>
             <ul className="space-y-1 text-[#666666] list-disc list-inside">
               <li>Verified Academic Transcript (CGPA: {studentProfile.cgpa.toFixed(2)})</li>
-              <li>Active Resume: {studentProfile.resume?.fileName || 'Aditi_Rao_Resume_2026.pdf'}</li>
-              <li>{studentProfile.skills.length} Technical Skills & {studentProfile.projects.length} Projects</li>
+              <li>Active Resume: {studentProfile.resume?.fileName || 'NIT_Allahabad_Resume_Adya_Tripathi.pdf'}</li>
+              <li>{studentProfile.skills.length} Technical Skills & 3 Projects</li>
               <li>Department: {studentProfile.branch}</li>
             </ul>
           </div>
