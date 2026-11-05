@@ -1,24 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
 import { Button, StatusBadge, Dialog, FormField, Input } from '../../components/ui';
-import { Calendar, Clock, Video, PlusCircle, CheckCircle2, RotateCcw, XCircle } from 'lucide-react';
+import { Calendar, Clock, Video, PlusCircle, CheckCircle2, RotateCcw, XCircle, RefreshCw } from 'lucide-react';
 
 export function RecruiterInterviewsPage() {
   const { navigate } = useRouter();
   const { interviews, currentUser, actions } = useCampusStore();
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const [newDate, setNewDate] = useState('2026-11-08');
   const [newStart, setNewStart] = useState('02:00 PM');
   const [newEnd, setNewEnd] = useState('03:15 PM');
 
+  useEffect(() => {
+    actions.loadRecruiterPortalData();
+  }, [actions]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await actions.loadRecruiterPortalData();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const companyInterviews = useMemo(() => {
+    const recruiterCompany = (currentUser.organization || currentUser.name || '').toLowerCase();
     return interviews.filter(
-      i => i.company.toLowerCase() === (currentUser.organization || 'Apex Systems').toLowerCase() || i.company.includes('Apex')
+      i =>
+        currentUser.role === 'admin' ||
+        (recruiterCompany && i.company.toLowerCase() === recruiterCompany)
     );
-  }, [interviews, currentUser.organization]);
+  }, [interviews, currentUser.organization, currentUser.name, currentUser.role]);
 
   const handleOpenReschedule = (id: string) => {
     setSelectedInterviewId(id);
@@ -51,24 +68,35 @@ export function RecruiterInterviewsPage() {
             Scheduled Interviews
           </h1>
           <p className="text-sm text-[#666666] mt-1 max-w-xl">
-            Coordinate interview logistics, monitor booked time slots, and update scheduling status for {currentUser.organization || 'Apex Systems'}.
+            Coordinate interview logistics, monitor booked time slots, and update scheduling status for {currentUser.organization || currentUser.name || 'Corporate Partner'}.
           </p>
         </div>
 
-        <Link to="/recruiter/calendar">
-          <Button variant="secondary" size="sm" icon={<Calendar size={14} />}>
-            Open Recruiter Calendar
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            icon={<RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />}
+          >
+            {isRefreshing ? 'Syncing...' : 'Sync Schedule'}
           </Button>
-        </Link>
+          <Link to="/recruiter/calendar">
+            <Button variant="secondary" size="sm" icon={<Calendar size={14} />}>
+              Open Recruiter Calendar
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {companyInterviews.length === 0 ? (
         <div className="border border-dashed border-[#E4E4E1] p-12 text-center bg-[#FAFAF9]">
           <p className="text-sm text-[#666666]">No active interviews scheduled for this organization.</p>
           <div className="pt-3">
-            <Link to="/recruiter/jobs/job_apex_sde/applicants">
+            <Link to="/recruiter/jobs">
               <Button variant="primary" size="sm">
-                Review Applicants to Schedule
+                Review Openings to Schedule Candidates
               </Button>
             </Link>
           </div>
@@ -149,7 +177,7 @@ export function RecruiterInterviewsPage() {
           }
         >
           <div className="space-y-4 font-mono text-xs">
-            <FormField label="New Interview Date" required>
+            <FormField label="New Date" required>
               <Input
                 type="date"
                 value={newDate}

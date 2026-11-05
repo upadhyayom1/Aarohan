@@ -3,6 +3,8 @@ import {
   StudentProfile,
   JobOpportunity,
   Application,
+  ApplicationStatus,
+  ApplicationHistoryItem,
   Interview,
   PlacementDrive,
   NotificationItem,
@@ -10,6 +12,7 @@ import {
   SkillResource,
   UserRole,
 } from '../types';
+import { api, getAuthToken, setAuthToken, clearAuthToken } from './api';
 
 export const INITIAL_USER_STUDENT: User = {
   id: 'usr_student_adya',
@@ -21,17 +24,17 @@ export const INITIAL_USER_STUDENT: User = {
 };
 
 export const INITIAL_USER_RECRUITER: User = {
-  id: 'usr_recruiter_1',
-  name: 'Marcus Vance',
-  email: 'm.vance@apexsystems.com',
+  id: 'usr_recruiter_microsoft',
+  name: 'Microsoft',
+  email: 'microsoft@microsoft.com',
   role: 'recruiter',
-  organization: 'Apex Systems',
+  organization: 'Microsoft',
 };
 
 export const INITIAL_USER_ADMIN: User = {
-  id: 'usr_admin_1',
-  name: 'Dr. Eleanor Hayes',
-  email: 'dean.placement@university.edu',
+  id: 'ace5b256-8177-4f44-b04b-0993e61f8c91',
+  name: 'Directorate Central Administrator',
+  email: 'admin@aarohan.edu',
   role: 'admin',
   organization: 'Office of Career Advancement & Placement',
 };
@@ -879,15 +882,397 @@ class CampusStore {
   }
 
   // Set User Role / Identity
-  public switchRole(role: UserRole) {
+  public async switchRole(role: UserRole) {
     if (role === 'student') {
       this.currentUser = INITIAL_USER_STUDENT;
+      try {
+        const res = await api.auth.login({ email: 'dev.sharma@aarohan.edu', password: 'Password@123' });
+        if (res && res.token) {
+          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'student' }, res.token);
+          await this.loadStudentPortalData();
+        }
+      } catch {
+        // Fallback
+      }
     } else if (role === 'recruiter') {
       this.currentUser = INITIAL_USER_RECRUITER;
+      try {
+        const res = await api.auth.login({ email: 'microsoft', password: 'password123' });
+        if (res && res.token) {
+          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'recruiter', organization: 'Microsoft' }, res.token);
+          await this.loadRecruiterPortalData();
+        }
+      } catch {
+        // Fallback
+      }
     } else if (role === 'admin') {
       this.currentUser = INITIAL_USER_ADMIN;
+      try {
+        const res = await api.auth.login({ email: 'admin@aarohan.edu', password: 'Password@123' });
+        if (res && res.token) {
+          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'admin' }, res.token);
+        }
+      } catch {
+        // Fallback
+      }
     }
     this.notify();
+  }
+
+  // Authentication & Session Management
+  public setAuthSession(user: Partial<User> & { role: UserRole }, token?: string) {
+    if (token) {
+      setAuthToken(token, user.role);
+    }
+
+    let base = INITIAL_USER_STUDENT;
+    if (user.role === 'recruiter') base = INITIAL_USER_RECRUITER;
+    else if (user.role === 'admin') base = INITIAL_USER_ADMIN;
+
+    const org = user.organization || (user.role === 'recruiter' ? user.name || base.organization : base.organization);
+
+    this.currentUser = {
+      ...base,
+      ...user,
+      id: user.id || base.id,
+      name: user.name || base.name,
+      email: user.email || base.email,
+      role: user.role,
+      organization: org,
+    };
+
+    if (user.role === 'student') {
+      this.studentProfile = {
+        ...this.studentProfile,
+        fullName: user.name || this.studentProfile.fullName,
+        email: user.email || this.studentProfile.email,
+      };
+    }
+
+    this.addAuditLog(
+      this.currentUser.name,
+      this.currentUser.role,
+      'AUTH_LOGIN',
+      `Session ${this.currentUser.email}`,
+      'Authenticated successfully into portal session.'
+    );
+
+    this.notify();
+  }
+
+  public clearAuthSession() {
+    clearAuthToken();
+    this.currentUser = INITIAL_USER_STUDENT;
+    this.notify();
+  }
+
+  public async checkAuthSession(): Promise<User | null> {
+    const token = getAuthToken();
+    if (token) {
+      try {
+        const me = await api.auth.getMe();
+        if (me && me.role) {
+          this.setAuthSession({
+            id: me.id,
+            name: me.name,
+            email: me.email,
+            role: me.role as UserRole,
+          }, token);
+          return this.currentUser;
+        }
+      } catch {
+        clearAuthToken();
+      }
+    }
+
+    // Auto-authenticate default demo session based on portal route
+    try {
+      const path = typeof window !== 'undefined' ? window.location.pathname : '';
+      let qEmail = 'dev.sharma@aarohan.edu';
+      let qPass = 'Password@123';
+      let qRole: UserRole = 'student';
+
+      if (path.startsWith('/recruiter')) {
+        qEmail = 'microsoft';
+        qPass = 'password123';
+        qRole = 'recruiter';
+      } else if (path.startsWith('/admin')) {
+        qEmail = 'admin@aarohan.edu';
+        qPass = 'Password@123';
+        qRole = 'admin';
+      }
+
+      const res = await api.auth.login({ email: qEmail, password: qPass });
+      if (res && res.token) {
+        this.setAuthSession({
+          id: res.id,
+          name: res.name,
+          email: res.email,
+          role: res.role as UserRole,
+          organization: qRole === 'recruiter' ? 'Microsoft' : undefined,
+        }, res.token);
+
+        if (res.role === 'student') {
+          await this.loadStudentPortalData();
+        } else if (res.role === 'recruiter') {
+          await this.loadRecruiterPortalData();
+        }
+        return this.currentUser;
+      }
+    } catch (e) {
+      console.warn('Auto demo authentication failed:', e);
+    }
+
+    return null;
+  }
+
+  public login(user: Partial<User> & { role: UserRole }, token: string) {
+    this.setAuthSession(user, token);
+  }
+
+  public logout() {
+    this.clearAuthSession();
+  }
+
+  // Live Sync with Backend Server
+  public syncStudentProfile(backendProfile: any) {
+    if (!backendProfile) return;
+    this.studentProfile = {
+      ...this.studentProfile,
+      id: backendProfile.id || this.studentProfile.id,
+      fullName: backendProfile.name || this.studentProfile.fullName,
+      email: backendProfile.email || this.studentProfile.email,
+      branch: backendProfile.branch || this.studentProfile.branch,
+      cgpa: typeof backendProfile.cgpa === 'number' ? backendProfile.cgpa : this.studentProfile.cgpa,
+      graduationYear: backendProfile.graduation_year || this.studentProfile.graduationYear,
+      activeBacklogs: typeof backendProfile.backlogs === 'number' ? backendProfile.backlogs : this.studentProfile.activeBacklogs,
+      skills: Array.isArray(backendProfile.skills) && backendProfile.skills.length > 0 ? backendProfile.skills : this.studentProfile.skills,
+      projects: Array.isArray(backendProfile.projects) && backendProfile.projects.length > 0 ? backendProfile.projects : this.studentProfile.projects,
+      resume: backendProfile.resume_uploaded
+        ? {
+            fileName: backendProfile.resume_url ? backendProfile.resume_url.split('/').pop() || 'resume.pdf' : 'resume.pdf',
+            fileSize: 'Uploaded PDF',
+            uploadedAt: 'Verified by Directorate',
+            parsingStatus: 'completed',
+            parsedSkills: backendProfile.skills || [],
+            parsedEducation: `${backendProfile.branch || 'Engineering'}, Class of ${backendProfile.graduation_year || 2027}`,
+            parsedProjects: (backendProfile.projects || []).map((p: any) => typeof p === 'string' ? p : p.title || 'Project'),
+            parsedExperience: 'Verified Experience',
+          }
+        : this.studentProfile.resume,
+    };
+    this.notify();
+  }
+
+  public syncJobs(backendJobs: any[]) {
+    if (!Array.isArray(backendJobs) || backendJobs.length === 0) return;
+    const mapped: JobOpportunity[] = backendJobs.map((j) => {
+      const existing = this.jobs.find((orig) => orig.id === j.id);
+      return {
+        id: j.id,
+        title: j.title || 'Software Engineer',
+        company: j.company || 'Partner Enterprise',
+        companyInitials: (j.company || 'PE').slice(0, 2).toUpperCase(),
+        location: existing?.location || 'Campus / Multiple Locations',
+        workArrangement: existing?.workArrangement || 'Hybrid',
+        employmentType: existing?.employmentType || 'Full-time',
+        deadline: j.deadline ? new Date(j.deadline).toISOString().split('T')[0] : '2026-12-31',
+        publishedDate: j.created_at ? new Date(j.created_at).toISOString().split('T')[0] : '2026-09-01',
+        salaryRange: existing?.salaryRange || 'Competitive',
+        description: j.description || '',
+        responsibilities: existing?.responsibilities || ['Develop technical solutions', 'Collaborate across teams'],
+        requiredQualifications: existing?.requiredQualifications || [`Min CGPA ${j.min_cgpa || 7.0}`],
+        requiredSkills: Array.isArray(j.required_skills) ? j.required_skills : [],
+        preferredSkills: existing?.preferredSkills || [],
+        eligibleBranches: Array.isArray(j.eligible_branches) ? j.eligible_branches : ['CSE', 'IT'],
+        eligibleGradYears: [j.graduation_year || 2026],
+        minCgpa: j.min_cgpa ?? 7.0,
+        maxBacklogs: j.max_backlogs ?? 0,
+        applicantsCount: j.applicant_count ?? existing?.applicantsCount ?? 0,
+        shortlistedCount: existing?.shortlistedCount || 0,
+        status: (j.status === 'open' ? 'Active' : 'Closed') as any,
+        recruiterId: j.recruiter_id,
+      };
+    });
+
+    this.jobs = mapped;
+    this.notify();
+  }
+
+  public syncApplications(backendApps: any[]) {
+    if (!Array.isArray(backendApps)) return;
+    const mapped: Application[] = backendApps.map((a) => {
+      const existing = this.applications.find((orig) => orig.id === a.id);
+      const statusTitle: ApplicationStatus =
+        a.status === 'interview_scheduled'
+          ? 'Interview Scheduled'
+          : a.status === 'shortlisted'
+          ? 'Shortlisted'
+          : a.status === 'selected'
+          ? 'Selected'
+          : a.status === 'rejected' || a.status === 'not_selected'
+          ? 'Rejected'
+          : a.status === 'withdrawn'
+          ? 'Withdrawn'
+          : 'Under Review';
+
+      const updateDate = a.updated_at ? new Date(a.updated_at).toISOString().split('T')[0] : (existing?.latestUpdateDate || '2026-10-01');
+
+      return {
+        id: a.id,
+        jobId: a.job_id || a.jobId,
+        studentId: a.student_id || a.studentId || this.studentProfile.id,
+        studentName: a.student?.name || this.studentProfile.fullName,
+        studentEmail: a.student?.user?.email || this.studentProfile.email,
+        studentBranch: a.student?.branch || this.studentProfile.branch,
+        studentCgpa: a.student?.cgpa ?? this.studentProfile.cgpa,
+        studentGradYear: a.student?.graduationYear ?? this.studentProfile.graduationYear,
+        studentSkills: a.student?.skills || a.studentSkills || [],
+        jobTitle: a.job?.title || a.job_title || existing?.jobTitle || 'Role Candidacy',
+        company: a.job?.company || a.company || existing?.company || 'Enterprise',
+        appliedDate: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : (existing?.appliedDate || '2026-10-01'),
+        status: statusTitle,
+        matchScore: a.matchResult?.match_score ?? a.match_score ?? existing?.matchScore ?? 85,
+        latestUpdateDate: updateDate,
+        history: existing?.history || [
+          {
+            stage: statusTitle,
+            date: updateDate,
+            note: a.matchResult?.explanation || 'Status recorded in campus registry.',
+          },
+        ],
+        recruiterNotes: a.notes || a.recruiterNotes,
+        rejectionReason: a.rejectionReason,
+      };
+    });
+
+    if (mapped.length > 0) {
+      this.applications = mapped;
+      this.notify();
+    }
+  }
+
+  public syncInterviews(backendInterviews: any[]) {
+    if (!Array.isArray(backendInterviews)) return;
+    const mapped: Interview[] = backendInterviews.map((iv) => {
+      const modeVal: 'Video Call' | 'In-person' | 'Phone' =
+        iv.mode === 'on_campus' ? 'In-person' : 'Video Call';
+
+      return {
+        id: iv.id,
+        applicationId: iv.application_id || iv.applicationId || '',
+        jobId: iv.application?.job_id || iv.jobId || '',
+        studentId: iv.student_id || iv.studentId || this.studentProfile.id,
+        studentName: iv.student?.name || this.studentProfile.fullName,
+        studentEmail: iv.student?.user?.email || this.studentProfile.email,
+        jobTitle: iv.application?.job?.title || 'Technical Interview',
+        company: iv.application?.job?.company || 'Partner Enterprise',
+        round: 'Technical Assessment',
+        date: iv.scheduled_at ? new Date(iv.scheduled_at).toISOString().split('T')[0] : '2026-11-15',
+        startTime: iv.scheduled_at ? new Date(iv.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10:00 AM',
+        endTime: '11:00 AM',
+        timezone: 'EST',
+        mode: modeVal,
+        locationOrLink: iv.location || 'Building 4, Placement Hall',
+        status: 'Scheduled',
+        notes: iv.notes,
+      };
+    });
+
+    if (mapped.length > 0) {
+      this.interviews = mapped;
+      this.notify();
+    }
+  }
+
+  public async loadStudentPortalData() {
+    const token = getAuthToken();
+    if (!token) return;
+
+    try {
+      const [prof, jobsRes, appsRes, ivRes] = await Promise.all([
+        api.students.getMyProfile().catch(() => null),
+        api.jobs.list({ open_only: true }).catch(() => null),
+        api.applications.getMy().catch(() => null),
+        api.interviews.getMy().catch(() => null),
+      ]);
+
+      if (prof) this.syncStudentProfile(prof);
+      if (jobsRes && Array.isArray(jobsRes.jobs)) this.syncJobs(jobsRes.jobs);
+      if (appsRes && Array.isArray(appsRes.applications)) this.syncApplications(appsRes.applications);
+      if (ivRes && Array.isArray(ivRes.interviews)) this.syncInterviews(ivRes.interviews);
+    } catch (e) {
+      console.warn('loadStudentPortalData error:', e);
+    }
+  }
+
+  public async loadRecruiterPortalData() {
+    const token = getAuthToken();
+    if (!token) return;
+
+    try {
+      const [jobsRes, ivRes] = await Promise.all([
+        api.jobs.list({ open_only: false }).catch(() => null),
+        api.interviews.getMy().catch(() => null),
+      ]);
+
+      if (jobsRes && Array.isArray(jobsRes.jobs)) {
+        this.syncJobs(jobsRes.jobs);
+
+        const currentRecruiterId = this.currentUser.id;
+        const recruiterCompany = (this.currentUser.organization || this.currentUser.name || '').toLowerCase();
+
+        const relevantJobs = jobsRes.jobs.filter((j: any) => {
+          if (this.currentUser.role === 'admin') return true;
+          if (currentRecruiterId && (j.recruiter_id === currentRecruiterId || j.recruiterId === currentRecruiterId)) {
+            return true;
+          }
+          if (recruiterCompany && j.company.toLowerCase() === recruiterCompany) {
+            return true;
+          }
+          return false;
+        });
+
+        if (relevantJobs.length > 0) {
+          const allApps: any[] = [];
+          await Promise.all(
+            relevantJobs.map(async (job: any) => {
+              try {
+                const appRes = await api.jobs.getApplicants(job.id);
+                if (appRes && Array.isArray(appRes.applicants)) {
+                  appRes.applicants.forEach((app: any) => {
+                    allApps.push({
+                      id: app.application_id,
+                      job_id: job.id,
+                      jobTitle: job.title,
+                      company: job.company,
+                      student_id: app.student.id,
+                      student: app.student,
+                      status: app.status,
+                      created_at: app.applied_at,
+                      matchResult: app.match_result,
+                      match_score: app.match_result?.match_score,
+                    });
+                  });
+                }
+              } catch {
+                // Ignore per-job applicant lookup errors
+              }
+            })
+          );
+
+          if (allApps.length > 0) {
+            this.syncApplications(allApps);
+          }
+        }
+      }
+
+      if (ivRes && Array.isArray(ivRes.interviews)) {
+        this.syncInterviews(ivRes.interviews);
+      }
+    } catch (e) {
+      console.warn('loadRecruiterPortalData error:', e);
+    }
   }
 
   // Student Profile Updates

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useCampusStore } from '../../lib/useStore';
+import { api, BuildResumeResult } from '../../lib/api';
 import { Button, Input, Textarea, FormField } from '../../components/ui';
 import { CheckCircle2, Plus, Trash2, Save, Undo, Camera, Upload, User as UserIcon } from 'lucide-react';
 
@@ -34,13 +35,51 @@ export function StudentProfilePage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    actions.updateStudentProfile(formData);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    setIsSaving(true);
+    setErrorMessage(null);
+
+    try {
+      await api.students.updateMyProfile({
+        name: formData.fullName,
+        branch: formData.branch,
+        cgpa: formData.cgpa,
+        graduation_year: formData.graduationYear,
+        backlogs: formData.activeBacklogs,
+        skills: formData.skills,
+        projects: formData.projects,
+      });
+
+      actions.updateStudentProfile(formData);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Saved locally. Backend sync encountered an issue.');
+      actions.updateStudentProfile(formData);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleGenerateAiResume = async () => {
+    setAiGenerating(true);
+    setAiError(null);
+    setShowAiModal(true);
+
+    try {
+      const result = await api.ai.buildResume(studentProfile.id);
+      setAiResumeResult(result);
+    } catch (err: any) {
+      setAiError(err.message || 'AI service temporarily unavailable on port 8001. Fallback heuristic active.');
+    } finally {
+      setAiGenerating(false);
+    }
   };
 
   const handleReset = () => {
     setFormData(studentProfile);
+    setErrorMessage(null);
   };
 
   const addSkill = () => {
@@ -76,7 +115,16 @@ export function StudentProfilePage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleGenerateAiResume}
+            disabled={aiGenerating}
+            icon={<Sparkles size={14} className="text-[#111111]" />}
+          >
+            {aiGenerating ? 'AI Generating...' : 'AI Dossier Builder'}
+          </Button>
           {isDirty && (
             <Button variant="secondary" size="sm" onClick={handleReset} icon={<Undo size={14} />}>
               Discard Changes
@@ -86,10 +134,10 @@ export function StudentProfilePage() {
             variant="primary"
             size="sm"
             onClick={handleSave}
-            disabled={!isDirty}
+            disabled={!isDirty || isSaving}
             icon={<Save size={14} />}
           >
-            Save Changes
+            {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </div>
@@ -98,6 +146,13 @@ export function StudentProfilePage() {
         <div className="p-3 border border-[#111111] bg-[#FAFAF9] text-xs font-mono flex items-center gap-2">
           <CheckCircle2 size={16} className="text-[#111111]" />
           <span>Profile dossier saved and synced with university placement registry.</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="p-3 border border-red-200 bg-red-50 text-red-700 text-xs font-mono flex items-center gap-2">
+          <AlertCircle size={16} className="text-red-600 shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 

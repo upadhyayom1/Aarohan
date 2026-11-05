@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api, setAuthToken } from '../../lib/api';
+import { UserRole } from '../../types';
 import { Button, Input, FormField, Select, AarohanLogo } from '../../components/ui';
+import { AlertCircle } from 'lucide-react';
 
 export function RegisterPage() {
   const { navigate } = useRouter();
@@ -11,22 +14,67 @@ export function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [extraField, setExtraField] = useState('2026'); // grad year or org
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !email) return;
+    setErrorMessage(null);
 
-    actions.switchRole(role);
-    if (role === 'student') {
-      actions.updateStudentProfile({
-        fullName,
-        email,
-        graduationYear: parseInt(extraField) || 2026,
+    if (!fullName.trim() || !email.trim()) {
+      setErrorMessage('Please fill in all required fields.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      setErrorMessage('Passwords do not match.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const res = await api.auth.register({
+        name: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        role,
       });
-      navigate('/student/dashboard');
-    } else {
-      navigate('/recruiter/dashboard');
+
+      setAuthToken(res.token, res.role);
+      actions.setAuthSession(
+        {
+          id: res.id,
+          name: res.name,
+          email: res.email,
+          role: res.role as UserRole,
+          organization: role === 'recruiter' ? extraField : undefined,
+        },
+        res.token
+      );
+
+      if (role === 'student') {
+        actions.updateStudentProfile({
+          fullName: res.name,
+          email: res.email,
+          graduationYear: parseInt(extraField, 10) || 2026,
+        });
+        navigate('/student/dashboard');
+      } else {
+        navigate('/recruiter/dashboard');
+      }
+    } catch (err: any) {
+      const msg = err.message || 'Registration failed. Please check your details and try again.';
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,6 +144,15 @@ export function RegisterPage() {
             </button>
           </div>
 
+          {errorMessage && (
+            <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs font-mono rounded-[2px] flex items-start gap-2.5">
+              <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+              <div>
+                <span className="font-bold">Registration Error:</span> {errorMessage}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <FormField label="Full Legal Name" required>
               <Input
@@ -106,23 +163,35 @@ export function RegisterPage() {
               />
             </FormField>
 
-            <FormField label="Email Address" required hint={role === 'student' ? 'Use @campus.edu' : 'Company domain'}>
+            <FormField label="Email Address" required hint={role === 'student' ? 'Use @aarohan.edu or campus email' : 'Company domain'}>
               <Input
                 type="email"
-                placeholder={role === 'student' ? 'j.doe@campus.edu' : 'recruiting@company.com'}
+                placeholder={role === 'student' ? 'j.doe@aarohan.edu' : 'recruiting@company.com'}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
               />
             </FormField>
 
-            <FormField label="Password" required>
+            <FormField label="Password" required hint="Minimum 8 characters">
               <Input
                 type="password"
-                placeholder="Create secure password"
+                placeholder="Create secure password (min 8 chars)"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
+                minLength={8}
+              />
+            </FormField>
+
+            <FormField label="Confirm Password" required>
+              <Input
+                type="password"
+                placeholder="Re-enter password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                required
+                minLength={8}
               />
             </FormField>
 
@@ -147,8 +216,14 @@ export function RegisterPage() {
               </FormField>
             )}
 
-            <Button type="submit" variant="primary" size="lg" className="w-full mt-2">
-              Complete Registration
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full mt-2"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating Account...' : 'Complete Registration'}
             </Button>
           </form>
 

@@ -20,10 +20,19 @@ import {
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { path, navigate } = useRouter();
-  const { currentUser, drives, applications } = useCampusStore();
+  const { currentUser } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
-  const activeDrivesCount = drives.filter(d => d.status === 'Active').length;
+  if (currentUser.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#858585]">
+          <span className="inline-block w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+          Synchronizing institutional administrator credentials...
+        </div>
+      </div>
+    );
+  }
 
   const navGroups = [
     {
@@ -43,7 +52,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     {
       title: 'RECRUITMENT DRIVES',
       items: [
-        { label: 'Placement Drives', href: '/admin/drives', icon: CalendarCheck2, badge: activeDrivesCount },
+        { label: 'Placement Drives', href: '/admin/drives', icon: CalendarCheck2 },
         { label: 'Master Applications', href: '/admin/applications', icon: FileCheck2 },
         { label: 'Placement Outcomes', href: '/admin/placements', icon: Award },
       ],
@@ -135,11 +144,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
                         <Icon size={14} className={isActive ? 'text-white' : 'text-[#858585]'} />
                         <span>{item.label}</span>
                       </div>
-                      {item.badge !== undefined && (
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${isActive ? 'bg-white text-black' : 'bg-[#111111] text-white'}`}>
-                          {item.badge}
-                        </span>
-                      )}
                     </Link>
                   );
                 })}
@@ -152,10 +156,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between mb-2">
             <div className="truncate">
               <span className="text-xs font-bold text-[#111111] block truncate">
-                {currentUser.role === 'admin' ? currentUser.name : 'Dr. Eleanor Hayes'}
+                {currentUser?.name || 'Administrator'}
               </span>
               <span className="text-[10px] font-mono text-[#858585] block truncate">
-                Dean of Career & Corporate Relations
+                Directorate Administrator
               </span>
             </div>
           </div>

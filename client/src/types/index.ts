@@ -110,6 +110,7 @@ export interface Application {
   studentBranch: string;
   studentCgpa: number;
   studentGradYear: number;
+  studentSkills?: string[];
   appliedDate: string;
   status: ApplicationStatus;
   latestUpdateDate: string;

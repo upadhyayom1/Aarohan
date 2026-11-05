@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 _engine: Optional[Engine] = None
 _tables: Optional["Tables"] = None
-_lock = threading.Lock()
+_lock = threading.RLock()
 
 
 @dataclass
@@ -37,8 +37,12 @@ class Tables:
 def _connect_options(settings: Settings) -> str:
     opts = [
         "-c default_transaction_read_only=on",
-        f"-c statement_timeout={int(settings.db_statement_timeout_ms)}",
     ]
+    # Neon pooler (PgBouncer) rejects statement_timeout in startup connection options
+    db_url_str = (settings.database_url or "").lower()
+    is_pooler = "pooler" in db_url_str or "neon.tech" in db_url_str or "pgbouncer=true" in db_url_str
+    if not is_pooler and settings.db_statement_timeout_ms:
+        opts.append(f"-c statement_timeout={int(settings.db_statement_timeout_ms)}")
     if settings.schema_name:
         opts.append(f"-c search_path={settings.schema_name}")
     return " ".join(opts)
@@ -112,20 +116,16 @@ def get_tables(force: bool = False) -> Tables:
                     "Could not find required tables in the database: " + ", ".join(missing),
                     {"existing_tables": existing[:50], "hint": "Set TABLE_STUDENT / TABLE_JOB / TABLE_APPLICATION"},
                 )
-            names = sorted({v for v in wanted.values() if v})
             md = MetaData(schema=schema)
-            md.reflect(bind=engine, schema=schema, only=names)
+            _tables = Tables(
+                student=Table(wanted["student"], md, autoload_with=engine, schema=schema),
+                job=Table(wanted["job"], md, autoload_with=engine, schema=schema),
+                application=Table(wanted["application"], md, autoload_with=engine, schema=schema),
+                user=Table(wanted["user"], md, autoload_with=engine, schema=schema) if wanted["user"] else None,
+            )
         except SQLAlchemyError as exc:
             log.exception("Schema reflection failed")
             raise AppError(503, "DATABASE_UNAVAILABLE", "Could not read the database schema") from exc
-
-        by_name = {t.name: t for t in md.tables.values()}
-        _tables = Tables(
-            student=by_name[wanted["student"]],  # type: ignore[index]
-            job=by_name[wanted["job"]],  # type: ignore[index]
-            application=by_name[wanted["application"]],  # type: ignore[index]
-            user=by_name.get(wanted["user"]) if wanted["user"] else None,  # type: ignore[arg-type]
-        )
         log.info(
             "Reflected tables: student=%s job=%s application=%s user=%s",
             _tables.student.name,

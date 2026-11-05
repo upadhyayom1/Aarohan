@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api, setAuthToken } from '../../lib/api';
+import { UserRole } from '../../types';
 import { Button, Input, FormField, AarohanLogo } from '../../components/ui';
-import { Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export function LoginPage() {
   const { navigate } = useRouter();
@@ -13,9 +15,9 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const performLogin = async (loginEmail: string, loginPass: string) => {
     setIsLoading(true);
 
     setTimeout(() => {
@@ -28,18 +30,38 @@ export function LoginPage() {
       } else if (normalized.includes('dean') || normalized.includes('admin')) {
         actions.switchRole('admin');
         navigate('/admin/dashboard');
+      } else if (res.role === 'recruiter') {
+        navigate('/recruiter/dashboard');
       } else {
-        actions.switchRole('student');
         navigate('/student/dashboard');
       }
-    }, 400);
+    } catch (err: any) {
+      const msg = err.message || 'Invalid credentials. Please verify your email and password.';
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleQuickLogin = (role: 'student' | 'recruiter' | 'admin') => {
-    actions.switchRole(role);
-    if (role === 'student') navigate('/student/dashboard');
-    else if (role === 'recruiter') navigate('/recruiter/dashboard');
-    else if (role === 'admin') navigate('/admin/dashboard');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await performLogin(email, password);
+  };
+
+  const handleQuickLogin = async (role: 'student' | 'recruiter' | 'admin') => {
+    let qEmail = 'dev.sharma@aarohan.edu';
+    let qPass = 'Password@123';
+
+    if (role === 'recruiter') {
+      qEmail = 'microsoft';
+      qPass = 'password123';
+    } else if (role === 'admin') {
+      qEmail = 'admin@aarohan.edu';
+    }
+
+    setEmail(qEmail);
+    setPassword(qPass);
+    await performLogin(qEmail, qPass);
   };
 
   return (
@@ -66,26 +88,32 @@ export function LoginPage() {
         {/* Demo Fast-Switch Buttons */}
         <div className="pt-8 mt-8 border-t border-[#E4E4E1] space-y-3 font-mono text-xs">
           <span className="text-[10px] text-[#858585] uppercase tracking-widest block">
-            DEMO SANDBOX QUICK LOGIN
+            DEMO SEEDED ONE-CLICK LOGIN
           </span>
           <div className="flex flex-wrap gap-2">
             <button
+              type="button"
+              disabled={isLoading}
               onClick={() => handleQuickLogin('student')}
-              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer"
+              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
             >
               Sign In as Student (Adya Tripathi)
             </button>
             <button
+              type="button"
+              disabled={isLoading}
               onClick={() => handleQuickLogin('recruiter')}
-              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer"
+              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
             >
-              Sign In as Recruiter (Apex Systems)
+              Sign In as Recruiter (Microsoft)
             </button>
             <button
+              type="button"
+              disabled={isLoading}
               onClick={() => handleQuickLogin('admin')}
-              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer"
+              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
             >
-              Sign In as Placement Dean
+              Sign In as Placement Dean (Admin)
             </button>
           </div>
         </div>
@@ -109,13 +137,22 @@ export function LoginPage() {
             </p>
           </div>
 
+          {errorMessage && (
+            <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs font-mono rounded-[2px] flex items-start gap-2.5">
+              <AlertCircle size={16} className="shrink-0 mt-0.5 text-red-600" />
+              <div>
+                <span className="font-bold">Authentication Failed:</span> {errorMessage}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
-            <FormField label="Institutional / Work Email" required>
+            <FormField label="Institutional / Corporate Username or Email" required>
               <Input
-                type="email"
+                type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="name@campus.edu"
+                placeholder="microsoft or name@aarohan.edu"
                 required
               />
             </FormField>
@@ -126,6 +163,7 @@ export function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
+                  placeholder="Enter password"
                   required
                 />
                 <button

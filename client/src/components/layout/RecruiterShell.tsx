@@ -18,8 +18,19 @@ import {
 
 export function RecruiterShell({ children }: { children: ReactNode }) {
   const { path, navigate } = useRouter();
-  const { currentUser, jobs } = useCampusStore();
+  const { currentUser, jobs, actions } = useCampusStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  if (currentUser.role !== 'recruiter') {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#858585]">
+          <span className="inline-block w-2 h-2 rounded-full bg-blue-600 animate-ping" />
+          Synchronizing recruiter enterprise credentials...
+        </div>
+      </div>
+    );
+  }
 
   const activeJobsCount = jobs.filter(j => j.status === 'Active').length;
 
@@ -143,15 +154,18 @@ export function RecruiterShell({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between mb-2">
             <div className="truncate">
               <span className="text-xs font-bold text-[#111111] block truncate">
-                {currentUser.role === 'recruiter' ? currentUser.name : 'Marcus Vance'}
+                {currentUser.name}
               </span>
               <span className="text-[10px] font-mono text-[#858585] block truncate">
-                {currentUser.role === 'recruiter' ? currentUser.organization : 'Apex Systems'}
+                {currentUser.organization || currentUser.name || 'Corporate Partner'}
               </span>
             </div>
           </div>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => {
+              actions.logout();
+              navigate('/login');
+            }}
             className="w-full flex items-center justify-center gap-1.5 text-[11px] font-mono text-[#666666] hover:text-[#111111] py-1.5 border border-[#E4E4E1] rounded-[2px] hover:bg-[#F5F5F3] transition-colors cursor-pointer"
           >
             <LogOut size={12} />

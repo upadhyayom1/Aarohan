@@ -19,6 +19,19 @@ export function useCampusStore() {
     auditLogs: storeVersion.getAuditLogs(),
     skillResources: storeVersion.getSkillResources(),
     actions: {
+      setAuthSession: (user: Parameters<typeof storeVersion.setAuthSession>[0], token?: string) =>
+        storeVersion.setAuthSession(user, token),
+      clearAuthSession: () => storeVersion.clearAuthSession(),
+      checkAuthSession: () => storeVersion.checkAuthSession(),
+      login: (user: Parameters<typeof storeVersion.login>[0], token: string) =>
+        storeVersion.login(user, token),
+      logout: () => storeVersion.logout(),
+      loadStudentPortalData: () => storeVersion.loadStudentPortalData(),
+      loadRecruiterPortalData: () => storeVersion.loadRecruiterPortalData(),
+      syncStudentProfile: (p: any) => storeVersion.syncStudentProfile(p),
+      syncJobs: (j: any[]) => storeVersion.syncJobs(j),
+      syncApplications: (a: any[]) => storeVersion.syncApplications(a),
+      syncInterviews: (i: any[]) => storeVersion.syncInterviews(i),
       switchRole: (role: 'student' | 'recruiter' | 'admin') => storeVersion.switchRole(role),
       updateStudentProfile: (updates: Parameters<typeof storeVersion.updateStudentProfile>[0]) =>
         storeVersion.updateStudentProfile(updates),

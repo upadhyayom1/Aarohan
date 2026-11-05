@@ -42,6 +42,7 @@ import { RecruiterSettingsPage } from './pages/recruiter/RecruiterSettingsPage';
 // Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminStudentsPage } from './pages/admin/AdminStudentsPage';
+import { AdminRecruitersPage } from './pages/admin/AdminRecruitersPage';
 import { AdminDrivesPage } from './pages/admin/AdminDrivesPage';
 import { AdminNewDrivePage } from './pages/admin/AdminNewDrivePage';
 import { AdminApplicationsPage } from './pages/admin/AdminApplicationsPage';
@@ -53,6 +54,20 @@ import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 function AppRouter() {
   const { path } = useRouter();
   const { currentUser, actions } = useCampusStore();
+
+  // Restore authenticated session from backend token on mount
+  React.useEffect(() => {
+    actions.checkAuthSession();
+  }, [actions]);
+
+  // Sync live backend data when in student or recruiter portal
+  React.useEffect(() => {
+    if (currentUser.role === 'student' || path.startsWith('/student')) {
+      actions.loadStudentPortalData();
+    } else if (currentUser.role === 'recruiter' || path.startsWith('/recruiter')) {
+      actions.loadRecruiterPortalData();
+    }
+  }, [currentUser.role, path, actions]);
 
   // Keep active role aligned when navigating directly via URL
   React.useEffect(() => {
@@ -145,7 +160,7 @@ function AppRouter() {
     if (path === '/admin/students') {
       content = <AdminStudentsPage />;
     } else if (path === '/admin/recruiters' || path === '/admin/companies') {
-      content = <RecruiterJobsPage />;
+      content = <AdminRecruitersPage />;
     } else if (path === '/admin/drives/new') {
       content = <AdminNewDrivePage />;
     } else if (path === '/admin/drives') {

@@ -211,5 +211,5 @@ def skill_demand(
     repo: Repository = Depends(get_repository),
 ):
     """In-demand skills across jobs vs how many students have them."""
-    require_roles(principal, "recruiter", "admin")
+    require_roles(principal, "student", "recruiter", "admin")
     return analytics.skill_demand(repo, limit=limit, open_only=open_only)
