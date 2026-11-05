@@ -194,8 +194,8 @@ async function ensureAuthToken(): Promise<string | null> {
   if (typeof window !== 'undefined') {
     try {
       const path = window.location.pathname;
-      let email = 'dev.sharma@aarohan.edu';
-      let password = 'Password@123';
+      let email = 'adya.20253026@mnnit.ac.in';
+      let password = 'paswoerd12345';
       let role = 'student';
 
       if (path.startsWith('/recruiter')) {

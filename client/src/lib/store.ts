@@ -472,9 +472,9 @@ export const INITIAL_APPLICATIONS: Application[] = [
     jobId: 'job_apex_sde',
     jobTitle: 'Software Development Engineer I',
     company: 'Apex Systems',
-    studentId: 'stu_dev_sharma',
-    studentName: 'Dev Sharma',
-    studentEmail: 'dev.sharma@campus.edu',
+    studentId: 'stu_adya_tripathi',
+    studentName: 'Adya Tripathi',
+    studentEmail: 'adya.20253026@mnnit.ac.in',
     studentBranch: 'Computer Science & Engineering',
     studentCgpa: 9.30,
     studentGradYear: 2026,
@@ -886,7 +886,7 @@ class CampusStore {
     if (role === 'student') {
       this.currentUser = INITIAL_USER_STUDENT;
       try {
-        const res = await api.auth.login({ email: 'dev.sharma@aarohan.edu', password: 'Password@123' });
+        const res = await api.auth.login({ email: 'adya.20253026@mnnit.ac.in', password: 'paswoerd12345' });
         if (res && res.token) {
           this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'student' }, res.token);
           await this.loadStudentPortalData();
@@ -988,8 +988,8 @@ class CampusStore {
     // Auto-authenticate default demo session based on portal route
     try {
       const path = typeof window !== 'undefined' ? window.location.pathname : '';
-      let qEmail = 'dev.sharma@aarohan.edu';
-      let qPass = 'Password@123';
+      let qEmail = 'adya.20253026@mnnit.ac.in';
+      let qPass = 'paswoerd12345';
       let qRole: UserRole = 'student';
 
       if (path.startsWith('/recruiter')) {

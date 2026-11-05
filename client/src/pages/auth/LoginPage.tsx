@@ -19,19 +19,27 @@ export function LoginPage() {
 
   const performLogin = async (loginEmail: string, loginPass: string) => {
     setIsLoading(true);
+    setErrorMessage(null);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      const normalized = email.toLowerCase().trim();
-      // Auto-route based on email entered
-      if (normalized.includes('apex') || normalized.includes('recruiter')) {
-        actions.switchRole('recruiter');
+    try {
+      const res = await api.auth.login({
+        email: loginEmail.trim().toLowerCase(),
+        password: loginPass,
+      });
+      const role = res.role as UserRole;
+
+      setAuthToken(res.token, role);
+      actions.setAuthSession({
+        id: res.id,
+        name: res.name,
+        email: res.email,
+        role,
+      }, res.token);
+
+      if (role === 'recruiter') {
         navigate('/recruiter/dashboard');
-      } else if (normalized.includes('dean') || normalized.includes('admin')) {
-        actions.switchRole('admin');
+      } else if (role === 'admin') {
         navigate('/admin/dashboard');
-      } else if (res.role === 'recruiter') {
-        navigate('/recruiter/dashboard');
       } else {
         navigate('/student/dashboard');
       }
@@ -49,8 +57,8 @@ export function LoginPage() {
   };
 
   const handleQuickLogin = async (role: 'student' | 'recruiter' | 'admin') => {
-    let qEmail = 'dev.sharma@aarohan.edu';
-    let qPass = 'Password@123';
+    let qEmail = 'adya.20253026@mnnit.ac.in';
+    let qPass = 'paswoerd12345';
 
     if (role === 'recruiter') {
       qEmail = 'microsoft';
