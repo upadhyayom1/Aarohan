@@ -84,6 +84,68 @@ async function main() {
   }
 
   // 4. Ensure students exist with profiles
+  const adyaPassword = await bcrypt.hash('paswoerd12345', 10);
+  let adyaUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: 'adya.20253026@mnnit.ac.in' },
+        { email: 'adya@aarohan.edu' },
+      ],
+    },
+  });
+
+  if (!adyaUser) {
+    adyaUser = await prisma.user.create({
+      data: {
+        name: 'Adya Tripathi',
+        email: 'adya.20253026@mnnit.ac.in',
+        password: adyaPassword,
+        role: 'student',
+      },
+    });
+    console.log('Created student user Adya: adya.20253026@mnnit.ac.in (password: paswoerd12345)');
+  }
+
+  let adyaProfile = await prisma.studentProfile.findUnique({ where: { userId: adyaUser.id } });
+  if (!adyaProfile) {
+    adyaProfile = await prisma.studentProfile.create({
+      data: {
+        userId: adyaUser.id,
+        name: 'Adya Tripathi',
+        branch: 'CSE',
+        cgpa: 8.84,
+        graduationYear: 2029,
+        backlogs: 0,
+        skills: [
+          'Python',
+          'Java',
+          'C',
+          'Data Structures & Algorithms',
+          'Machine Learning',
+          'Deep Learning',
+          'NLP',
+          'Scikit-learn',
+          'TensorFlow',
+          'Keras',
+          'NumPy',
+          'Pandas',
+          'Matplotlib',
+          'Seaborn',
+          'Git',
+          'GitHub',
+          'VS Code',
+          'Streamlit',
+          'Jupyter Notebook',
+          'SQL',
+          'FastAPI',
+          'Docker',
+        ],
+        profileComplete: true,
+      },
+    });
+    console.log('Created student profile for Adya Tripathi (MNNIT Allahabad, CGPA: 8.84)');
+  }
+
   const sampleStudents = [
     {
       name: 'Dev Sharma',
@@ -200,6 +262,75 @@ async function main() {
     });
 
     console.log('Seeded sample candidate applications.');
+  }
+
+  // Seed applications and interviews for Adya Tripathi
+  if (adyaProfile && jobHorizon && jobApex) {
+    let adyaAppHorizon = await prisma.application.findFirst({
+      where: { studentId: adyaProfile.id, jobId: jobHorizon.id },
+    });
+    if (!adyaAppHorizon) {
+      adyaAppHorizon = await prisma.application.create({
+        data: {
+          jobId: jobHorizon.id,
+          studentId: adyaProfile.id,
+          status: 'interview_scheduled',
+          eligible: true,
+          eligibilityReasons: [],
+          matchResult: { match_score: 96, explanation: 'Outstanding ML research background from Nagar-Drishti & Jan Saarthi AI projects' },
+        },
+      });
+      console.log('Created application for Adya -> Horizon AI Labs');
+    }
+
+    let adyaAppApex = await prisma.application.findFirst({
+      where: { studentId: adyaProfile.id, jobId: jobApex.id },
+    });
+    if (!adyaAppApex) {
+      adyaAppApex = await prisma.application.create({
+        data: {
+          jobId: jobApex.id,
+          studentId: adyaProfile.id,
+          status: 'interview_scheduled',
+          eligible: true,
+          eligibilityReasons: [],
+          matchResult: { match_score: 92, explanation: 'Strong algorithmic skills, Python, Java and anomaly detection in MicroGuard' },
+        },
+      });
+      console.log('Created application for Adya -> Apex Systems');
+    }
+
+    // Seed Interviews for Adya
+    const existingAdyaInterview = await prisma.interview.findFirst({
+      where: { applicationId: adyaAppHorizon.id },
+    });
+    if (!existingAdyaInterview) {
+      await prisma.interview.create({
+        data: {
+          applicationId: adyaAppHorizon.id,
+          round: 'Round 1: Machine Learning Systems & Deep Learning Modeling',
+          scheduledAt: new Date('2026-11-06T14:00:00Z'),
+          durationMinutes: 75,
+          mode: 'online',
+          location: 'https://meet.google.com/aar-ml-eng-2026',
+          status: 'scheduled',
+          interviewerName: 'Dr. Kenji Sato',
+        },
+      });
+      await prisma.interview.create({
+        data: {
+          applicationId: adyaAppApex.id,
+          round: 'Round 1: Data Structures, Algorithms & System Concurrency',
+          scheduledAt: new Date('2026-11-10T11:00:00Z'),
+          durationMinutes: 75,
+          mode: 'online',
+          location: 'https://meet.apexsystems.com/aarohan-adya-interview',
+          status: 'scheduled',
+          interviewerName: 'Marcus Vance',
+        },
+      });
+      console.log('Created 2 scheduled interviews for Adya Tripathi.');
+    }
   }
 
   // 6. Seed placement drives if none exist

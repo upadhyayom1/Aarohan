@@ -8,8 +8,8 @@ export function LoginPage() {
   const { navigate } = useRouter();
   const { actions } = useCampusStore();
 
-  const [email, setEmail] = useState('aditi.rao@campus.edu');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState('adya.20253026@mnnit.ac.in');
+  const [password, setPassword] = useState('paswoerd12345');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,11 +20,12 @@ export function LoginPage() {
 
     setTimeout(() => {
       setIsLoading(false);
+      const normalized = email.toLowerCase().trim();
       // Auto-route based on email entered
-      if (email.includes('apex') || email.includes('recruiter')) {
+      if (normalized.includes('apex') || normalized.includes('recruiter')) {
         actions.switchRole('recruiter');
         navigate('/recruiter/dashboard');
-      } else if (email.includes('dean') || email.includes('admin')) {
+      } else if (normalized.includes('dean') || normalized.includes('admin')) {
         actions.switchRole('admin');
         navigate('/admin/dashboard');
       } else {
@@ -72,7 +73,7 @@ export function LoginPage() {
               onClick={() => handleQuickLogin('student')}
               className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer"
             >
-              Sign In as Student (Aditi Rao)
+              Sign In as Student (Adya Tripathi)
             </button>
             <button
               onClick={() => handleQuickLogin('recruiter')}
