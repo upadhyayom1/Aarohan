@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export function StudentResumePage() {
-  const { studentProfile, actions } = useCampusStore();
+  const { currentUser, studentProfile, actions } = useCampusStore();
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzingAts, setIsAnalyzingAts] = useState(false);
@@ -32,10 +32,11 @@ export function StudentResumePage() {
   useEffect(() => {
     let isMounted = true;
     const fetchInitialAts = async () => {
-      if (!studentProfile.id) return;
+      const activeId = studentProfile.id || currentUser.id;
+      if (!activeId || !resume) return;
       try {
         setIsAnalyzingAts(true);
-        const res = await api.ai.getAtsAnalysis(studentProfile.id);
+        const res = await api.ai.getAtsAnalysis(activeId);
         if (isMounted && res) {
           setAtsResult(res);
         }
@@ -51,7 +52,7 @@ export function StudentResumePage() {
     return () => {
       isMounted = false;
     };
-  }, [studentProfile.id]);
+  }, [studentProfile.id, currentUser.id, resume]);
 
   const handleFileUpload = async (file: File) => {
     if (!file.name.toLowerCase().endsWith('.pdf')) {
@@ -82,31 +83,47 @@ export function StudentResumePage() {
         ? uploadRes.analysis.skills
         : studentProfile.skills;
 
-      // Update student profile skills if extracted
-      if (extractedSkills.length > 0) {
-        actions.updateStudentProfile({
-          skills: Array.from(new Set([...studentProfile.skills, ...extractedSkills])),
-          resume: {
-            fileName: file.name,
-            fileSize: sizeStr,
-            uploadedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
-            parsingStatus: 'completed',
-            parsedSkills: extractedSkills,
-            parsedEducation: uploadRes.analysis?.education?.length
-              ? uploadRes.analysis.education.map((e: any) => typeof e === 'string' ? e : `${e.degree || ''} ${e.institution || ''}`).join(', ')
-              : `${studentProfile.degree} in ${studentProfile.branch}, ${studentProfile.institution}`,
-            parsedProjects: studentProfile.projects.map(p => p.title),
-            parsedExperience: studentProfile.experience.map(e => `${e.position} at ${e.organization}`).join('; '),
-          },
-        });
-      }
+      const extractedEducation = uploadRes.analysis?.education?.length
+        ? uploadRes.analysis.education.map((e: any) => typeof e === 'string' ? e : `${e.degree || ''} ${e.branch ? `in ${e.branch}` : ''}, ${e.institution || ''}${e.cgpa ? ` (CGPA: ${e.cgpa})` : ''}`).join('; ')
+        : (studentProfile.degree ? `${studentProfile.degree} in ${studentProfile.branch}, ${studentProfile.institution}` : '');
+
+      const extractedProjects = Array.isArray(uploadRes.analysis?.projects) && uploadRes.analysis.projects.length > 0
+        ? uploadRes.analysis.projects.map((p: any) => typeof p === 'string' ? p : p.title || 'Project')
+        : [];
+
+      const extractedExperience = Array.isArray(uploadRes.analysis?.experience) && uploadRes.analysis.experience.length > 0
+        ? uploadRes.analysis.experience.map((e: any) => typeof e === 'string' ? e : `${e.role || e.position || ''} at ${e.company || e.organization || ''}`).join('; ')
+        : '';
+
+      actions.updateStudentProfile({
+        skills: Array.from(new Set([...studentProfile.skills, ...extractedSkills])),
+        projects: extractedProjects.length > 0
+          ? extractedProjects.map((title: string, idx: number) => ({
+              id: `proj_${Date.now()}_${idx}`,
+              title,
+              description: 'Extracted from resume',
+              techStack: extractedSkills.slice(0, 4),
+            }))
+          : studentProfile.projects,
+        resume: {
+          fileName: file.name,
+          fileSize: sizeStr,
+          uploadedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
+          parsingStatus: 'completed',
+          parsedSkills: extractedSkills,
+          parsedEducation: extractedEducation,
+          parsedProjects: extractedProjects,
+          parsedExperience: extractedExperience,
+        },
+      });
 
       setSuccessMessage('Resume uploaded and processed by placement extraction pipeline.');
 
       // 2. Automatically request ATS analysis from AI Service (ai/app/routers/ai.py)
       setIsAnalyzingAts(true);
       try {
-        const ats = await api.ai.getAtsAnalysis(studentProfile.id);
+        const activeId = studentProfile.id || currentUser.id;
+        const ats = await api.ai.getAtsAnalysis(activeId);
         setAtsResult(ats);
       } catch (aiErr) {
         console.warn('AI ATS analysis delayed:', aiErr);
@@ -154,7 +171,8 @@ export function StudentResumePage() {
     setIsAnalyzingAts(true);
     setErrorMessage(null);
     try {
-      const ats = await api.ai.getAtsAnalysis(studentProfile.id);
+      const activeId = studentProfile.id || currentUser.id;
+      const ats = await api.ai.getAtsAnalysis(activeId);
       setAtsResult(ats);
       setSuccessMessage('ATS evaluation refreshed with current recruitment benchmarks.');
     } catch (err: any) {
@@ -462,7 +480,7 @@ export function StudentResumePage() {
                     Extracted Education Credentials
                   </span>
                   <div className="p-3 bg-white border border-[#E4E4E1] text-[#111111]">
-                    {resume.parsedEducation || `${studentProfile.degree} in ${studentProfile.branch}, ${studentProfile.institution}`}
+                    {resume.parsedEducation || (studentProfile.degree ? `${studentProfile.degree} in ${studentProfile.branch}, ${studentProfile.institution}` : 'Not specified')}
                   </div>
                 </div>
 
@@ -471,14 +489,18 @@ export function StudentResumePage() {
                     Extracted Technical Competencies ({studentProfile.skills.length})
                   </span>
                   <div className="flex flex-wrap gap-1">
-                    {studentProfile.skills.map(skill => (
-                      <span
-                        key={skill}
-                        className="bg-white border border-[#111111] px-2 py-0.5 text-[#111111]"
-                      >
-                        {skill}
-                      </span>
-                    ))}
+                    {studentProfile.skills.length > 0 ? (
+                      studentProfile.skills.map(skill => (
+                        <span
+                          key={skill}
+                          className="bg-white border border-[#111111] px-2 py-0.5 text-[#111111]"
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[#858585]">No competencies extracted</span>
+                    )}
                   </div>
                 </div>
 
@@ -487,12 +509,16 @@ export function StudentResumePage() {
                     Extracted Projects
                   </span>
                   <div className="p-3 bg-white border border-[#E4E4E1] space-y-1">
-                    {studentProfile.projects.length > 0 ? (
+                    {resume.parsedProjects && resume.parsedProjects.length > 0 ? (
+                      resume.parsedProjects.map((p, i) => (
+                        <div key={i} className="text-[#111111]">• {p}</div>
+                      ))
+                    ) : studentProfile.projects.length > 0 ? (
                       studentProfile.projects.map((p, i) => (
                         <div key={i} className="text-[#111111]">• {p.title}</div>
                       ))
                     ) : (
-                      <div className="text-[#858585]">No projects parsed</div>
+                      <div className="text-[#858585]">No projects parsed from resume</div>
                     )}
                   </div>
                 </div>
@@ -502,9 +528,9 @@ export function StudentResumePage() {
                     Prior Work / Internships
                   </span>
                   <div className="p-3 bg-white border border-[#E4E4E1] text-[#111111]">
-                    {studentProfile.experience.length > 0
+                    {resume.parsedExperience || (studentProfile.experience.length > 0
                       ? studentProfile.experience.map(e => `${e.position} at ${e.organization}`).join('; ')
-                      : 'None registered'}
+                      : 'None registered')}
                   </div>
                 </div>
               </div>

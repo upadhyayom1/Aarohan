@@ -188,44 +188,7 @@ export const getStoredRole = (): string | null => {
  * If running in browser and token is missing, auto-authenticates the demo session.
  */
 async function ensureAuthToken(): Promise<string | null> {
-  const existing = getAuthToken();
-  if (existing) return existing;
-
-  if (typeof window !== 'undefined') {
-    try {
-      const path = window.location.pathname;
-      let email = 'adya.20253026@mnnit.ac.in';
-      let password = 'paswoerd12345';
-      let role = 'student';
-
-      if (path.startsWith('/recruiter')) {
-        email = 'microsoft';
-        password = 'password123';
-        role = 'recruiter';
-      } else if (path.startsWith('/admin')) {
-        email = 'admin@aarohan.edu';
-        password = 'Password@123';
-        role = 'admin';
-      }
-
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) {
-          setAuthToken(data.token, data.role || role);
-          return data.token;
-        }
-      }
-    } catch {
-      // Ignore background auth failure
-    }
-  }
-  return null;
+  return getAuthToken();
 }
 
 /**
@@ -569,45 +532,35 @@ export const api = {
 
   // 9. AI Endpoints (Port 8001 AI Server)
   ai: {
-    analyzeResume: (studentId: string) => {
-      const resolved = !studentId || studentId.startsWith('stu_') ? 'c61ef00a-8099-4197-9fc9-97457a16d5b7' : studentId;
-      return aiRequest<ResumeAnalysis>('/analyze-resume', {
+    analyzeResume: (studentId?: string) =>
+      aiRequest<ResumeAnalysis>('/analyze-resume', {
         method: 'POST',
-        body: JSON.stringify({ student_id: resolved }),
-      });
-    },
+        body: JSON.stringify({ student_id: studentId || '' }),
+      }),
 
-    matchResume: (studentId: string, jobId: string) => {
-      const resolved = !studentId || studentId.startsWith('stu_') ? 'c61ef00a-8099-4197-9fc9-97457a16d5b7' : studentId;
-      return aiRequest<MatchResult>('/match-resume', {
+    matchResume: (studentId: string, jobId: string) =>
+      aiRequest<MatchResult>('/match-resume', {
         method: 'POST',
-        body: JSON.stringify({ student_id: resolved, job_id: jobId }),
-      });
-    },
+        body: JSON.stringify({ student_id: studentId || '', job_id: jobId }),
+      }),
 
-    getAtsAnalysis: (studentId: string, jobId?: string) => {
-      const resolved = !studentId || studentId.startsWith('stu_') ? 'c61ef00a-8099-4197-9fc9-97457a16d5b7' : studentId;
-      return aiRequest<AtsResult>('/ats-analysis', {
+    getAtsAnalysis: (studentId?: string, jobId?: string) =>
+      aiRequest<AtsResult>('/ats-analysis', {
         method: 'POST',
-        body: JSON.stringify({ student_id: resolved, job_id: jobId || null }),
-      });
-    },
+        body: JSON.stringify({ student_id: studentId || '', job_id: jobId || null }),
+      }),
 
-    getSkillGaps: (studentId: string, jobId: string) => {
-      const resolved = !studentId || studentId.startsWith('stu_') ? 'c61ef00a-8099-4197-9fc9-97457a16d5b7' : studentId;
-      return aiRequest<SkillGapResult>('/skill-gaps', {
+    getSkillGaps: (studentId: string, jobId: string) =>
+      aiRequest<SkillGapResult>('/skill-gaps', {
         method: 'POST',
-        body: JSON.stringify({ student_id: resolved, job_id: jobId }),
-      });
-    },
+        body: JSON.stringify({ student_id: studentId || '', job_id: jobId }),
+      }),
 
-    buildResume: (studentId: string) => {
-      const resolved = !studentId || studentId.startsWith('stu_') ? 'c61ef00a-8099-4197-9fc9-97457a16d5b7' : studentId;
-      return aiRequest<BuildResumeResult>('/build-resume', {
+    buildResume: (studentId?: string) =>
+      aiRequest<BuildResumeResult>('/build-resume', {
         method: 'POST',
-        body: JSON.stringify({ student_id: resolved }),
-      });
-    },
+        body: JSON.stringify({ student_id: studentId || '' }),
+      }),
 
     compareMatching: (studentId: string, jobId: string) =>
       aiRequest<any>('/compare-matching', {

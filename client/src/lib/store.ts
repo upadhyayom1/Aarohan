@@ -15,160 +15,51 @@ import {
 import { api, getAuthToken, setAuthToken, clearAuthToken } from './api';
 
 export const INITIAL_USER_STUDENT: User = {
-  id: 'usr_student_adya',
-  name: 'Adya Tripathi',
-  email: 'adya.20253026@mnnit.ac.in',
+  id: '',
+  name: 'Student',
+  email: '',
   role: 'student',
-  studentId: '20253026',
-  organization: 'Motilal Nehru National Institute of Technology Allahabad',
+  studentId: '',
+  organization: '',
 };
 
 export const INITIAL_USER_RECRUITER: User = {
-  id: 'usr_recruiter_microsoft',
-  name: 'Microsoft',
-  email: 'microsoft@microsoft.com',
+  id: '',
+  name: 'Recruiter',
+  email: '',
   role: 'recruiter',
-  organization: 'Microsoft',
+  organization: 'Partner Enterprise',
 };
 
 export const INITIAL_USER_ADMIN: User = {
-  id: 'ace5b256-8177-4f44-b04b-0993e61f8c91',
-  name: 'Directorate Central Administrator',
+  id: '',
+  name: 'Central Administrator',
   email: 'admin@aarohan.edu',
   role: 'admin',
   organization: 'Office of Career Advancement & Placement',
 };
 
 export const INITIAL_STUDENT_PROFILE: StudentProfile = {
-  id: 'stu_adya_tripathi',
-  fullName: 'Adya Tripathi',
-  email: 'adya.20253026@mnnit.ac.in',
-  phone: '+91-9580367287',
+  id: '',
+  fullName: '',
+  email: '',
+  phone: '',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
-  portfolioUrl: 'https://github.com/adya-tripathi',
-  githubUrl: 'https://github.com/adya-tripathi',
-  linkedinUrl: 'https://linkedin.com/in/adya-tripathi-83425b394/',
-  bio: 'B.Tech student in Computer Science and Engineering at Motilal Nehru National Institute of Technology Allahabad (MNNIT). Passionate about Machine Learning, Deep Learning, NLP, Data Structures & Algorithms, and AI Systems with proven experience developing real-time intelligence platforms.',
-  institution: 'Motilal Nehru National Institute of Technology Allahabad',
+  portfolioUrl: '',
+  githubUrl: '',
+  linkedinUrl: '',
+  bio: '',
+  institution: '',
   degree: 'Bachelor of Technology (B.Tech)',
   branch: 'Computer Science & Engineering',
-  currentSemester: 4,
-  cgpa: 8.84,
-  graduationYear: 2029,
+  currentSemester: 1,
+  cgpa: 0,
+  graduationYear: new Date().getFullYear(),
   activeBacklogs: 0,
-  skills: [
-    'Python',
-    'Java',
-    'C',
-    'Data Structures & Algorithms',
-    'Machine Learning',
-    'Deep Learning',
-    'NLP',
-    'Scikit-learn',
-    'TensorFlow',
-    'Keras',
-    'NumPy',
-    'Pandas',
-    'Matplotlib',
-    'Seaborn',
-    'Git',
-    'GitHub',
-    'VS Code',
-    'Streamlit',
-    'Jupyter Notebook',
-    'SQL',
-    'FastAPI',
-    'Docker',
-    'REST APIs',
-    'Algorithms',
-    'React',
-    'TypeScript',
-  ],
-  projects: [
-    {
-      id: 'proj_nagar_drishti',
-      title: 'Nagar-Drishti — Smart Urban Traffic Intelligence System',
-      description: 'AI-driven urban traffic intelligence system analyzing multi-camera vehicle movement data for congestion monitoring, trajectory analysis, anomaly alerts using Isolation Forest & DBSCAN, and traffic forecasting via Random Forest and Markov chains.',
-      techStack: ['Python', 'Scikit-learn', 'Pandas', 'NumPy', 'Streamlit'],
-      projectUrl: 'https://github.com/adya-tripathi/nagar-drishti',
-      githubUrl: 'https://github.com/adya-tripathi/nagar-drishti',
-    },
-    {
-      id: 'proj_jan_saarthi',
-      title: 'Jan Saarthi AI — Government Opportunity Recommendation Platform',
-      description: 'Centralized civic platform discovering government scholarships, jobs, internships, and welfare schemes. Features profile-based ML recommendation pipelines, Scikit-learn filtering models, and Random Forest probability classifiers with rule-based eligibility verification.',
-      techStack: ['Python', 'Scikit-learn', 'Pandas', 'NumPy', 'NLP'],
-      projectUrl: 'https://github.com/adya-tripathi/jan-saarthi-ai',
-      githubUrl: 'https://github.com/adya-tripathi/jan-saarthi-ai',
-    },
-    {
-      id: 'proj_microguard',
-      title: 'MicroGuard — Real-Time Anomaly Detection from Scratch',
-      description: 'Lightweight real-time anomaly detection system for IoT environments with strict memory constraints. Implemented Multivariate Gaussian model from scratch with incremental streaming pipeline and deployed interactive Streamlit monitoring dashboard.',
-      techStack: ['Python', 'NumPy', 'Pandas', 'Streamlit'],
-      projectUrl: 'https://github.com/adya-tripathi/microguard',
-      githubUrl: 'https://github.com/adya-tripathi/microguard',
-    },
-    {
-      id: 'proj_health_insurance',
-      title: 'Health Insurance Premium Predictor',
-      description: 'End-to-end machine learning system estimating healthcare premiums using demographic and lifestyle features. Evaluated Linear Regression, Decision Tree, and Random Forest models optimized via cross-validation and GridSearchCV.',
-      techStack: ['Python', 'Scikit-Learn', 'NumPy', 'Pandas', 'Matplotlib', 'Seaborn', 'Streamlit'],
-      projectUrl: 'https://github.com/adya-tripathi/insurance-predictor',
-      githubUrl: 'https://github.com/adya-tripathi/insurance-predictor',
-    },
-  ],
-  experience: [
-    {
-      id: 'exp_mnnit_lead',
-      position: 'Machine Learning Researcher & Project Lead',
-      organization: 'MNNIT Allahabad AI & Intelligent Systems Group',
-      startDate: 'January 2026',
-      endDate: 'Present',
-      description: 'Spearheaded predictive ML pipelines, geospatial traffic telemetry analytics, and custom anomaly detection models for campus and smart-city research.',
-    },
-    {
-      id: 'exp_open_source',
-      position: 'Open Source Software Contributor',
-      organization: 'AI & Data Science Community',
-      startDate: 'June 2025',
-      endDate: 'December 2025',
-      description: 'Contributed modular machine learning utilities, unsupervised anomaly scoring implementations, and responsive Streamlit UI components.',
-    },
-  ],
-  resume: {
-    fileName: 'NIT_Allahabad_Resume_Adya_Tripathi.pdf',
-    fileSize: '320 KB',
-    uploadedAt: '2026-10-31 16:30',
-    parsingStatus: 'completed',
-    parsedSkills: [
-      'Python',
-      'Java',
-      'C',
-      'Data Structures & Algorithms',
-      'Machine Learning',
-      'Deep Learning',
-      'NLP',
-      'Scikit-learn',
-      'TensorFlow',
-      'Keras',
-      'NumPy',
-      'Pandas',
-      'Matplotlib',
-      'Seaborn',
-      'Git',
-      'Streamlit',
-      'SQL',
-    ],
-    parsedEducation: 'B.Tech in Computer Science and Engineering, Motilal Nehru National Institute of Technology Allahabad (MNNIT) (CGPA: 8.84, Roll No: 20253026, 2025-2029)',
-    parsedProjects: [
-      'Nagar-Drishti — Smart Urban Traffic Intelligence System (Python, Scikit-learn, Pandas)',
-      'Jan Saarthi AI — Government Opportunity Recommendation Platform (Scikit-learn, NLP)',
-      'MicroGuard — Real-Time Anomaly Detection from Scratch (NumPy, Streamlit)',
-      'Health Insurance Premium Predictor (Scikit-Learn, Streamlit)',
-    ],
-    parsedExperience: 'Machine Learning Researcher & Project Lead at MNNIT Allahabad AI & Intelligent Systems Group; Open Source Software Contributor',
-  },
+  skills: [],
+  projects: [],
+  experience: [],
+  resume: undefined,
 };
 
 export const INITIAL_JOBS: JobOpportunity[] = [
@@ -379,197 +270,9 @@ export const INITIAL_JOBS: JobOpportunity[] = [
   },
 ];
 
-export const INITIAL_APPLICATIONS: Application[] = [
-  {
-    id: 'app_1',
-    jobId: 'job_horizon_ai',
-    jobTitle: 'Machine Learning Research Engineer',
-    company: 'Horizon AI Labs',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2029,
-    appliedDate: '2026-10-24',
-    status: 'Interview Scheduled',
-    latestUpdateDate: '2026-10-30',
-    matchScore: 96,
-    recruiterNotes: 'Exceptional deep learning and ML architecture profile. Nagar-Drishti and Jan Saarthi AI demonstrate practical, end-to-end intelligence platform engineering with Scikit-learn and Streamlit.',
-    history: [
-      { stage: 'Applied', date: '2026-10-24', note: 'Application dossier submitted via Aarohan portal.' },
-      { stage: 'Under Review', date: '2026-10-27', note: 'AI Research recruitment committee screened resume and MNNIT academic records.' },
-      { stage: 'Shortlisted', date: '2026-10-29', note: 'Candidate shortlisted for technical round.' },
-      { stage: 'Interview Scheduled', date: '2026-10-30', note: 'Round 1: Machine Learning Systems & Deep Learning Modeling confirmed.' },
-    ],
-  },
-  {
-    id: 'app_2',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2029,
-    appliedDate: '2026-10-21',
-    status: 'Interview Scheduled',
-    latestUpdateDate: '2026-10-28',
-    matchScore: 92,
-    recruiterNotes: 'Strong computer science foundation, algorithms, and clean system design displayed in Nagar-Drishti and MicroGuard projects.',
-    history: [
-      { stage: 'Applied', date: '2026-10-21', note: 'Application submitted.' },
-      { stage: 'Under Review', date: '2026-10-24', note: 'Profile and code samples reviewed.' },
-      { stage: 'Shortlisted', date: '2026-10-26', note: 'Shortlisted for core technical round.' },
-      { stage: 'Interview Scheduled', date: '2026-10-28', note: 'Round 1: Data Structures, Algorithms & System Concurrency confirmed.' },
-    ],
-  },
-  {
-    id: 'app_3',
-    jobId: 'job_veritas_cloud',
-    jobTitle: 'Cloud Infrastructure & DevOps Engineer',
-    company: 'Veritas Technologies',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2029,
-    appliedDate: '2026-10-25',
-    status: 'Under Review',
-    latestUpdateDate: '2026-10-28',
-    matchScore: 84,
-    recruiterNotes: 'Reviewing systems streaming and container fundamentals.',
-    history: [
-      { stage: 'Applied', date: '2026-10-25', note: 'Application dossier received.' },
-      { stage: 'Under Review', date: '2026-10-28', note: 'Department recruitment committee evaluating credentials.' },
-    ],
-  },
-  {
-    id: 'app_4',
-    jobId: 'job_meridian_data',
-    jobTitle: 'Healthcare Informatics & Data Analyst',
-    company: 'Meridian Health Informatics',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 8.84,
-    studentGradYear: 2029,
-    appliedDate: '2026-10-28',
-    status: 'Applied',
-    latestUpdateDate: '2026-10-28',
-    matchScore: 89,
-    history: [
-      { stage: 'Applied', date: '2026-10-28', note: 'Submission confirmed. Awaiting committee review.' },
-    ],
-  },
-  // Additional student applicants for recruiter review workflow
-  {
-    id: 'app_recruiter_demo_1',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    studentBranch: 'Computer Science & Engineering',
-    studentCgpa: 9.30,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-20',
-    status: 'Shortlisted',
-    latestUpdateDate: '2026-10-26',
-    matchScore: 94,
-    recruiterNotes: 'Top 3% class rank. Strong competitive programming track record.',
-    history: [
-      { stage: 'Applied', date: '2026-10-20' },
-      { stage: 'Under Review', date: '2026-10-22' },
-      { stage: 'Shortlisted', date: '2026-10-26' },
-    ],
-  },
-  {
-    id: 'app_recruiter_demo_2',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_priya_nair',
-    studentName: 'Priya Nair',
-    studentEmail: 'priya.nair@campus.edu',
-    studentBranch: 'Information Technology',
-    studentCgpa: 8.42,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-21',
-    status: 'Under Review',
-    latestUpdateDate: '2026-10-24',
-    matchScore: 82,
-    history: [
-      { stage: 'Applied', date: '2026-10-21' },
-      { stage: 'Under Review', date: '2026-10-24' },
-    ],
-  },
-  {
-    id: 'app_recruiter_demo_3',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_lucas_mendez',
-    studentName: 'Lucas Mendez',
-    studentEmail: 'lucas.mendez@campus.edu',
-    studentBranch: 'Electrical & Computer Engineering',
-    studentCgpa: 7.91,
-    studentGradYear: 2026,
-    appliedDate: '2026-10-22',
-    status: 'Applied',
-    latestUpdateDate: '2026-10-22',
-    matchScore: 68,
-    history: [
-      { stage: 'Applied', date: '2026-10-22' },
-    ],
-  },
-];
+export const INITIAL_APPLICATIONS: Application[] = [];
 
-export const INITIAL_INTERVIEWS: Interview[] = [
-  {
-    id: 'int_1',
-    applicationId: 'app_1',
-    jobId: 'job_horizon_ai',
-    jobTitle: 'Machine Learning Research Engineer',
-    company: 'Horizon AI Labs',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    round: 'Round 1: Machine Learning Systems & Deep Learning Modeling',
-    date: '2026-11-06',
-    startTime: '02:00 PM',
-    endTime: '03:15 PM',
-    timezone: 'IST',
-    mode: 'Video Call',
-    locationOrLink: 'https://meet.google.com/aar-ml-eng-2026',
-    status: 'Scheduled',
-    notes: 'Please be prepared to walk through your Nagar-Drishti and Jan Saarthi AI pipelines and discuss custom anomaly scoring algorithms.',
-  },
-  {
-    id: 'int_2',
-    applicationId: 'app_2',
-    jobId: 'job_apex_sde',
-    jobTitle: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    studentId: 'stu_adya_tripathi',
-    studentName: 'Adya Tripathi',
-    studentEmail: 'adya.20253026@mnnit.ac.in',
-    round: 'Round 1: Data Structures, Algorithms & System Concurrency',
-    date: '2026-11-10',
-    startTime: '11:00 AM',
-    endTime: '12:15 PM',
-    timezone: 'IST',
-    mode: 'Video Call',
-    locationOrLink: 'https://meet.apexsystems.com/aarohan-adya-interview',
-    status: 'Scheduled',
-    notes: 'Live coding on dynamic programming and data structure optimization, followed by MicroGuard streaming architecture discussion.',
-  },
-];
+export const INITIAL_INTERVIEWS: Interview[] = [];
 
 export const INITIAL_DRIVES: PlacementDrive[] = [
   {
@@ -616,96 +319,9 @@ export const INITIAL_DRIVES: PlacementDrive[] = [
   },
 ];
 
-export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'notif_1',
-    userId: 'usr_student_adya',
-    title: 'Round 1 AI Research Interview Confirmed',
-    message: 'Horizon AI Labs has confirmed your Technical Architecture & Deep Learning interview for November 6, 2026 at 02:00 PM IST.',
-    category: 'interview',
-    read: false,
-    timestamp: '2026-10-31 16:45',
-    link: '/student/interviews',
-  },
-  {
-    id: 'notif_2',
-    userId: 'usr_student_adya',
-    title: 'Core Systems Interview Scheduled',
-    message: 'Apex Systems has scheduled your Data Structures, Algorithms & System Concurrency interview for November 10, 2026 at 11:00 AM IST.',
-    category: 'interview',
-    read: false,
-    timestamp: '2026-10-31 16:40',
-    link: '/student/interviews',
-  },
-  {
-    id: 'notif_3',
-    userId: 'usr_student_adya',
-    title: 'Autumn Placement Drive Registration Open',
-    message: 'Registration is now open for the Autumn Technology & Engineering Placement Drive 2026. MNNIT Allahabad B.Tech CSE cohort is verified eligible.',
-    category: 'drive',
-    read: true,
-    timestamp: '2026-10-30 09:00',
-    link: '/opportunities',
-  },
-  {
-    id: 'notif_4',
-    userId: 'usr_student_adya',
-    title: 'Resume Parsing Completed',
-    message: 'Your official resume NIT_Allahabad_Resume_Adya_Tripathi.pdf was successfully parsed with 17 technical skills and 4 projects verified.',
-    category: 'system',
-    read: true,
-    timestamp: '2026-10-31 16:30',
-    link: '/student/resume',
-  },
-];
+export const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
 
-export const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'aud_1',
-    timestamp: '2026-10-31 16:45',
-    actor: 'Dr. Kenji Sato',
-    actorRole: 'recruiter',
-    action: 'SCHEDULE_INTERVIEW',
-    entity: 'Application app_1 (Adya Tripathi)',
-    summary: 'Scheduled Round 1 Machine Learning Systems & Deep Learning Modeling interview for 2026-11-06.',
-  },
-  {
-    id: 'aud_2',
-    timestamp: '2026-10-31 16:40',
-    actor: 'Marcus Vance',
-    actorRole: 'recruiter',
-    action: 'SCHEDULE_INTERVIEW',
-    entity: 'Application app_2 (Adya Tripathi)',
-    summary: 'Scheduled Round 1 Data Structures, Algorithms & System Concurrency interview for 2026-11-10.',
-  },
-  {
-    id: 'aud_3',
-    timestamp: '2026-10-29 14:00',
-    actor: 'Dr. Eleanor Hayes',
-    actorRole: 'admin',
-    action: 'PUBLISH_DRIVE',
-    entity: 'Placement Drive drv_autumn_2026',
-    summary: 'Approved and published Autumn Technology & Engineering Placement Drive 2026.',
-  },
-  {
-    id: 'aud_4',
-    timestamp: '2026-10-20 09:45',
-    actor: 'Marcus Vance',
-    actorRole: 'recruiter',
-    action: 'CREATE_JOB',
-    entity: 'Job job_apex_sde (Software Development Engineer I)',
-    summary: 'Created and published new campus vacancy with 8.0 CGPA requirement.',
-  },
-  {
-    id: 'aud_5',
-    timestamp: '2026-10-15 14:00',
-    actor: 'Dr. Eleanor Hayes',
-    actorRole: 'admin',
-    action: 'VERIFY_RECRUITER',
-    entity: 'Recruiter Marcus Vance (Apex Systems)',
-    summary: 'Verified institutional employer credentials and approved campus recruiter access.',
-  },
-];
+export const INITIAL_AUDIT_LOGS: AuditLog[] = [];
 
 export const INITIAL_SKILL_RESOURCES: SkillResource[] = [
   {
@@ -781,7 +397,7 @@ class CampusStore {
     if (typeof window === 'undefined') return;
     try {
       const data = {
-        version: 3,
+        version: 4,
         currentUser: this.currentUser,
         studentProfile: this.studentProfile,
         jobs: this.jobs,
@@ -804,23 +420,20 @@ class CampusStore {
       const raw = localStorage.getItem('aarohan_state') || localStorage.getItem('campuslink_state');
       if (raw) {
         const parsed = JSON.parse(raw);
-        // If stored state is from previous dummy student "Aditi Rao" or older version, reset to Adya Tripathi
         if (
           !parsed.version ||
-          parsed.version < 3 ||
+          parsed.version < 4 ||
           parsed.currentUser?.name === 'Aditi Rao' ||
+          parsed.currentUser?.name === 'Adya Tripathi' ||
           parsed.studentProfile?.fullName === 'Aditi Rao' ||
-          parsed.studentProfile?.id === 'stu_aditi_rao'
+          parsed.studentProfile?.fullName === 'Adya Tripathi' ||
+          parsed.studentProfile?.id?.startsWith('stu_')
         ) {
           this.currentUser = INITIAL_USER_STUDENT;
           this.studentProfile = INITIAL_STUDENT_PROFILE;
-          this.jobs = INITIAL_JOBS;
-          this.applications = INITIAL_APPLICATIONS;
-          this.interviews = INITIAL_INTERVIEWS;
-          this.drives = INITIAL_DRIVES;
-          this.notifications = INITIAL_NOTIFICATIONS;
-          this.auditLogs = INITIAL_AUDIT_LOGS;
-          this.skillResources = INITIAL_SKILL_RESOURCES;
+          this.applications = [];
+          this.interviews = [];
+          this.notifications = [];
           this.saveToStorage();
           return;
         }
@@ -886,7 +499,7 @@ class CampusStore {
     if (role === 'student') {
       this.currentUser = INITIAL_USER_STUDENT;
       try {
-        const res = await api.auth.login({ email: 'adya.20253026@mnnit.ac.in', password: 'paswoerd12345' });
+        const res = await api.auth.login({ email: 'dev.sharma@aarohan.edu', password: 'Password@123' });
         if (res && res.token) {
           this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'student' }, res.token);
           await this.loadStudentPortalData();
@@ -944,6 +557,7 @@ class CampusStore {
     if (user.role === 'student') {
       this.studentProfile = {
         ...this.studentProfile,
+        id: this.studentProfile.id && !this.studentProfile.id.startsWith('stu_') ? this.studentProfile.id : (user.studentId || user.id || this.studentProfile.id),
         fullName: user.name || this.studentProfile.fullName,
         email: user.email || this.studentProfile.email,
       };
@@ -978,51 +592,18 @@ class CampusStore {
             email: me.email,
             role: me.role as UserRole,
           }, token);
+
+          if (me.role === 'student') {
+            await this.loadStudentPortalData();
+          } else if (me.role === 'recruiter') {
+            await this.loadRecruiterPortalData();
+          }
           return this.currentUser;
         }
       } catch {
         clearAuthToken();
       }
     }
-
-    // Auto-authenticate default demo session based on portal route
-    try {
-      const path = typeof window !== 'undefined' ? window.location.pathname : '';
-      let qEmail = 'adya.20253026@mnnit.ac.in';
-      let qPass = 'paswoerd12345';
-      let qRole: UserRole = 'student';
-
-      if (path.startsWith('/recruiter')) {
-        qEmail = 'microsoft';
-        qPass = 'password123';
-        qRole = 'recruiter';
-      } else if (path.startsWith('/admin')) {
-        qEmail = 'admin@aarohan.edu';
-        qPass = 'Password@123';
-        qRole = 'admin';
-      }
-
-      const res = await api.auth.login({ email: qEmail, password: qPass });
-      if (res && res.token) {
-        this.setAuthSession({
-          id: res.id,
-          name: res.name,
-          email: res.email,
-          role: res.role as UserRole,
-          organization: qRole === 'recruiter' ? 'Microsoft' : undefined,
-        }, res.token);
-
-        if (res.role === 'student') {
-          await this.loadStudentPortalData();
-        } else if (res.role === 'recruiter') {
-          await this.loadRecruiterPortalData();
-        }
-        return this.currentUser;
-      }
-    } catch (e) {
-      console.warn('Auto demo authentication failed:', e);
-    }
-
     return null;
   }
 
@@ -1039,15 +620,15 @@ class CampusStore {
     if (!backendProfile) return;
     this.studentProfile = {
       ...this.studentProfile,
-      id: backendProfile.id || this.studentProfile.id,
+      id: backendProfile.id || backendProfile.user_id || this.studentProfile.id,
       fullName: backendProfile.name || this.studentProfile.fullName,
       email: backendProfile.email || this.studentProfile.email,
       branch: backendProfile.branch || this.studentProfile.branch,
       cgpa: typeof backendProfile.cgpa === 'number' ? backendProfile.cgpa : this.studentProfile.cgpa,
       graduationYear: backendProfile.graduation_year || this.studentProfile.graduationYear,
       activeBacklogs: typeof backendProfile.backlogs === 'number' ? backendProfile.backlogs : this.studentProfile.activeBacklogs,
-      skills: Array.isArray(backendProfile.skills) && backendProfile.skills.length > 0 ? backendProfile.skills : this.studentProfile.skills,
-      projects: Array.isArray(backendProfile.projects) && backendProfile.projects.length > 0 ? backendProfile.projects : this.studentProfile.projects,
+      skills: Array.isArray(backendProfile.skills) ? backendProfile.skills : [],
+      projects: Array.isArray(backendProfile.projects) ? backendProfile.projects : [],
       resume: backendProfile.resume_uploaded
         ? {
             fileName: backendProfile.resume_url ? backendProfile.resume_url.split('/').pop() || 'resume.pdf' : 'resume.pdf',
@@ -1059,7 +640,7 @@ class CampusStore {
             parsedProjects: (backendProfile.projects || []).map((p: any) => typeof p === 'string' ? p : p.title || 'Project'),
             parsedExperience: 'Verified Experience',
           }
-        : this.studentProfile.resume,
+        : undefined,
     };
     this.notify();
   }
@@ -1146,10 +727,8 @@ class CampusStore {
       };
     });
 
-    if (mapped.length > 0) {
-      this.applications = mapped;
-      this.notify();
-    }
+    this.applications = mapped;
+    this.notify();
   }
 
   public syncInterviews(backendInterviews: any[]) {
@@ -1179,10 +758,8 @@ class CampusStore {
       };
     });
 
-    if (mapped.length > 0) {
-      this.interviews = mapped;
-      this.notify();
-    }
+    this.interviews = mapped;
+    this.notify();
   }
 
   public async loadStudentPortalData() {

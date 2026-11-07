@@ -10,8 +10,8 @@ export function LoginPage() {
   const { navigate } = useRouter();
   const { actions } = useCampusStore();
 
-  const [email, setEmail] = useState('adya.20253026@mnnit.ac.in');
-  const [password, setPassword] = useState('paswoerd12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,14 +57,15 @@ export function LoginPage() {
   };
 
   const handleQuickLogin = async (role: 'student' | 'recruiter' | 'admin') => {
-    let qEmail = 'adya.20253026@mnnit.ac.in';
-    let qPass = 'paswoerd12345';
+    let qEmail = 'dev.sharma@aarohan.edu';
+    let qPass = 'Password@123';
 
     if (role === 'recruiter') {
       qEmail = 'microsoft';
       qPass = 'password123';
     } else if (role === 'admin') {
       qEmail = 'admin@aarohan.edu';
+      qPass = 'Password@123';
     }
 
     setEmail(qEmail);
@@ -105,7 +106,7 @@ export function LoginPage() {
               onClick={() => handleQuickLogin('student')}
               className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
             >
-              Sign In as Student (Adya Tripathi)
+              Sign In as Student (Demo)
             </button>
             <button
               type="button"

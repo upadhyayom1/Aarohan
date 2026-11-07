@@ -40,6 +40,15 @@ router = APIRouter(tags=["ai"])
 
 
 # ───────────────────────────── helpers ─────────────────────────────
+def _resolve_student_id(principal: Principal, raw_id: Optional[str]) -> str:
+    """When a student queries their own resources, fall back to authenticated principal.user_id if raw_id is missing or mock."""
+    if principal.role == "student":
+        if not raw_id or raw_id == "me" or raw_id.startswith("stu_"):
+            if principal.user_id:
+                return principal.user_id
+    return raw_id or ""
+
+
 def _student(repo: Repository, student_id: str) -> StudentRecord:
     s = repo.get_student(student_id)
     if not s:
@@ -70,7 +79,7 @@ def analyze_resume(
     svc: Services = Depends(get_services),
 ):
     require_roles(principal, "student", "admin")
-    student = _student(repo, body.student_id)
+    student = _student(repo, _resolve_student_id(principal, body.student_id))
     authorize_student_access(repo, principal, student)
     ctx = svc.resumes.get_context(student)
     background.add_task(svc.node.push_resume_analysis, student.id, ctx.analysis)
@@ -87,7 +96,7 @@ def match_resume(
     svc: Services = Depends(get_services),
 ):
     require_roles(principal, "student", "recruiter", "admin")
-    student = _student(repo, body.student_id)
+    student = _student(repo, _resolve_student_id(principal, body.student_id))
     job = _job(repo, body.job_id)
     _guard_student_job(repo, principal, student, job)
 
@@ -109,7 +118,7 @@ def ats_analysis(
     svc: Services = Depends(get_services),
 ):
     require_roles(principal, "student", "recruiter", "admin")
-    student = _student(repo, body.student_id)
+    student = _student(repo, _resolve_student_id(principal, body.student_id))
     job: Optional[JobRecord] = None
     if body.job_id:
         job = _job(repo, body.job_id)
@@ -131,7 +140,7 @@ def skill_gaps(
     svc: Services = Depends(get_services),
 ):
     require_roles(principal, "student", "admin")
-    student = _student(repo, body.student_id)
+    student = _student(repo, _resolve_student_id(principal, body.student_id))
     job = _job(repo, body.job_id)
     authorize_student_access(repo, principal, student)
     ctx = svc.resumes.try_get_context(student)
@@ -149,7 +158,7 @@ def build_resume(
     svc: Services = Depends(get_services),
 ):
     require_roles(principal, "student", "admin")
-    student = _student(repo, body.student_id)
+    student = _student(repo, _resolve_student_id(principal, body.student_id))
     authorize_student_access(repo, principal, student)
     ctx = svc.resumes.try_get_context(student)
     return svc.builder.build(student, ctx.analysis if ctx else None, resume=ctx.pdf if ctx else None)
