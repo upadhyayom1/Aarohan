@@ -1,8 +1,11 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { RouterProvider, useRouter } from './lib/router';
 import { useCampusStore } from './lib/useStore';
+import { getAuthToken } from './lib/api';
 import { PublicHeader } from './components/layout/PublicHeader';
 import { PublicFooter } from './components/layout/PublicFooter';
+import { Button } from './components/ui';
 
 import { StudentShell } from './components/layout/StudentShell';
 import { RecruiterShell } from './components/layout/RecruiterShell';
@@ -51,9 +54,32 @@ import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
 import { AdminAuditLogsPage } from './pages/admin/AdminAuditLogsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 
+function PageTransition({ children, routeKey }: { children: React.ReactNode; routeKey: string }) {
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={routeKey}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        className="flex-1 flex flex-col w-full"
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function AppRouter() {
-  const { path } = useRouter();
+  const { path, navigate } = useRouter();
   const { currentUser, actions } = useCampusStore();
+  const token = getAuthToken();
+
+  // Scroll to top on every navigation
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [path]);
 
   // Restore authenticated session from backend token on mount
   React.useEffect(() => {
@@ -62,23 +88,14 @@ function AppRouter() {
 
   // Sync live backend data when in student or recruiter portal
   React.useEffect(() => {
-    if (currentUser.role === 'student' || path.startsWith('/student')) {
-      actions.loadStudentPortalData();
-    } else if (currentUser.role === 'recruiter' || path.startsWith('/recruiter')) {
-      actions.loadRecruiterPortalData();
+    if (token) {
+      if (currentUser.role === 'student' || path.startsWith('/student')) {
+        actions.loadStudentPortalData();
+      } else if (currentUser.role === 'recruiter' || path.startsWith('/recruiter')) {
+        actions.loadRecruiterPortalData();
+      }
     }
-  }, [currentUser.role, path, actions]);
-
-  // Keep active role aligned when navigating directly via URL
-  React.useEffect(() => {
-    if (path.startsWith('/admin') && currentUser.role !== 'admin') {
-      actions.switchRole('admin');
-    } else if (path.startsWith('/recruiter') && currentUser.role !== 'recruiter') {
-      actions.switchRole('recruiter');
-    } else if (path.startsWith('/student') && currentUser.role !== 'student') {
-      actions.switchRole('student');
-    }
-  }, [path, currentUser.role, actions]);
+  }, [currentUser.role, path, actions, token]);
 
   // Helper for dynamic subroutes
   const isOpportunityDetail = path.startsWith('/opportunities/') && path !== '/opportunities';
@@ -89,6 +106,20 @@ function AppRouter() {
   // STUDENT PORTAL ROUTES
   // ==========================================
   if (path.startsWith('/student')) {
+    if (!token) {
+      return (
+        <div className="min-h-screen flex flex-col bg-white">
+          <PublicHeader />
+          <main className="flex-1">
+            <PageTransition routeKey="/login">
+              <LoginPage />
+            </PageTransition>
+          </main>
+          <PublicFooter />
+        </div>
+      );
+    }
+
     let content = <StudentDashboard />;
 
     if (path === '/student/profile') {
@@ -117,7 +148,9 @@ function AppRouter() {
 
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <StudentShell>{content}</StudentShell>
+        <StudentShell>
+          <PageTransition routeKey={path}>{content}</PageTransition>
+        </StudentShell>
       </div>
     );
   }
@@ -126,6 +159,20 @@ function AppRouter() {
   // RECRUITER PORTAL ROUTES
   // ==========================================
   if (path.startsWith('/recruiter')) {
+    if (!token) {
+      return (
+        <div className="min-h-screen flex flex-col bg-white">
+          <PublicHeader />
+          <main className="flex-1">
+            <PageTransition routeKey="/login">
+              <LoginPage />
+            </PageTransition>
+          </main>
+          <PublicFooter />
+        </div>
+      );
+    }
+
     let content = <RecruiterDashboard />;
 
     if (path === '/recruiter/jobs/new') {
@@ -146,7 +193,9 @@ function AppRouter() {
 
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <RecruiterShell>{content}</RecruiterShell>
+        <RecruiterShell>
+          <PageTransition routeKey={path}>{content}</PageTransition>
+        </RecruiterShell>
       </div>
     );
   }
@@ -155,6 +204,43 @@ function AppRouter() {
   // ADMIN PORTAL ROUTES
   // ==========================================
   if (path.startsWith('/admin')) {
+    if (!token) {
+      return (
+        <div className="min-h-screen flex flex-col bg-white">
+          <PublicHeader />
+          <main className="flex-1">
+            <PageTransition routeKey="/login">
+              <LoginPage />
+            </PageTransition>
+          </main>
+          <PublicFooter />
+        </div>
+      );
+    }
+
+    if (currentUser.role && currentUser.role !== 'admin') {
+      return (
+        <div className="min-h-screen flex flex-col bg-white">
+          <PublicHeader />
+          <main className="flex-1 max-w-xl mx-auto py-24 px-4 text-center space-y-4">
+            <div className="w-12 h-12 bg-neutral-100 border border-neutral-300 rounded-[2px] mx-auto flex items-center justify-center font-mono font-bold text-lg text-neutral-800">
+              !
+            </div>
+            <h1 className="text-2xl font-extrabold text-[#111111]">Administration Privilege Required</h1>
+            <p className="text-sm text-[#666666]">
+              This administrative module is restricted to verified central placement directorate administrators.
+            </p>
+            <div className="pt-4">
+              <Button variant="secondary" size="sm" onClick={() => navigate('/')}>
+                Return to Institutional Portal
+              </Button>
+            </div>
+          </main>
+          <PublicFooter />
+        </div>
+      );
+    }
+
     let content = <AdminDashboard />;
 
     if (path === '/admin/students') {
@@ -179,7 +265,9 @@ function AppRouter() {
 
     return (
       <div className="min-h-screen flex flex-col bg-white">
-        <AdminShell>{content}</AdminShell>
+        <AdminShell>
+          <PageTransition routeKey={path}>{content}</PageTransition>
+        </AdminShell>
       </div>
     );
   }
@@ -206,7 +294,9 @@ function AppRouter() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <PublicHeader />
-      <main className="flex-1">{publicContent}</main>
+      <main className="flex-1 flex flex-col">
+        <PageTransition routeKey={path}>{publicContent}</PageTransition>
+      </main>
       <PublicFooter />
     </div>
   );

@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { calculateMatch, checkEligibility } from '../../lib/matching';
 import { Button, Input, Select, StatusBadge } from '../../components/ui';
 import {
@@ -18,7 +19,22 @@ import {
 
 export function OpportunitiesPage({ isStudentPortal = false }: { isStudentPortal?: boolean }) {
   const { navigate } = useRouter();
-  const { jobs, studentProfile, applications, currentUser } = useCampusStore();
+  const { jobs, studentProfile, applications, currentUser, actions } = useCampusStore();
+
+  useEffect(() => {
+    let active = true;
+    api.jobs
+      .list({ open_only: true })
+      .then((res) => {
+        if (active && res && Array.isArray(res.jobs)) {
+          actions.syncJobs(res.jobs);
+        }
+      })
+      .catch((err) => console.debug('Opportunities fetch error:', err));
+    return () => {
+      active = false;
+    };
+  }, [actions]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('All');

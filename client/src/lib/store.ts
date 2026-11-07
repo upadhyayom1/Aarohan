@@ -16,7 +16,7 @@ import { api, getAuthToken, setAuthToken, clearAuthToken } from './api';
 
 export const INITIAL_USER_STUDENT: User = {
   id: '',
-  name: 'Student',
+  name: '',
   email: '',
   role: 'student',
   studentId: '',
@@ -25,18 +25,18 @@ export const INITIAL_USER_STUDENT: User = {
 
 export const INITIAL_USER_RECRUITER: User = {
   id: '',
-  name: 'Recruiter',
+  name: '',
   email: '',
   role: 'recruiter',
-  organization: 'Partner Enterprise',
+  organization: '',
 };
 
 export const INITIAL_USER_ADMIN: User = {
   id: '',
-  name: 'Central Administrator',
-  email: 'admin@aarohan.edu',
+  name: '',
+  email: '',
   role: 'admin',
-  organization: 'Office of Career Advancement & Placement',
+  organization: '',
 };
 
 export const INITIAL_STUDENT_PROFILE: StudentProfile = {
@@ -44,14 +44,14 @@ export const INITIAL_STUDENT_PROFILE: StudentProfile = {
   fullName: '',
   email: '',
   phone: '',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
+  avatar: '',
   portfolioUrl: '',
   githubUrl: '',
   linkedinUrl: '',
   bio: '',
   institution: '',
-  degree: 'Bachelor of Technology (B.Tech)',
-  branch: 'Computer Science & Engineering',
+  degree: '',
+  branch: '',
   currentSemester: 1,
   cgpa: 0,
   graduationYear: new Date().getFullYear(),
@@ -74,58 +74,7 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
 
 export const INITIAL_AUDIT_LOGS: AuditLog[] = [];
 
-export const INITIAL_SKILL_RESOURCES: SkillResource[] = [
-  {
-    id: 'res_1',
-    title: 'Distributed Systems & Microservice Architecture',
-    provider: 'MIT OpenCourseWare (6.824)',
-    relevantSkill: 'Docker',
-    resourceType: 'Course',
-    duration: '14 Lectures (Self-Paced)',
-    url: 'https://ocw.mit.edu',
-    isSaved: true,
-  },
-  {
-    id: 'res_2',
-    title: 'Designing Data-Intensive Applications Core Principles',
-    provider: 'University Career Library',
-    relevantSkill: 'PostgreSQL',
-    resourceType: 'Documentation',
-    duration: '6 Modules',
-    url: 'https://library.campus.edu',
-    isSaved: false,
-  },
-  {
-    id: 'res_3',
-    title: 'Production Kubernetes Cluster Management Fundamentals',
-    provider: 'Cloud Native Computing Foundation (CNCF)',
-    relevantSkill: 'Docker',
-    resourceType: 'Tutorial',
-    duration: '4 Hours',
-    url: 'https://cncf.io',
-    isSaved: false,
-  },
-  {
-    id: 'res_4',
-    title: 'High-Performance Graph APIs with GraphQL',
-    provider: 'GraphQL Foundation Training',
-    relevantSkill: 'REST APIs',
-    resourceType: 'Practice',
-    duration: '3 Hours',
-    url: 'https://graphql.org',
-    isSaved: true,
-  },
-  {
-    id: 'res_5',
-    title: 'Advanced System Design & Concurrency Patterns',
-    provider: 'Association for Computing Machinery (ACM)',
-    relevantSkill: 'Algorithms',
-    resourceType: 'Course',
-    duration: '8 Modules',
-    url: 'https://acm.org',
-    isSaved: false,
-  },
-];
+export const INITIAL_SKILL_RESOURCES: SkillResource[] = [];
 
 // In-memory + LocalStorage reactive state store
 class CampusStore {
@@ -148,7 +97,7 @@ class CampusStore {
     if (typeof window === 'undefined') return;
     try {
       const data = {
-        version: 5,
+        version: 6,
         currentUser: this.currentUser,
         studentProfile: this.studentProfile,
         jobs: this.jobs,
@@ -173,18 +122,24 @@ class CampusStore {
         const parsed = JSON.parse(raw);
         if (
           !parsed.version ||
-          parsed.version < 5 ||
+          parsed.version < 6 ||
           parsed.currentUser?.name === 'Aditi Rao' ||
           parsed.currentUser?.name === 'Adya Tripathi' ||
+          parsed.currentUser?.name === 'Dev Sharma' ||
           parsed.studentProfile?.fullName === 'Aditi Rao' ||
           parsed.studentProfile?.fullName === 'Adya Tripathi' ||
+          parsed.studentProfile?.fullName === 'Dev Sharma' ||
           parsed.studentProfile?.id?.startsWith('stu_')
         ) {
           this.currentUser = INITIAL_USER_STUDENT;
           this.studentProfile = INITIAL_STUDENT_PROFILE;
+          this.jobs = [];
           this.applications = [];
           this.interviews = [];
+          this.drives = [];
           this.notifications = [];
+          this.auditLogs = [];
+          this.skillResources = [];
           this.saveToStorage();
           return;
         }
@@ -246,40 +201,12 @@ class CampusStore {
   }
 
   // Set User Role / Identity
-  public async switchRole(role: UserRole) {
-    if (role === 'student') {
-      this.currentUser = INITIAL_USER_STUDENT;
-      try {
-        const res = await api.auth.login({ email: 'dev.sharma@aarohan.edu', password: 'Password@123' });
-        if (res && res.token) {
-          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'student' }, res.token);
-          await this.loadStudentPortalData();
-        }
-      } catch {
-        // Fallback
-      }
-    } else if (role === 'recruiter') {
-      this.currentUser = INITIAL_USER_RECRUITER;
-      try {
-        const res = await api.auth.login({ email: 'microsoft', password: 'password123' });
-        if (res && res.token) {
-          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'recruiter', organization: 'Microsoft' }, res.token);
-          await this.loadRecruiterPortalData();
-        }
-      } catch {
-        // Fallback
-      }
-    } else if (role === 'admin') {
-      this.currentUser = INITIAL_USER_ADMIN;
-      try {
-        const res = await api.auth.login({ email: 'admin@aarohan.edu', password: 'Password@123' });
-        if (res && res.token) {
-          this.setAuthSession({ id: res.id, name: res.name, email: res.email, role: 'admin' }, res.token);
-        }
-      } catch {
-        // Fallback
-      }
-    }
+  public switchRole(role: UserRole) {
+    if (this.currentUser.role === role) return;
+    this.currentUser = {
+      ...this.currentUser,
+      role,
+    };
     this.notify();
   }
 

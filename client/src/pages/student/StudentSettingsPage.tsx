@@ -78,31 +78,6 @@ export function StudentSettingsPage() {
           </div>
         </div>
 
-        {/* Demo reset */}
-        <div className="border border-[#222222] bg-[#FAFAF9] p-6 space-y-3 font-mono text-xs">
-          <h2 className="text-sm font-bold uppercase text-[#111111] flex items-center gap-2">
-            <RotateCcw size={15} /> Sandbox State Management
-          </h2>
-          <p className="text-xs text-[#666666] leading-relaxed">
-            Reset all simulated interviews, modified student profile fields, newly created jobs, and submitted applications back to pristine institutional defaults.
-          </p>
-          <div className="pt-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                if (confirm('Reset all demo state to verified seed records?')) {
-                  actions.resetToDefaults();
-                  alert('Demo database reset to original institutional state.');
-                }
-              }}
-            >
-              Reset Sandbox to Factory Seed
-            </Button>
-          </div>
-        </div>
-
         <Button type="submit" variant="primary" size="md">
           Save Settings
         </Button>

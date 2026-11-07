@@ -56,23 +56,6 @@ export function LoginPage() {
     await performLogin(email, password);
   };
 
-  const handleQuickLogin = async (role: 'student' | 'recruiter' | 'admin') => {
-    let qEmail = 'dev.sharma@aarohan.edu';
-    let qPass = 'Password@123';
-
-    if (role === 'recruiter') {
-      qEmail = 'microsoft';
-      qPass = 'password123';
-    } else if (role === 'admin') {
-      qEmail = 'admin@aarohan.edu';
-      qPass = 'Password@123';
-    }
-
-    setEmail(qEmail);
-    setPassword(qPass);
-    await performLogin(qEmail, qPass);
-  };
-
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col lg:flex-row bg-white">
       {/* Left Institutional Editorial Panel */}
@@ -94,37 +77,8 @@ export function LoginPage() {
           </p>
         </div>
 
-        {/* Demo Fast-Switch Buttons */}
-        <div className="pt-8 mt-8 border-t border-[#E4E4E1] space-y-3 font-mono text-xs">
-          <span className="text-[10px] text-[#858585] uppercase tracking-widest block">
-            DEMO SEEDED ONE-CLICK LOGIN
-          </span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleQuickLogin('student')}
-              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
-            >
-              Sign In as Student (Demo)
-            </button>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleQuickLogin('recruiter')}
-              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
-            >
-              Sign In as Recruiter (Microsoft)
-            </button>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => handleQuickLogin('admin')}
-              className="bg-white border border-[#222222] hover:bg-black hover:text-white px-3 py-1.5 rounded-[2px] transition-colors cursor-pointer disabled:opacity-50"
-            >
-              Sign In as Placement Dean (Admin)
-            </button>
-          </div>
+        <div className="pt-8 mt-8 border-t border-[#E4E4E1] font-mono text-xs text-[#858585]">
+          Aarohan Career & Placement Cell • Official Authentication Service
         </div>
       </div>
 
@@ -161,7 +115,7 @@ export function LoginPage() {
                 type="text"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="microsoft or name@aarohan.edu"
+                placeholder="name@aarohan.edu or username"
                 required
               />
             </FormField>

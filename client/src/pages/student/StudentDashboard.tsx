@@ -115,7 +115,7 @@ export function StudentDashboard() {
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[#111111]">
-            Welcome, {studentProfile.fullName.split(' ')[0]}.
+            Welcome, {studentProfile.fullName ? studentProfile.fullName.split(' ')[0] : 'Student'}.
           </h1>
           <p className="text-sm sm:text-base text-[#666666] max-w-xl leading-relaxed">
             You are eligible for <strong className="text-[#111111]">{eligibleJobsCount} campus openings</strong>. Your profile is active and verified for institutional recruitment drives.
@@ -274,7 +274,12 @@ export function StudentDashboard() {
           </div>
 
           <div className="space-y-3.5">
-            {recommendedJobs.map(({ job, match }) => (
+            {recommendedJobs.length === 0 ? (
+              <div className="border border-[#E4E4E1] bg-[#FAFAF9] p-8 text-center text-xs font-mono text-[#858585] rounded-[3px]">
+                No active placement openings currently available. Opportunities will appear here once published by recruiters.
+              </div>
+            ) : (
+              recommendedJobs.map(({ job, match }) => (
               <div
                 key={job.id}
                 className="border border-[#E4E4E1] bg-white p-5 rounded-[3px] hover:border-[#111111] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -320,7 +325,8 @@ export function StudentDashboard() {
                   </Link>
                 </div>
               </div>
-            ))}
+            ))
+          )}
           </div>
         </div>
 

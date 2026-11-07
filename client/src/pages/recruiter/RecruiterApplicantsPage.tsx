@@ -51,13 +51,13 @@ export function RecruiterApplicantsPage() {
   const [rejectionReason, setRejectionReason] = useState('');
 
   // Schedule form state
-  const [interviewRound, setInterviewRound] = useState('Technical Architecture & Coding');
-  const [interviewDate, setInterviewDate] = useState('2026-11-06');
-  const [startTime, setStartTime] = useState('11:00 AM');
-  const [endTime, setEndTime] = useState('12:15 PM');
+  const [interviewRound, setInterviewRound] = useState('Technical Round 1');
+  const [interviewDate, setInterviewDate] = useState(new Date().toISOString().split('T')[0]);
+  const [startTime, setStartTime] = useState('10:00 AM');
+  const [endTime, setEndTime] = useState('11:00 AM');
   const [interviewMode, setInterviewMode] = useState<'Video Call' | 'In-person' | 'Phone'>('Video Call');
-  const [locationOrLink, setLocationOrLink] = useState('https://teams.microsoft.com/l/meetup-join/interview-room');
-  const [interviewNotes, setInterviewNotes] = useState('Prepare to discuss systems projects and write algorithmic solutions.');
+  const [locationOrLink, setLocationOrLink] = useState('');
+  const [interviewNotes, setInterviewNotes] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
 
   // Fetch live applicants from Node backend on mount
