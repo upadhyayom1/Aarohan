@@ -1,6 +1,6 @@
 import prisma from '../config/db.js';
 
-const formatStudentProfile = (profile, userEmail) => ({
+export const formatStudentProfile = (profile, userEmail) => ({
   id: profile.id,
   user_id: profile.userId,
   name: profile.name,
@@ -13,6 +13,7 @@ const formatStudentProfile = (profile, userEmail) => ({
   projects: profile.projects || [],
   resume_uploaded: profile.resumeUploaded,
   resume_url: profile.resumeUrl,
+  resume_analysis: profile.resumeAnalysis || null,
   profile_complete: profile.profileComplete,
 });
 

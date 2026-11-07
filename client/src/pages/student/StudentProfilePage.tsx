@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useCampusStore } from "../../lib/useStore";
 import { api, BuildResumeResult } from "../../lib/api";
 import { Button, Input, Textarea, FormField } from "../../components/ui";
@@ -21,6 +21,11 @@ export function StudentProfilePage() {
   // Form state
   const [formData, setFormData] = useState(studentProfile);
   const [newSkill, setNewSkill] = useState("");
+
+  // Sync form state when store/backend profile is updated
+  useEffect(() => {
+    setFormData(studentProfile);
+  }, [studentProfile]);
 
   // Save state
   const [isSaving, setIsSaving] = useState(false);

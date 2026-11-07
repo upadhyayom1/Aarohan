@@ -73,73 +73,39 @@ export function StudentResumePage() {
       // 1. Upload to Node backend (server/src/controllers/resume.controller.js)
       const uploadRes = await api.resume.upload(file);
 
-      const sizeKb = Math.round(file.size / 1024);
-      const sizeStr = sizeKb > 1000 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+      // If backend returned the full updated profile directly, sync it immediately
+      if (uploadRes.profile) {
+        actions.syncStudentProfile(uploadRes.profile);
+      }
 
-      // Sync with local campus store
-      actions.uploadResume(file.name, sizeStr);
+      // Reload full student portal data from database
+      await actions.loadStudentPortalData().catch(() => {});
 
-      const extractedSkills = Array.isArray(uploadRes.analysis?.skills)
-        ? uploadRes.analysis.skills
-        : studentProfile.skills;
+      setSuccessMessage('Resume uploaded, parsed, and updated in database successfully.');
 
-      const extractedEducation = uploadRes.analysis?.education?.length
-        ? uploadRes.analysis.education.map((e: any) => typeof e === 'string' ? e : `${e.degree || ''} ${e.branch ? `in ${e.branch}` : ''}, ${e.institution || ''}${e.cgpa ? ` (CGPA: ${e.cgpa})` : ''}`).join('; ')
-        : (studentProfile.degree ? `${studentProfile.degree} in ${studentProfile.branch}, ${studentProfile.institution}` : '');
-
-      const extractedProjects = Array.isArray(uploadRes.analysis?.projects) && uploadRes.analysis.projects.length > 0
-        ? uploadRes.analysis.projects.map((p: any) => typeof p === 'string' ? p : p.title || 'Project')
-        : [];
-
-      const extractedExperience = Array.isArray(uploadRes.analysis?.experience) && uploadRes.analysis.experience.length > 0
-        ? uploadRes.analysis.experience.map((e: any) => typeof e === 'string' ? e : `${e.role || e.position || ''} at ${e.company || e.organization || ''}`).join('; ')
-        : '';
-
-      actions.updateStudentProfile({
-        skills: Array.from(new Set([...studentProfile.skills, ...extractedSkills])),
-        projects: extractedProjects.length > 0
-          ? extractedProjects.map((title: string, idx: number) => ({
-              id: `proj_${Date.now()}_${idx}`,
-              title,
-              description: 'Extracted from resume',
-              techStack: extractedSkills.slice(0, 4),
-            }))
-          : studentProfile.projects,
-        resume: {
-          fileName: file.name,
-          fileSize: sizeStr,
-          uploadedAt: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          parsingStatus: 'completed',
-          parsedSkills: extractedSkills,
-          parsedEducation: extractedEducation,
-          parsedProjects: extractedProjects,
-          parsedExperience: extractedExperience,
-        },
-      });
-
-      setSuccessMessage('Resume uploaded and processed by placement extraction pipeline.');
-
-      // 2. Automatically request ATS analysis from AI Service (ai/app/routers/ai.py)
+      // 2. Automatically request ATS analysis from AI Service if available
       setIsAnalyzingAts(true);
       try {
-        const activeId = studentProfile.id || currentUser.id;
-        const ats = await api.ai.getAtsAnalysis(activeId);
-        setAtsResult(ats);
+        const activeId = uploadRes.profile?.id || studentProfile.id || currentUser.id;
+        if (activeId) {
+          const ats = await api.ai.getAtsAnalysis(activeId);
+          if (ats) setAtsResult(ats);
+        }
       } catch (aiErr) {
-        console.warn('AI ATS analysis delayed:', aiErr);
+        console.debug('AI ATS analysis postponed (AI service offline):', aiErr);
       } finally {
         setIsAnalyzingAts(false);
       }
     } catch (err: any) {
       console.error('Resume upload failed:', err);
       if (err instanceof ApiError) {
-        setErrorMessage(err.message || 'Server rejected resume upload');
+        if (err.status === 401) {
+          setErrorMessage('Your session has expired or is invalid. Please log in again to upload your resume.');
+        } else {
+          setErrorMessage(err.message || 'Server rejected resume upload');
+        }
       } else {
-        // Graceful simulated fallback if local backend is restarting
-        const sizeKb = Math.round(file.size / 1024);
-        const sizeStr = sizeKb > 1000 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
-        actions.uploadResume(file.name, sizeStr);
-        setSuccessMessage('Resume uploaded (cached locally).');
+        setErrorMessage(err?.message || 'Failed to connect to the backend server. Please verify the backend is running.');
       }
     } finally {
       setIsUploading(false);

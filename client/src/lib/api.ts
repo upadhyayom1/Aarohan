@@ -312,7 +312,7 @@ export const api = {
     upload: (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      return request<{ message: string; resume_url: string; analysis: any }>('/students/resume', {
+      return request<{ message: string; resume_url: string; analysis: any; profile?: any }>('/students/resume', {
         method: 'POST',
         body: formData,
       });

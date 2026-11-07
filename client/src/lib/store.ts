@@ -62,262 +62,13 @@ export const INITIAL_STUDENT_PROFILE: StudentProfile = {
   resume: undefined,
 };
 
-export const INITIAL_JOBS: JobOpportunity[] = [
-  {
-    id: 'job_apex_sde',
-    title: 'Software Development Engineer I',
-    company: 'Apex Systems',
-    companyInitials: 'AS',
-    location: 'Cambridge, MA',
-    workArrangement: 'Hybrid',
-    employmentType: 'Full-time',
-    deadline: '2026-11-28',
-    publishedDate: '2026-10-18',
-    salaryRange: '$115,000 – $130,000 / yr',
-    description: 'Join the Core Platform group engineering low-latency distributed transaction systems, developer platforms, and high-availability cloud APIs.',
-    responsibilities: [
-      'Design, implement, and maintain scalable web services and asynchronous event pipelines.',
-      'Collaborate across cross-functional engineering teams adhering to rigorous code review and CI/CD standards.',
-      'Participate in architectural reviews, incident retrospectives, and performance profiling.',
-    ],
-    requiredQualifications: [
-      'Graduating senior in Computer Science, Software Engineering, or related technical field.',
-      'Demonstrated fluency in typed languages (TypeScript, Java, C++, or Go).',
-      'Solid foundations in data structures, algorithms, and relational database systems.',
-    ],
-    requiredSkills: ['React', 'TypeScript', 'Node.js', 'SQL', 'Git'],
-    preferredSkills: ['Docker', 'AWS', 'PostgreSQL', 'REST APIs'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Electrical & Computer Engineering'],
-    eligibleGradYears: [2026, 2027, 2028, 2029],
-    minCgpa: 8.0,
-    maxBacklogs: 0,
-    applicantsCount: 42,
-    shortlistedCount: 8,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_1',
-    recruiterName: 'Marcus Vance',
-    recruiterEmail: 'm.vance@apexsystems.com',
-  },
-  {
-    id: 'job_veritas_cloud',
-    title: 'Cloud Infrastructure & DevOps Engineer',
-    company: 'Veritas Technologies',
-    companyInitials: 'VT',
-    location: 'New York, NY',
-    workArrangement: 'Hybrid',
-    employmentType: 'Full-time',
-    deadline: '2026-12-05',
-    publishedDate: '2026-10-22',
-    salaryRange: '$120,000 – $135,000 / yr',
-    description: 'Build and operate high-reliability automated Kubernetes clusters, multi-region observability stacks, and infrastructure-as-code automation.',
-    responsibilities: [
-      'Maintain automated deployment pipelines across hybrid multi-region cloud infrastructures.',
-      'Instrument telemetry, SLA monitors, and real-time incident alerting.',
-      'Harden container images and audit security policies across runtime clusters.',
-    ],
-    requiredQualifications: [
-      'Undergraduate or graduate degree in Computer Science, Systems Engineering, or equivalent.',
-      'Practical familiarity with Linux systems internals, container runtimes, and networking.',
-    ],
-    requiredSkills: ['Docker', 'AWS', 'Python', 'Git', 'Linux'],
-    preferredSkills: ['Kubernetes', 'CI/CD', 'TypeScript', 'SQL'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology'],
-    eligibleGradYears: [2026, 2027, 2028, 2029],
-    minCgpa: 7.5,
-    maxBacklogs: 0,
-    applicantsCount: 28,
-    shortlistedCount: 5,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_vt',
-    recruiterName: 'Sarah Lin',
-    recruiterEmail: 's.lin@veritas.tech',
-  },
-  {
-    id: 'job_crest_robotics',
-    title: 'Embedded Systems & Firmware Engineer',
-    company: 'Crest Robotics',
-    companyInitials: 'CR',
-    location: 'Pittsburgh, PA',
-    workArrangement: 'On-site',
-    employmentType: 'Full-time',
-    deadline: '2026-11-25',
-    publishedDate: '2026-10-14',
-    salaryRange: '$105,000 – $120,000 / yr',
-    description: 'Develop deterministic real-time firmware, motor controller drivers, and sensor communication protocols for next-generation automated warehouse robotics.',
-    responsibilities: [
-      'Author safety-critical C/C++ firmware running on ARM Cortex microcontrollers and RTOS.',
-      'Interface with hardware sensors over CAN, SPI, I2C, and UART buses.',
-      'Perform hardware-in-the-loop (HIL) validation and thermal stress testing.',
-    ],
-    requiredQualifications: [
-      'Degree in Electrical Engineering, Robotics, Computer Engineering, or Mechatronics.',
-      'Proficiency with C/C++, oscilloscope debugging, and microcontroller peripheral configuration.',
-    ],
-    requiredSkills: ['C++', 'Algorithms', 'Git'],
-    preferredSkills: ['Python', 'Docker', 'Linux'],
-    eligibleBranches: ['Electrical & Computer Engineering', 'Mechanical Engineering', 'Robotics Engineering'],
-    eligibleGradYears: [2026, 2027, 2028, 2029],
-    minCgpa: 7.8,
-    maxBacklogs: 0,
-    applicantsCount: 19,
-    shortlistedCount: 4,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_cr',
-    recruiterName: 'Dave Kowalski',
-    recruiterEmail: 'dkowalski@crestrobotics.com',
-  },
-  {
-    id: 'job_meridian_data',
-    title: 'Healthcare Informatics & Data Analyst',
-    company: 'Meridian Health Informatics',
-    companyInitials: 'MH',
-    location: 'Chicago, IL',
-    workArrangement: 'Remote',
-    employmentType: 'Full-time',
-    deadline: '2026-12-10',
-    publishedDate: '2026-10-26',
-    salaryRange: '$95,000 – $110,000 / yr',
-    description: 'Transform longitudinal clinical registries, patient outcomes, and epidemiology datasets into validated statistical insights and executive reporting models.',
-    responsibilities: [
-      'Write robust SQL queries and ETL transformations against relational data warehouses.',
-      'Collaborate with bioinformaticians and clinicians to validate analytical assumptions.',
-      'Construct reproducible data pipelines adhering to HIPAA compliance standards.',
-    ],
-    requiredQualifications: [
-      'Degree in Computer Science, Data Science, Biomedical Informatics, or Mathematics.',
-      'Experience with SQL database querying and Python statistical modeling.',
-    ],
-    requiredSkills: ['SQL', 'Python', 'Data Analysis', 'REST APIs'],
-    preferredSkills: ['PostgreSQL', 'Docker', 'Git'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Biomedical Engineering', 'Data Science'],
-    eligibleGradYears: [2026, 2027, 2028, 2029],
-    minCgpa: 7.2,
-    maxBacklogs: 1,
-    applicantsCount: 31,
-    shortlistedCount: 6,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_mh',
-    recruiterName: 'Elena Rostova',
-    recruiterEmail: 'erostova@meridianhealth.org',
-  },
-  {
-    id: 'job_horizon_ai',
-    title: 'Machine Learning Research Engineer',
-    company: 'Horizon AI Labs',
-    companyInitials: 'HA',
-    location: 'San Francisco, CA',
-    workArrangement: 'Hybrid',
-    employmentType: 'Full-time',
-    deadline: '2026-12-01',
-    publishedDate: '2026-10-20',
-    salaryRange: '$140,000 – $165,000 / yr',
-    description: 'Advance foundational model evaluation pipelines, multimodal embedding distillation, and real-time inferencing kernels on heterogeneous accelerators.',
-    responsibilities: [
-      'Implement evaluation benchmarks measuring reasoning fidelity, calibration, and latency.',
-      'Profile memory bandwidth bottlenecks and execute distributed tensor parallelism.',
-      'Convert novel research findings into production-grade modular inference APIs.',
-    ],
-    requiredQualifications: [
-      'BS/MS in Computer Science, Artificial Intelligence, or Mathematics.',
-      'Demonstrated research or project experience with PyTorch and deep learning architectures.',
-    ],
-    requiredSkills: ['Python', 'Machine Learning', 'Algorithms', 'Git'],
-    preferredSkills: ['Docker', 'C++', 'SQL'],
-    eligibleBranches: ['Computer Science & Engineering', 'Data Science', 'Electrical & Computer Engineering'],
-    eligibleGradYears: [2026, 2027, 2028, 2029],
-    minCgpa: 8.5,
-    maxBacklogs: 0,
-    applicantsCount: 56,
-    shortlistedCount: 7,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_ha',
-    recruiterName: 'Dr. Kenji Sato',
-    recruiterEmail: 'kenji@horizonlabs.ai',
-  },
-  {
-    id: 'job_aurora_frontend',
-    title: 'Frontend Systems Engineer',
-    company: 'Aurora FinTech',
-    companyInitials: 'AF',
-    location: 'New York, NY',
-    workArrangement: 'On-site',
-    employmentType: 'Full-time',
-    deadline: '2026-11-22',
-    publishedDate: '2026-10-12',
-    salaryRange: '$118,000 – $132,000 / yr',
-    description: 'Craft ultra-fast real-time trading terminal interfaces, complex institutional order books, and accessible design system components.',
-    responsibilities: [
-      'Build responsive, zero-jank React client applications with WebSocket streaming feeds.',
-      'Maintain an institutional design system ensuring WCAG AAA accessibility compliance.',
-      'Write end-to-end integration tests and benchmark Web Vitals metrics.',
-    ],
-    requiredQualifications: [
-      'Degree in Computer Science or related degree graduating in 2026-2029.',
-      'Extensive mastery of modern JavaScript, TypeScript, and modern CSS frameworks.',
-    ],
-    requiredSkills: ['React', 'TypeScript', 'REST APIs', 'Git'],
-    preferredSkills: ['SQL', 'Figma', 'Node.js'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology'],
-    eligibleGradYears: [2026, 2027, 2028, 2029],
-    minCgpa: 7.8,
-    maxBacklogs: 0,
-    applicantsCount: 38,
-    shortlistedCount: 9,
-    status: 'Active',
-    recruiterId: 'usr_recruiter_af',
-    recruiterName: 'Chloe Bennett',
-    recruiterEmail: 'cbennett@aurorafintech.com',
-  },
-];
+export const INITIAL_JOBS: JobOpportunity[] = [];
 
 export const INITIAL_APPLICATIONS: Application[] = [];
 
 export const INITIAL_INTERVIEWS: Interview[] = [];
 
-export const INITIAL_DRIVES: PlacementDrive[] = [
-  {
-    id: 'drv_autumn_2026',
-    name: 'Autumn Technology & Engineering Placement Drive 2026',
-    companies: ['Apex Systems', 'Veritas Technologies', 'Aurora FinTech', 'Horizon AI Labs'],
-    jobOpeningsCount: 14,
-    registrationDeadline: '2026-11-15',
-    eventStartDate: '2026-11-20',
-    eventEndDate: '2026-12-05',
-    rounds: ['Online Assessment', 'Technical Round 1', 'Systems Architecture', 'HR & Dean Briefing'],
-    eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Electrical & Computer Engineering', 'Data Science'],
-    minCgpa: 7.5,
-    status: 'Active',
-    description: 'Premier annual campus recruitment drive organized by the Central Placement Directorate for graduating engineering seniors.',
-  },
-  {
-    id: 'drv_health_informatics_2026',
-    name: 'Interdisciplinary Health & Bio-Informatics Recruitment Initiative',
-    companies: ['Meridian Health Informatics', 'BioCompute Research'],
-    jobOpeningsCount: 6,
-    registrationDeadline: '2026-11-30',
-    eventStartDate: '2026-12-06',
-    eventEndDate: '2026-12-14',
-    rounds: ['Domain Assessment', 'Panel Interview'],
-    eligibleBranches: ['Biomedical Engineering', 'Computer Science & Engineering', 'Data Science'],
-    minCgpa: 7.2,
-    status: 'Active',
-    description: 'Specialized hiring consortium connecting quantitative and engineering students with leading research and clinical hospital systems.',
-  },
-  {
-    id: 'drv_spring_hardware_2027',
-    name: 'Spring Robotics & Hardware Systems Drive',
-    companies: ['Crest Robotics', 'Apex Hardware Labs'],
-    jobOpeningsCount: 8,
-    registrationDeadline: '2027-01-15',
-    eventStartDate: '2027-02-01',
-    eventEndDate: '2027-02-15',
-    rounds: ['Hardware Schematic Test', 'Firmware Live Coding', 'On-campus Lab Assessment'],
-    eligibleBranches: ['Electrical & Computer Engineering', 'Mechanical Engineering', 'Robotics Engineering'],
-    minCgpa: 7.8,
-    status: 'Draft',
-    description: 'Targeted drive for embedded systems, autonomous robotics, and mechatronics engineers.',
-  },
-];
+export const INITIAL_DRIVES: PlacementDrive[] = [];
 
 export const INITIAL_NOTIFICATIONS: NotificationItem[] = [];
 
@@ -397,7 +148,7 @@ class CampusStore {
     if (typeof window === 'undefined') return;
     try {
       const data = {
-        version: 4,
+        version: 5,
         currentUser: this.currentUser,
         studentProfile: this.studentProfile,
         jobs: this.jobs,
@@ -422,7 +173,7 @@ class CampusStore {
         const parsed = JSON.parse(raw);
         if (
           !parsed.version ||
-          parsed.version < 4 ||
+          parsed.version < 5 ||
           parsed.currentUser?.name === 'Aditi Rao' ||
           parsed.currentUser?.name === 'Adya Tripathi' ||
           parsed.studentProfile?.fullName === 'Aditi Rao' ||
@@ -618,27 +369,65 @@ class CampusStore {
   // Live Sync with Backend Server
   public syncStudentProfile(backendProfile: any) {
     if (!backendProfile) return;
+    const analysis = backendProfile.resume_analysis;
+    const eduList = Array.isArray(analysis?.education) ? analysis.education : [];
+    const expList = Array.isArray(analysis?.experience) ? analysis.experience : [];
+    const projList = (Array.isArray(backendProfile.projects) && backendProfile.projects.length > 0)
+      ? backendProfile.projects
+      : (Array.isArray(analysis?.projects) ? analysis.projects : []);
+
+    const parsedEdu = eduList.length > 0
+      ? eduList.map((e: any) => typeof e === 'string' ? e : `${e.degree || ''} ${e.branch ? `in ${e.branch}` : ''}, ${e.institution || ''}${e.cgpa ? ` (CGPA: ${e.cgpa})` : ''}`.trim()).filter(Boolean).join('; ')
+      : (backendProfile.branch ? `${backendProfile.branch}, Class of ${backendProfile.graduation_year || 2027}` : '');
+
+    const parsedExp = expList.length > 0
+      ? expList.map((e: any) => typeof e === 'string' ? e : `${e.role || e.position || ''} at ${e.company || e.organization || ''}`.trim()).filter(Boolean).join('; ')
+      : '';
+
+    const parsedProjs = projList.map((p: any) => typeof p === 'string' ? p : p.title || 'Project');
+
     this.studentProfile = {
       ...this.studentProfile,
       id: backendProfile.id || backendProfile.user_id || this.studentProfile.id,
       fullName: backendProfile.name || this.studentProfile.fullName,
       email: backendProfile.email || this.studentProfile.email,
       branch: backendProfile.branch || this.studentProfile.branch,
+      institution: eduList[0]?.institution || this.studentProfile.institution,
+      degree: eduList[0]?.degree || this.studentProfile.degree,
       cgpa: typeof backendProfile.cgpa === 'number' ? backendProfile.cgpa : this.studentProfile.cgpa,
       graduationYear: backendProfile.graduation_year || this.studentProfile.graduationYear,
       activeBacklogs: typeof backendProfile.backlogs === 'number' ? backendProfile.backlogs : this.studentProfile.activeBacklogs,
-      skills: Array.isArray(backendProfile.skills) ? backendProfile.skills : [],
-      projects: Array.isArray(backendProfile.projects) ? backendProfile.projects : [],
+      skills: Array.isArray(backendProfile.skills) && backendProfile.skills.length > 0 ? backendProfile.skills : (analysis?.skills || []),
+      projects: projList.map((p: any, idx: number) => ({
+        id: p.id || `proj_${idx}`,
+        title: typeof p === 'string' ? p : p.title || `Project ${idx + 1}`,
+        description: typeof p === 'string' ? 'Extracted from resume' : p.description || 'Extracted from resume',
+        techStack: Array.isArray(p.tech_stack) ? p.tech_stack : (Array.isArray(p.techStack) ? p.techStack : []),
+        githubUrl: p.githubUrl || '',
+        projectUrl: p.projectUrl || '',
+      })),
+      experience: expList.length > 0
+        ? expList.map((e: any, idx: number) => ({
+            id: `exp_${idx}`,
+            position: e.role || e.position || 'Contributor / Intern',
+            organization: e.company || e.organization || 'Organization',
+            startDate: e.duration?.split(/[-–—]/)?.[0]?.trim() || '',
+            endDate: e.duration?.split(/[-–—]/)?.[1]?.trim() || 'Present',
+            description: e.description || '',
+          }))
+        : this.studentProfile.experience,
       resume: backendProfile.resume_uploaded
         ? {
             fileName: backendProfile.resume_url ? backendProfile.resume_url.split('/').pop() || 'resume.pdf' : 'resume.pdf',
-            fileSize: 'Uploaded PDF',
-            uploadedAt: 'Verified by Directorate',
+            fileSize: 'Verified Institutional PDF',
+            uploadedAt: 'Synced with Database',
             parsingStatus: 'completed',
-            parsedSkills: backendProfile.skills || [],
-            parsedEducation: `${backendProfile.branch || 'Engineering'}, Class of ${backendProfile.graduation_year || 2027}`,
-            parsedProjects: (backendProfile.projects || []).map((p: any) => typeof p === 'string' ? p : p.title || 'Project'),
-            parsedExperience: 'Verified Experience',
+            parsedSkills: (Array.isArray(backendProfile.skills) && backendProfile.skills.length > 0)
+              ? backendProfile.skills
+              : (analysis?.skills || []),
+            parsedEducation: parsedEdu,
+            parsedProjects: parsedProjs,
+            parsedExperience: parsedExp,
           }
         : undefined,
     };
@@ -646,7 +435,12 @@ class CampusStore {
   }
 
   public syncJobs(backendJobs: any[]) {
-    if (!Array.isArray(backendJobs) || backendJobs.length === 0) return;
+    if (!Array.isArray(backendJobs)) return;
+    if (backendJobs.length === 0) {
+      this.jobs = [];
+      this.notify();
+      return;
+    }
     const mapped: JobOpportunity[] = backendJobs.map((j) => {
       const existing = this.jobs.find((orig) => orig.id === j.id);
       return {
