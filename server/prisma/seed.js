@@ -300,25 +300,19 @@ async function main() {
       await prisma.interview.create({
         data: {
           applicationId: adyaAppHorizon.id,
-          round: 'Round 1: Machine Learning Systems & Deep Learning Modeling',
           scheduledAt: new Date('2026-11-06T14:00:00Z'),
-          durationMinutes: 75,
           mode: 'online',
           location: 'https://meet.google.com/aar-ml-eng-2026',
-          status: 'scheduled',
-          interviewerName: 'Dr. Kenji Sato',
+          notes: 'Round 1: Machine Learning Systems & Deep Learning Modeling (Interviewer: Dr. Kenji Sato, 75 mins)',
         },
       });
       await prisma.interview.create({
         data: {
           applicationId: adyaAppApex.id,
-          round: 'Round 1: Data Structures, Algorithms & System Concurrency',
           scheduledAt: new Date('2026-11-10T11:00:00Z'),
-          durationMinutes: 75,
           mode: 'online',
           location: 'https://meet.apexsystems.com/aarohan-adya-interview',
-          status: 'scheduled',
-          interviewerName: 'Marcus Vance',
+          notes: 'Round 1: Data Structures, Algorithms & System Concurrency (Interviewer: Marcus Vance, 75 mins)',
         },
       });
       console.log('Created 2 scheduled interviews for Adya Tripathi.');

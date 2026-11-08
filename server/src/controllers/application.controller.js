@@ -328,10 +328,14 @@ export const getApplicationById = async (req, res) => {
       });
     }
 
-    if (req.user.role !== 'admin' && application.job.recruiterId !== req.user.id) {
+    const isStudentOwner = req.user.role === 'student' && application.student.userId === req.user.id;
+    const isRecruiterOwner = req.user.role === 'recruiter' && application.job.recruiterId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isStudentOwner && !isRecruiterOwner && !isAdmin) {
       return res.status(403).json({
         code: 'FORBIDDEN',
-        message: 'Not the owner',
+        message: 'You are not authorized to view this application',
         details: {},
       });
     }
@@ -399,10 +403,14 @@ export const updateApplicationStatus = async (req, res) => {
       });
     }
 
-    if (req.user.role !== 'admin' && application.job.recruiterId !== req.user.id) {
+    const isStudentOwner = req.user.role === 'student' && application.student.userId === req.user.id;
+    const isRecruiterOwner = req.user.role === 'recruiter' && application.job.recruiterId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isStudentOwner && !isRecruiterOwner && !isAdmin) {
       return res.status(403).json({
         code: 'FORBIDDEN',
-        message: 'Not the owner',
+        message: 'You are not authorized to view this application',
         details: {},
       });
     }

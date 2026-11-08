@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const RoleEnum = z.enum(['student', 'recruiter', 'admin']);
+export const RoleEnum = z.enum(['student', 'recruiter']);
 
 export const registerSchema = z.object({
   name: z
@@ -25,5 +25,10 @@ export const loginSchema = z.object({
   password: z
     .string({ required_error: 'Password is required' })
     .min(1, { message: 'Password is required' }),
+});
+
+export const updateMeSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters').optional(),
+  organization: z.string().trim().max(120).optional(),
 });
 

@@ -6,6 +6,14 @@ export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
+    if (role === 'admin') {
+      return res.status(403).json({
+        code: 'FORBIDDEN',
+        message: 'Admin registration is prohibited through public registration',
+        details: {},
+      });
+    }
+
     const normalizedEmail = email.toLowerCase().trim();
 
     // Check if user already exists
@@ -133,6 +141,61 @@ export const getMe = async (req, res) => {
     return res.status(500).json({
       code: 'INTERNAL_ERROR',
       message: 'Failed to fetch current user',
+      details: {},
+    });
+  }
+};
+
+export const updateMe = async (req, res) => {
+  try {
+    const { name, organization } = req.body;
+    const userId = req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        code: 'NOT_FOUND',
+        message: 'User not found',
+        details: {},
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(name ? { name: name.trim() } : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    // If user is a student, sync their student profile name
+    if (user.role === 'student' && name) {
+      await prisma.studentProfile.updateMany({
+        where: { userId },
+        data: { name: name.trim() },
+      });
+    }
+
+    return res.status(200).json({
+      user: {
+        ...updatedUser,
+        ...(organization ? { organization } : {}),
+      },
+      message: 'Profile updated successfully',
+    });
+  } catch (error) {
+    console.error('UpdateMe error:', error);
+    return res.status(500).json({
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to update user profile',
       details: {},
     });
   }

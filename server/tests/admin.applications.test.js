@@ -94,13 +94,13 @@ test('Admin Master Applications & Placements API Suite', async (t) => {
   });
 
   await t.test('GET /admin/applications: filters by candidate search query', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/admin/applications?search=Eligible`, {
+    const res = await fetch(`${baseUrl}/api/v1/admin/applications?search=Dev`, {
       headers: { Authorization: `Bearer ${adminToken}` },
     });
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.ok(body.applications.length > 0);
-    assert.ok(body.applications.some((a) => a.student_name.includes('Eligible')));
+    assert.ok(body.applications.some((a) => a.student_name.includes('Dev')));
   });
 
   await t.test('GET /admin/applications: supports pagination', async () => {

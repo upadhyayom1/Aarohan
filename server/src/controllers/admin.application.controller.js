@@ -44,32 +44,30 @@ export async function getAdminApplications(req, res, next) {
       ];
     }
 
-    const [total, records] = await Promise.all([
-      prisma.application.count({ where }),
-      prisma.application.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          job: {
-            select: { id: true, title: true, company: true },
-          },
-          student: {
-            select: {
-              id: true,
-              name: true,
-              branch: true,
-              cgpa: true,
-              graduationYear: true,
-              user: {
-                select: { email: true },
-              },
+    const total = await prisma.application.count({ where });
+    const records = await prisma.application.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        job: {
+          select: { id: true, title: true, company: true },
+        },
+        student: {
+          select: {
+            id: true,
+            name: true,
+            branch: true,
+            cgpa: true,
+            graduationYear: true,
+            user: {
+              select: { email: true },
             },
           },
         },
-      }),
-    ]);
+      },
+    });
 
     const applications = records.map((app) => {
       const matchScore =
@@ -127,25 +125,23 @@ export async function getAdminPlacements(req, res, next) {
       ];
     }
 
-    const [total, records, allSelected] = await Promise.all([
-      prisma.application.count({ where }),
-      prisma.application.findMany({
-        where,
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { updatedAt: 'desc' },
-        include: {
-          job: true,
-          student: {
-            include: { user: true },
-          },
+    const total = await prisma.application.count({ where });
+    const records = await prisma.application.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        job: true,
+        student: {
+          include: { user: true },
         },
-      }),
-      prisma.application.findMany({
-        where: { status: 'selected' },
-        include: { job: true },
-      }),
-    ]);
+      },
+    });
+    const allSelected = await prisma.application.findMany({
+      where: { status: 'selected' },
+      include: { job: true },
+    });
 
     const participatingCompanies = new Set(
       allSelected.map((a) => a.job?.company).filter(Boolean)
