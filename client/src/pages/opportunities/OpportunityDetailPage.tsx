@@ -3,6 +3,7 @@ import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
 import { calculateMatch, checkEligibility } from '../../lib/matching';
 import { api, MatchResult, ApiError } from '../../lib/api';
+import { JobOpportunity } from '../../types';
 import { Button, StatusBadge, Dialog } from '../../components/ui';
 import {
   ArrowLeft,
@@ -30,29 +31,79 @@ export function OpportunityDetailPage() {
   const [isApplying, setIsApplying] = useState(false);
   const [aiMatch, setAiMatch] = useState<MatchResult | null>(null);
   const [isLoadingAiMatch, setIsLoadingAiMatch] = useState(false);
+  const [jobDetail, setJobDetail] = useState<JobOpportunity | null>(null);
+  const [isLoadingJob, setIsLoadingJob] = useState(false);
 
-  const job = useMemo(() => {
-    return jobs.find(j => j.id === params.jobId) || jobs[0];
-  }, [jobs, params.jobId]);
+  const job = useMemo((): JobOpportunity | null => {
+    return jobs.find(j => j.id === params.jobId) || jobDetail || null;
+  }, [jobs, params.jobId, jobDetail]);
+
+  useEffect(() => {
+    let active = true;
+    if (params.jobId && !jobs.some(j => j.id === params.jobId)) {
+      setIsLoadingJob(true);
+      api.jobs
+        .getById(params.jobId)
+        .then((res) => {
+          if (active && res) {
+            setJobDetail({
+              id: res.id,
+              title: res.title,
+              company: res.company,
+              companyInitials: (res.company || 'PE').slice(0, 2).toUpperCase(),
+              location: res.location || 'Campus / Multiple Locations',
+              workArrangement: res.workArrangement || 'Hybrid',
+              employmentType: res.employmentType || 'Full-time',
+              deadline: res.deadline ? new Date(res.deadline).toISOString().split('T')[0] : '',
+              publishedDate: res.created_at ? new Date(res.created_at).toISOString().split('T')[0] : '',
+              salaryRange: res.salaryRange || 'Competitive',
+              description: res.description || '',
+              responsibilities: res.responsibilities || ['Develop technical solutions', 'Collaborate across teams'],
+              requiredQualifications: res.requiredQualifications || [`Min CGPA ${res.min_cgpa || 7.0}`],
+              requiredSkills: Array.isArray(res.required_skills) ? res.required_skills : [],
+              preferredSkills: res.preferredSkills || [],
+              eligibleBranches: Array.isArray(res.eligible_branches) ? res.eligible_branches : [],
+              eligibleGradYears: [res.graduation_year || 2026],
+              minCgpa: res.min_cgpa ?? 0,
+              maxBacklogs: res.max_backlogs ?? 0,
+              applicantsCount: res.applicant_count ?? 0,
+              shortlistedCount: 0,
+              status: res.status === 'open' ? 'Active' : 'Closed',
+              recruiterId: res.recruiter_id,
+            });
+          }
+        })
+        .catch(() => null)
+        .finally(() => {
+          if (active) setIsLoadingJob(false);
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [params.jobId, jobs]);
 
   const existingApp = useMemo(() => {
+    if (!job) return null;
     return applications.find(
       a => a.jobId === job.id && a.studentId === studentProfile.id && a.status !== 'Withdrawn'
     );
-  }, [applications, job.id, studentProfile.id]);
+  }, [applications, job, studentProfile.id]);
 
   const eligibility = useMemo(() => {
+    if (!job) return checkEligibility(studentProfile, jobs[0] || ({} as JobOpportunity));
     return checkEligibility(studentProfile, job);
-  }, [studentProfile, job]);
+  }, [studentProfile, job, jobs]);
 
   const match = useMemo(() => {
+    if (!job) return calculateMatch(studentProfile, jobs[0] || ({} as JobOpportunity));
     return calculateMatch(studentProfile, job);
-  }, [studentProfile, job]);
+  }, [studentProfile, job, jobs]);
 
   // Request AI Match from Python AI Server on mount
   useEffect(() => {
     let active = true;
-    if (!studentProfile.id || !job.id) return;
+    if (!studentProfile.id || !job?.id) return;
 
     const fetchAiMatch = async () => {
       setIsLoadingAiMatch(true);
@@ -72,9 +123,11 @@ export function OpportunityDetailPage() {
     return () => {
       active = false;
     };
-  }, [studentProfile.id, job.id]);
+  }, [studentProfile.id, job?.id]);
 
   const handleApply = async () => {
+    if (!job) return;
+
     setIsApplying(true);
     setApplyErrorMessage(null);
     setEligibilityFailures(null);
@@ -102,14 +155,7 @@ export function OpportunityDetailPage() {
           setApplyErrorMessage(err.message || 'Server rejected application');
         }
       } else {
-        // Fallback for offline demo mode
-        const res = actions.applyToJob(job.id, matchScore);
-        if (res.success) {
-          setApplySuccessMessage('Your application dossier has been submitted (local demo mode).');
-          setApplyModalOpen(false);
-        } else {
-          setApplyErrorMessage(res.message);
-        }
+        setApplyErrorMessage(err?.message || 'Failed to submit application. Please check your network and try again.');
       }
     } finally {
       setIsApplying(false);
@@ -118,6 +164,27 @@ export function OpportunityDetailPage() {
 
   const displayedScore = aiMatch ? aiMatch.match_score : match.overallScore;
   const displayedExplanation = aiMatch?.explanation || match.matchExplanation;
+
+  if (isLoadingJob) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2 border border-[#E4E4E1] bg-white max-w-[1440px] mx-auto my-10">
+        <RefreshCw className="animate-spin text-[#111111]" size={20} />
+        <span>Retrieving opportunity dossier from database...</span>
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="max-w-[1440px] mx-auto px-4 py-16 text-center space-y-4">
+        <h2 className="text-xl font-bold text-[#111111]">Opportunity Not Found</h2>
+        <p className="text-xs font-mono text-[#858585]">The requested job posting may have closed or been removed.</p>
+        <Link to="/opportunities">
+          <Button variant="secondary" size="sm">Back to Opportunities</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10">

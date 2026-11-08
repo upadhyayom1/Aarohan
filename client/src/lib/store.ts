@@ -88,9 +88,20 @@ class CampusStore {
   private auditLogs: AuditLog[] = INITIAL_AUDIT_LOGS;
   private skillResources: SkillResource[] = INITIAL_SKILL_RESOURCES;
   private listeners: Set<() => void> = new Set();
+  private authReady: boolean = false;
+  private lastStudentFetch: number = 0;
+  private lastRecruiterFetch: number = 0;
+  private isFetchingStudentData: boolean = false;
+  private isFetchingRecruiterData: boolean = false;
 
   constructor() {
     this.loadFromStorage();
+    if (typeof window !== 'undefined') {
+      const token = getAuthToken();
+      this.authReady = !token;
+    } else {
+      this.authReady = true;
+    }
   }
 
   private saveToStorage() {
@@ -199,6 +210,9 @@ class CampusStore {
   public getSkillResources(): SkillResource[] {
     return this.skillResources;
   }
+  public isAuthReady(): boolean {
+    return this.authReady;
+  }
 
   // Set User Role / Identity
   public switchRole(role: UserRole) {
@@ -241,6 +255,8 @@ class CampusStore {
       };
     }
 
+    this.authReady = true;
+
     this.addAuditLog(
       this.currentUser.name,
       this.currentUser.role,
@@ -255,32 +271,39 @@ class CampusStore {
   public clearAuthSession() {
     clearAuthToken();
     this.currentUser = INITIAL_USER_STUDENT;
+    this.authReady = true;
     this.notify();
   }
 
   public async checkAuthSession(): Promise<User | null> {
     const token = getAuthToken();
-    if (token) {
-      try {
-        const me = await api.auth.getMe();
-        if (me && me.role) {
-          this.setAuthSession({
-            id: me.id,
-            name: me.name,
-            email: me.email,
-            role: me.role as UserRole,
-          }, token);
+    if (!token) {
+      this.authReady = true;
+      this.notify();
+      return null;
+    }
+    try {
+      const me = await api.auth.getMe();
+      if (me && me.role) {
+        this.setAuthSession({
+          id: me.id,
+          name: me.name,
+          email: me.email,
+          role: me.role as UserRole,
+        }, token);
 
-          if (me.role === 'student') {
-            await this.loadStudentPortalData();
-          } else if (me.role === 'recruiter') {
-            await this.loadRecruiterPortalData();
-          }
-          return this.currentUser;
+        if (me.role === 'student') {
+          await this.loadStudentPortalData();
+        } else if (me.role === 'recruiter') {
+          await this.loadRecruiterPortalData();
         }
-      } catch {
-        clearAuthToken();
+        return this.currentUser;
       }
+    } catch {
+      clearAuthToken();
+    } finally {
+      this.authReady = true;
+      this.notify();
     }
     return null;
   }
@@ -434,7 +457,7 @@ class CampusStore {
         company: a.job?.company || a.company || existing?.company || 'Enterprise',
         appliedDate: a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : (existing?.appliedDate || '2026-10-01'),
         status: statusTitle,
-        matchScore: a.matchResult?.match_score ?? a.match_score ?? existing?.matchScore ?? 85,
+        matchScore: a.matchResult?.match_score ?? a.match_score ?? existing?.matchScore ?? 0,
         latestUpdateDate: updateDate,
         history: existing?.history || [
           {
@@ -458,24 +481,30 @@ class CampusStore {
       const modeVal: 'Video Call' | 'In-person' | 'Phone' =
         iv.mode === 'on_campus' ? 'In-person' : 'Video Call';
 
+      const scheduledDate = iv.scheduled_at ? new Date(iv.scheduled_at) : null;
+      const formattedDate = scheduledDate ? scheduledDate.toISOString().split('T')[0] : '';
+      const formattedTime = scheduledDate
+        ? scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
+
       return {
         id: iv.id,
         applicationId: iv.application_id || iv.applicationId || '',
-        jobId: iv.application?.job_id || iv.jobId || '',
-        studentId: iv.student_id || iv.studentId || this.studentProfile.id,
-        studentName: iv.student?.name || this.studentProfile.fullName,
-        studentEmail: iv.student?.user?.email || this.studentProfile.email,
-        jobTitle: iv.application?.job?.title || 'Technical Interview',
-        company: iv.application?.job?.company || 'Partner Enterprise',
-        round: 'Technical Assessment',
-        date: iv.scheduled_at ? new Date(iv.scheduled_at).toISOString().split('T')[0] : '2026-11-15',
-        startTime: iv.scheduled_at ? new Date(iv.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10:00 AM',
-        endTime: '11:00 AM',
-        timezone: 'EST',
+        jobId: iv.job?.id || iv.application?.job?.id || iv.job_id || iv.jobId || '',
+        studentId: iv.student?.id || iv.application?.student?.id || iv.student_id || iv.studentId || this.studentProfile.id,
+        studentName: iv.student?.name || iv.application?.student?.name || this.studentProfile.fullName,
+        studentEmail: iv.student?.email || iv.student?.user?.email || this.studentProfile.email,
+        jobTitle: iv.job?.title || iv.application?.job?.title || iv.jobTitle || 'Technical Interview',
+        company: iv.job?.company || iv.application?.job?.company || iv.company || 'Partner Enterprise',
+        round: iv.round || (iv.notes ? iv.notes.split('(')[0]?.trim() : 'Technical Assessment') || 'Technical Assessment',
+        date: formattedDate,
+        startTime: formattedTime,
+        endTime: '',
+        timezone: 'Local',
         mode: modeVal,
-        locationOrLink: iv.location || 'Building 4, Placement Hall',
+        locationOrLink: iv.location || '',
         status: 'Scheduled',
-        notes: iv.notes,
+        notes: iv.notes || '',
       };
     });
 
@@ -483,9 +512,14 @@ class CampusStore {
     this.notify();
   }
 
-  public async loadStudentPortalData() {
+  public async loadStudentPortalData(force = false) {
     const token = getAuthToken();
     if (!token) return;
+    const now = Date.now();
+    if (!force && (now - this.lastStudentFetch < 12000 || this.isFetchingStudentData)) {
+      return;
+    }
+    this.isFetchingStudentData = true;
 
     try {
       const [prof, jobsRes, appsRes, ivRes] = await Promise.all([
@@ -499,14 +533,22 @@ class CampusStore {
       if (jobsRes && Array.isArray(jobsRes.jobs)) this.syncJobs(jobsRes.jobs);
       if (appsRes && Array.isArray(appsRes.applications)) this.syncApplications(appsRes.applications);
       if (ivRes && Array.isArray(ivRes.interviews)) this.syncInterviews(ivRes.interviews);
+      this.lastStudentFetch = Date.now();
     } catch (e) {
       console.warn('loadStudentPortalData error:', e);
+    } finally {
+      this.isFetchingStudentData = false;
     }
   }
 
-  public async loadRecruiterPortalData() {
+  public async loadRecruiterPortalData(force = false) {
     const token = getAuthToken();
     if (!token) return;
+    const now = Date.now();
+    if (!force && (now - this.lastRecruiterFetch < 12000 || this.isFetchingRecruiterData)) {
+      return;
+    }
+    this.isFetchingRecruiterData = true;
 
     try {
       const [jobsRes, ivRes] = await Promise.all([
@@ -568,8 +610,11 @@ class CampusStore {
       if (ivRes && Array.isArray(ivRes.interviews)) {
         this.syncInterviews(ivRes.interviews);
       }
+      this.lastRecruiterFetch = Date.now();
     } catch (e) {
       console.warn('loadRecruiterPortalData error:', e);
+    } finally {
+      this.isFetchingRecruiterData = false;
     }
   }
 

@@ -38,8 +38,16 @@ export function RecruiterSettingsPage() {
     };
   }, []);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      await api.auth.updateMe({
+        name: contactName,
+        organization: orgName,
+      });
+    } catch (err) {
+      console.debug('UpdateMe backend sync error:', err);
+    }
     actions.setAuthSession({
       ...currentUser,
       organization: orgName,

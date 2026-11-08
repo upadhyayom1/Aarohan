@@ -292,6 +292,12 @@ export const api = {
 
     getMe: () =>
       request<{ id: string; name: string; email: string; role: string }>('/auth/me'),
+
+    updateMe: (data: { name?: string; organization?: string }) =>
+      request<{ user: { id: string; name: string; email: string; role: string; organization?: string }; message: string }>('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
   },
 
   // 2. Student Profile Endpoints
@@ -387,6 +393,24 @@ export const api = {
         method: 'PATCH',
         body: JSON.stringify({ status }),
       }),
+
+    withdraw: (applicationId: string) =>
+      request<{ id: string; status: string; message: string }>(`/applications/${applicationId}/withdraw`, {
+        method: 'POST',
+      }),
+  },
+
+  // 6. Drives Endpoints (for students, recruiters, and admins)
+  drives: {
+    list: (params?: { status?: string; search?: string }) => {
+      const query = new URLSearchParams();
+      if (params?.status) query.set('status', params.status);
+      if (params?.search) query.set('search', params.search);
+      const qs = query.toString();
+      return request<{ total: number; drives: any[] }>(`/drives${qs ? `?${qs}` : ''}`);
+    },
+
+    getById: (driveId: string) => request<any>(`/drives/${driveId}`),
   },
 
   // 7. Interviews Endpoints
@@ -401,6 +425,25 @@ export const api = {
       request<any>('/interviews', {
         method: 'POST',
         body: JSON.stringify(data),
+      }),
+
+    reschedule: (
+      interviewId: string,
+      data: {
+        scheduled_at?: string;
+        mode?: 'online' | 'on_campus';
+        location?: string;
+        notes?: string;
+      }
+    ) =>
+      request<any>(`/interviews/${interviewId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+
+    cancel: (interviewId: string) =>
+      request<{ message: string; interview_id: string }>(`/interviews/${interviewId}`, {
+        method: 'DELETE',
       }),
 
     getMy: (params?: { upcoming?: boolean; past?: boolean }) => {
@@ -592,6 +635,32 @@ export const api = {
       return aiRequest<any>(`/analytics/skill-demand${qs ? `?${qs}` : ''}`);
     },
   },
+};
+
+export const authApi = api.auth;
+export const studentApi = api.students;
+export const jobApi = api.jobs;
+export const applicationApi = api.applications;
+export const interviewApi = api.interviews;
+export const driveApi = api.drives;
+export const adminApi = api.admin;
+export const resumeApi = api.resume;
+export const aiApi = api.ai;
+
+export const recruiterApi = {
+  getJobs: api.jobs.list,
+  getJobById: api.jobs.getById,
+  createJob: api.jobs.create,
+  updateJob: api.jobs.update,
+  updateJobStatus: api.jobs.updateStatus,
+  getApplicants: api.jobs.getApplicants,
+  updateApplicationStatus: api.applications.updateStatus,
+  scheduleInterview: api.interviews.schedule,
+  rescheduleInterview: api.interviews.reschedule,
+  cancelInterview: api.interviews.cancel,
+  getInterviews: api.interviews.getMy,
+  downloadCandidateResume: api.resume.downloadCandidateResume,
+  getCandidateById: api.students.getById,
 };
 
 export default api;

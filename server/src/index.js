@@ -25,8 +25,7 @@ app.use(cors({
 
     const isAllowed =
       allowedOrigins.includes(origin) ||
-      origin.endsWith('.vercel.app') ||
-      process.env.NODE_ENV !== 'production';
+      (process.env.NODE_ENV !== 'production' && origin.endsWith('.vercel.app'));
 
     if (isAllowed) {
       return callback(null, true);

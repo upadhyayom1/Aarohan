@@ -200,64 +200,69 @@ export function StudentMatchesPage() {
       </div>
 
       {/* Main Two-Column Master / Detail View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Match Listings */}
-        <div className="lg:col-span-5 space-y-4">
-          <span className="text-xs font-mono uppercase text-[#858585] tracking-widest block mb-2">
-            SELECT VACANCY FOR FULL FIT BREAKDOWN
-          </span>
-
-          <div className="space-y-3">
-            {matchResults.map(({ job, match }) => {
-              const isSelected = job.id === selectedJobId;
-              const currentScore = isSelected && aiMatch ? aiMatch.match_score : match.overallScore;
-
-              return (
-                <div
-                  key={job.id}
-                  onClick={() => setSelectedJobId(job.id)}
-                  className={`border p-4 cursor-pointer transition-all ${
-                    isSelected
-                      ? 'border-[#111111] bg-white shadow-xs'
-                      : 'border-[#E4E4E1] bg-[#FAFAF9] hover:border-[#858585]'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="text-[10px] font-mono uppercase text-[#858585] block">
-                        {job.company}
-                      </span>
-                      <h3 className="font-bold text-sm text-[#111111] leading-tight">
-                        {job.title}
-                      </h3>
-                    </div>
-                    <span className="text-xs font-mono font-bold bg-[#111111] text-white px-2 py-0.5 rounded-[2px] shrink-0">
-                      {currentScore}%
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-[#E4E4E1] h-1.5 rounded-[1px] overflow-hidden my-2.5">
-                    <div
-                      className="bg-[#111111] h-full"
-                      style={{ width: `${currentScore}%` }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center text-[10px] font-mono text-[#666666]">
-                    <span>{match.matchedSkills.length} matches • {match.missingRequiredSkills.length} gaps</span>
-                    <span className={match.isEligible ? 'text-[#111111] font-semibold' : 'text-[#858585]'}>
-                      {match.isEligible ? '✓ Eligible' : '✕ Ineligible'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+      {matchResults.length === 0 ? (
+        <div className="border border-[#E4E4E1] bg-[#FAFAF9] p-12 text-center text-xs font-mono text-[#858585] rounded-[3px]">
+          No active campus placement vacancies found. AI match evaluations will generate automatically as openings are published.
         </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Match Listings */}
+          <div className="lg:col-span-5 space-y-4">
+            <span className="text-xs font-mono uppercase text-[#858585] tracking-widest block mb-2">
+              SELECT VACANCY FOR FULL FIT BREAKDOWN
+            </span>
 
-        {/* Right Column: In-depth Transparent Report */}
-        {selectedItem && (
-          <div className="lg:col-span-7 border border-[#222222] bg-white p-6 sm:p-8 space-y-6">
+            <div className="space-y-3">
+              {matchResults.map(({ job, match }) => {
+                const isSelected = job.id === selectedJobId;
+                const currentScore = isSelected && aiMatch ? aiMatch.match_score : match.overallScore;
+
+                return (
+                  <div
+                    key={job.id}
+                    onClick={() => setSelectedJobId(job.id)}
+                    className={`border p-4 cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-[#111111] bg-white shadow-xs'
+                        : 'border-[#E4E4E1] bg-[#FAFAF9] hover:border-[#858585]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] font-mono uppercase text-[#858585] block">
+                          {job.company}
+                        </span>
+                        <h3 className="font-bold text-sm text-[#111111] leading-tight">
+                          {job.title}
+                        </h3>
+                      </div>
+                      <span className="text-xs font-mono font-bold bg-[#111111] text-white px-2 py-0.5 rounded-[2px] shrink-0">
+                        {currentScore}%
+                      </span>
+                    </div>
+
+                    <div className="w-full bg-[#E4E4E1] h-1.5 rounded-[1px] overflow-hidden my-2.5">
+                      <div
+                        className="bg-[#111111] h-full"
+                        style={{ width: `${currentScore}%` }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center text-[10px] font-mono text-[#666666]">
+                      <span>{match.matchedSkills.length} matches • {match.missingRequiredSkills.length} gaps</span>
+                      <span className={match.isEligible ? 'text-[#111111] font-semibold' : 'text-[#858585]'}>
+                        {match.isEligible ? '✓ Eligible' : '✕ Ineligible'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Column: In-depth Transparent Report */}
+          {selectedItem && (
+            <div className="lg:col-span-7 border border-[#222222] bg-white p-6 sm:p-8 space-y-6">
             <div className="flex items-start justify-between border-b border-[#E4E4E1] pb-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -454,6 +459,7 @@ export function StudentMatchesPage() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

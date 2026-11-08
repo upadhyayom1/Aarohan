@@ -21,3 +21,13 @@ export const scheduleInterviewSchema = z.object({
   notes: z.string().optional().default(''),
 });
 
+export const rescheduleInterviewSchema = z.object({
+  scheduled_at: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid ISO 8601 date string' })
+    .optional(),
+  mode: interviewModeEnum.optional(),
+  location: z.string().trim().min(1, 'location cannot be empty').optional(),
+  notes: z.string().optional(),
+});
+

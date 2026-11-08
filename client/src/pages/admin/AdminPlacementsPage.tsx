@@ -32,8 +32,8 @@ export function AdminPlacementsPage() {
   }, []);
 
   const verifiedOffers = summary?.verified_offers ?? placements.length;
-  const avgPkg = summary?.average_package ?? (placements.length > 0 ? '$120,000 / yr' : 'N/A');
-  const highPkg = summary?.highest_package ?? (placements.length > 0 ? '$145,000 / yr' : 'N/A');
+  const avgPkg = summary?.average_package || (placements.length > 0 ? 'Disclosed on selection' : 'N/A');
+  const highPkg = summary?.highest_package || (placements.length > 0 ? 'Disclosed on selection' : 'N/A');
   const companiesCount = summary?.participating_companies ?? 0;
 
   return (

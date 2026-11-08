@@ -6,6 +6,7 @@ import jobRoutes from './job.routes.js';
 import applicationRoutes from './application.routes.js';
 import interviewRoutes from './interview.routes.js';
 import adminRoutes from './admin.routes.js';
+import driveRoutes from './drive.routes.js';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/jobs', jobRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/interviews', interviewRoutes);
 router.use('/admin', adminRoutes);
+router.use('/drives', driveRoutes);
 
 export default router;

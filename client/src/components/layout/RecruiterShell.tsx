@@ -46,7 +46,7 @@ export function RecruiterShell({ children }: { children: ReactNode }) {
       items: [
         { label: 'Job Openings', href: '/recruiter/jobs', icon: Briefcase, badge: activeJobsCount },
         { label: 'Post New Job', href: '/recruiter/jobs/new', icon: PlusCircle },
-        { label: 'Review Applicants', href: '/recruiter/jobs/job_apex_sde/applicants', icon: Users },
+        { label: 'Review Applicants', href: '/recruiter/applicants', icon: Users },
         { label: 'Interviews', href: '/recruiter/interviews', icon: Calendar },
         { label: 'Calendar', href: '/recruiter/calendar', icon: Calendar },
       ],

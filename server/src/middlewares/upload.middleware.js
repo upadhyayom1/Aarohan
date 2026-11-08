@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   const isPdf =
-    file.mimetype === 'application/pdf' ||
+    file.mimetype === 'application/pdf' &&
     path.extname(file.originalname).toLowerCase() === '.pdf';
 
   if (isPdf) {

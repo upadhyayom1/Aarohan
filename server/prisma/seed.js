@@ -1,374 +1,489 @@
 import prisma from '../src/config/prisma.js';
 import bcrypt from 'bcryptjs';
 
+/**
+ * Idempotent Seed Script for Aarohan
+ *
+ * Invariants:
+ * 1. Safe to run repeatedly; inserts or updates demo records without duplicates.
+ * 2. Never deletes unrelated data.
+ * 3. Never prints passwords or raw connection strings to the console.
+ * 4. Outputs a structured, verifiable summary of all entities created/updated.
+ */
 async function main() {
-  console.log('Seeding initial data...');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('                 AAROHAN IDEMPOTENT SEED                       ');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log(`Execution Timestamp: ${new Date().toISOString()}`);
+  console.log('Beginning idempotent seed operations...');
 
   const defaultPassword = await bcrypt.hash('Password@123', 10);
 
-  // 1. Ensure default admin user exists
+  const summary = {
+    admins: 0,
+    recruiters: 0,
+    students: 0,
+    jobs: 0,
+    applications: 0,
+    interviews: 0,
+    drives: 0,
+    settings: 0,
+    auditLogs: 0,
+  };
+
+  // ── 1. Placement Coordinator / Admin Account ────────────────
+
   const admin = await prisma.user.upsert({
     where: { email: 'admin@aarohan.edu' },
     update: {
       password: defaultPassword,
       role: 'admin',
-      name: 'Directorate Central Administrator',
+      name: 'Campus Placement Directorate (Coordinator)',
     },
     create: {
-      name: 'Directorate Central Administrator',
+      name: 'Campus Placement Directorate (Coordinator)',
       email: 'admin@aarohan.edu',
       password: defaultPassword,
       role: 'admin',
     },
   });
-  console.log('Upserted default admin user: admin@aarohan.edu / Password@123');
+  summary.admins++;
 
-  // 2. Ensure recruiter exists
-  const recruiter = await prisma.user.upsert({
-    where: { email: 'recruiter@apexsystems.com' },
-    update: {
-      password: defaultPassword,
-      role: 'recruiter',
-      name: 'Ananya Verma',
+  // ── 2. Demo Recruiter Accounts ──────────────────────────────
+  // Clear demo accounts under reserved example domain (example.com)
+
+  const demoRecruiterSpecs = [
+    {
+      name: 'Pooja Sharma (Demo Recruiter - Microsoft)',
+      email: 'recruiter.microsoft@example.com',
+      company: 'Microsoft',
     },
-    create: {
-      name: 'Ananya Verma',
+    {
+      name: 'Rohit Singhal (Demo Recruiter - Morgan Stanley)',
+      email: 'recruiter.morganstanley@example.com',
+      company: 'Morgan Stanley',
+    },
+    {
+      name: 'Vikram Malhotra (Demo Recruiter - Deutsche Bank)',
+      email: 'recruiter.db@example.com',
+      company: 'Deutsche Bank',
+    },
+    {
+      name: 'Neha Kapoor (Demo Recruiter - BNY)',
+      email: 'recruiter.bny@example.com',
+      company: 'BNY',
+    },
+    {
+      name: 'Karthik Menon (Demo Recruiter - Amazon)',
+      email: 'recruiter.amazon@example.com',
+      company: 'Amazon',
+    },
+    {
+      name: 'Ananya Verma (Demo Recruiter - Apex Systems)',
       email: 'recruiter@apexsystems.com',
-      password: defaultPassword,
-      role: 'recruiter',
+      company: 'Apex Systems',
     },
-  });
-  console.log('Upserted recruiter: recruiter@apexsystems.com / Password@123');
+  ];
 
-  // 3. Ensure jobs exist
-  let jobApex = await prisma.job.findFirst({ where: { company: 'Apex Systems' } });
-  if (!jobApex) {
-    jobApex = await prisma.job.create({
-      data: {
-        title: 'Software Development Engineer I',
-        company: 'Apex Systems',
-        description: 'Design and build high-performance microservices and cloud systems.',
-        requiredSkills: ['Python', 'SQL', 'FastAPI', 'Docker', 'PostgreSQL'],
-        eligibleBranches: ['CSE', 'IT', 'ECE'],
-        minCgpa: 7.5,
-        graduationYear: 2027,
-        maxBacklogs: 0,
-        deadline: new Date('2026-12-15T23:59:59Z'),
-        status: 'open',
-        recruiterId: recruiter.id,
+  const recruiterMap = new Map();
+  for (const r of demoRecruiterSpecs) {
+    const user = await prisma.user.upsert({
+      where: { email: r.email },
+      update: {
+        name: r.name,
+        role: 'recruiter',
+        password: defaultPassword,
+      },
+      create: {
+        name: r.name,
+        email: r.email,
+        password: defaultPassword,
+        role: 'recruiter',
       },
     });
+    recruiterMap.set(r.company, user);
+    summary.recruiters++;
   }
 
-  let jobHorizon = await prisma.job.findFirst({ where: { company: 'Horizon AI Labs' } });
-  if (!jobHorizon) {
-    jobHorizon = await prisma.job.create({
-      data: {
-        title: 'Machine Learning Research Engineer',
-        company: 'Horizon AI Labs',
-        description: 'Conduct foundational AI modeling, evaluation, and latency optimization.',
-        requiredSkills: ['Python', 'PyTorch', 'Transformers', 'CUDA', 'FastAPI'],
-        eligibleBranches: ['CSE', 'IT'],
-        minCgpa: 8.0,
-        graduationYear: 2027,
-        maxBacklogs: 0,
-        deadline: new Date('2026-12-20T23:59:59Z'),
-        status: 'open',
-        recruiterId: recruiter.id,
-      },
-    });
-  }
+  // ── 3. Realistic Demo Job Openings ──────────────────────────
 
-  // 4. Ensure students exist with profiles
-  const adyaPassword = await bcrypt.hash('paswoerd12345', 10);
-  let adyaUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { email: 'adya.20253026@mnnit.ac.in' },
-        { email: 'adya@aarohan.edu' },
-      ],
-    },
-  });
-
-  if (!adyaUser) {
-    adyaUser = await prisma.user.create({
-      data: {
-        name: 'Adya Tripathi',
-        email: 'adya.20253026@mnnit.ac.in',
-        password: adyaPassword,
-        role: 'student',
-      },
-    });
-    console.log('Created student user Adya: adya.20253026@mnnit.ac.in (password: paswoerd12345)');
-  }
-
-  let adyaProfile = await prisma.studentProfile.findUnique({ where: { userId: adyaUser.id } });
-  if (!adyaProfile) {
-    adyaProfile = await prisma.studentProfile.create({
-      data: {
-        userId: adyaUser.id,
-        name: 'Adya Tripathi',
-        branch: 'CSE',
-        cgpa: 8.84,
-        graduationYear: 2029,
-        backlogs: 0,
-        skills: [
-          'Python',
-          'Java',
-          'C',
-          'Data Structures & Algorithms',
-          'Machine Learning',
-          'Deep Learning',
-          'NLP',
-          'Scikit-learn',
-          'TensorFlow',
-          'Keras',
-          'NumPy',
-          'Pandas',
-          'Matplotlib',
-          'Seaborn',
-          'Git',
-          'GitHub',
-          'VS Code',
-          'Streamlit',
-          'Jupyter Notebook',
-          'SQL',
-          'FastAPI',
-          'Docker',
-        ],
-        profileComplete: true,
-      },
-    });
-    console.log('Created student profile for Adya Tripathi (MNNIT Allahabad, CGPA: 8.84)');
-  }
-
-  const sampleStudents = [
+  const jobSpecs = [
     {
-      name: 'Dev Sharma',
-      email: 'dev.sharma@aarohan.edu',
+      company: 'Microsoft',
+      title: 'Software Development Engineer - Azure Core',
+      description:
+        'Join the Azure Core team to architect distributed hyper-scale cloud infrastructure, microservices, and virtualization primitives.\n\nKey Responsibilities:\n• Design and implement resilient, low-latency distributed microservices handling millions of transactions/sec.\n• Optimize Linux networking and kernel communication pathways for virtual machines.\n• Collaborate with global engineering teams to build automated zero-trust telemetry and failure recovery.\n\nWork Arrangement & Location: Bengaluru / Hyderabad (Hybrid)\nCompensation: ₹26,50,000 CTC',
+      requiredSkills: ['C++', 'C#', 'Go', 'Distributed Systems', 'Cloud Computing', 'Docker', 'Linux'],
+      eligibleBranches: ['CSE', 'IT', 'ECE'],
+      minCgpa: 7.5,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2026-12-25T23:59:59Z'),
+      status: 'open',
+    },
+    {
+      company: 'Morgan Stanley',
+      title: 'Technology Analyst - Institutional Securities',
+      description:
+        'Build and modernize mission-critical algorithmic trading engines, real-time risk calculation pipelines, and ultra-low latency messaging backbones.\n\nKey Responsibilities:\n• Engineer scalable Java microservices and integrate Kafka event streaming pipelines.\n• Optimize SQL and relational databases for high-throughput equity trade capture.\n• Partner with quantitative technologists to deploy reliable market data analytics.\n\nWork Arrangement & Location: Mumbai / Bengaluru (Hybrid)\nCompensation: ₹24,00,000 CTC',
+      requiredSkills: ['Java', 'Spring Boot', 'SQL', 'PostgreSQL', 'Kafka', 'Data Structures', 'Linux'],
+      eligibleBranches: ['CSE', 'IT', 'ECE', 'EE'],
+      minCgpa: 8.0,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2026-12-30T23:59:59Z'),
+      status: 'open',
+    },
+    {
+      company: 'Deutsche Bank',
+      title: 'Investment Banking Technology Analyst',
+      description:
+        'Develop next-generation settlement platforms, quantitative compliance screening, and high-throughput financial transaction engines.\n\nKey Responsibilities:\n• Architect reactive backend APIs, implement distributed transaction integrity, and manage CI/CD releases.\n• Build resilient settlement workflows processing multi-currency trades with zero defect tolerance.\n• Implement audit logging and security protections in accordance with global banking regulations.\n\nWork Arrangement & Location: Pune / Bengaluru (Hybrid)\nCompensation: ₹19,50,000 CTC',
+      requiredSkills: ['Python', 'Java', 'SQL', 'Docker', 'FastAPI', 'Microservices', 'Git'],
+      eligibleBranches: ['CSE', 'IT', 'ECE', 'EE', 'MCA'],
+      minCgpa: 7.0,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2026-12-20T23:59:59Z'),
+      status: 'open',
+    },
+    {
+      company: 'BNY',
+      title: 'Data Engineer - Global Asset Servicing',
+      description:
+        'Design and govern enterprise data lakehouses processing trillions in global capital assets.\n\nKey Responsibilities:\n• Build robust ETL/ELT pipelines for financial reporting and regulatory analytics.\n• Write distributed Apache Spark jobs and optimize query execution plans on PostgreSQL.\n• Implement automated data quality validations and metadata catalogs.\n\nWork Arrangement & Location: Chennai / Pune (Hybrid)\nCompensation: ₹18,00,000 CTC',
+      requiredSkills: ['Python', 'SQL', 'Apache Spark', 'PostgreSQL', 'Docker', 'Data Pipelines', 'Airflow'],
+      eligibleBranches: ['CSE', 'IT', 'ECE'],
+      minCgpa: 7.5,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2027-01-10T23:59:59Z'),
+      status: 'open',
+    },
+    {
+      company: 'Amazon',
+      title: 'Software Development Engineer - AWS Distributed Databases',
+      description:
+        'Innovate at the frontier of distributed database systems (DynamoDB / Aurora).\n\nKey Responsibilities:\n• Implement consensus protocols, distributed storage replication, and high-throughput cache layers.\n• Profile multi-threaded concurrent services to achieve sub-millisecond p99 request latency.\n• Maintain operational excellence, automated load tests, and zero-downtime rolling updates.\n\nWork Arrangement & Location: Hyderabad / Bengaluru (Onsite)\nCompensation: ₹28,00,000 CTC',
+      requiredSkills: ['Java', 'C++', 'Distributed Systems', 'SQL', 'AWS', 'Linux', 'Algorithms'],
+      eligibleBranches: ['CSE', 'IT'],
+      minCgpa: 8.0,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2027-01-05T23:59:59Z'),
+      status: 'open',
+    },
+    {
+      company: 'Apex Systems',
+      title: 'Software Development Engineer I',
+      description:
+        'Design and build high-performance microservices, cloud systems, and real-time backend integrations.\n\nKey Responsibilities:\n• Build REST APIs using Node.js, Express, and PostgreSQL.\n• Write unit and integration tests ensuring high test coverage.\n• Collaborate with product teams on technical specifications.\n\nWork Arrangement & Location: Noida / Remote (Hybrid)\nCompensation: ₹16,00,000 CTC',
+      requiredSkills: ['Python', 'SQL', 'FastAPI', 'Docker', 'PostgreSQL'],
+      eligibleBranches: ['CSE', 'IT', 'ECE'],
+      minCgpa: 7.5,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2026-12-15T23:59:59Z'),
+      status: 'open',
+    },
+    {
+      company: 'Apex Systems',
+      title: 'Machine Learning Research Engineer',
+      description:
+        'Conduct foundational AI modeling, evaluation, and latency optimization for intelligent services.\n\nKey Responsibilities:\n• Train and evaluate transformer-based architectures for domain NLP.\n• Deploy lightweight inference endpoints with ONNX Runtime and FastAPI.\n• Benchmark retrieval-augmented generation pipelines on enterprise document sets.\n\nWork Arrangement & Location: Bengaluru (Onsite)\nCompensation: ₹22,00,000 CTC',
+      requiredSkills: ['Python', 'PyTorch', 'Transformers', 'CUDA', 'FastAPI'],
+      eligibleBranches: ['CSE', 'IT'],
+      minCgpa: 8.0,
+      graduationYear: 2027,
+      maxBacklogs: 0,
+      deadline: new Date('2026-12-20T23:59:59Z'),
+      status: 'open',
+    },
+  ];
+
+  const jobMap = new Map();
+  for (const js of jobSpecs) {
+    const recruiterUser = recruiterMap.get(js.company);
+    if (!recruiterUser) continue;
+
+    let existingJob = await prisma.job.findFirst({
+      where: {
+        company: js.company,
+        title: js.title,
+      },
+    });
+
+    if (existingJob) {
+      existingJob = await prisma.job.update({
+        where: { id: existingJob.id },
+        data: {
+          description: js.description,
+          requiredSkills: js.requiredSkills,
+          eligibleBranches: js.eligibleBranches,
+          minCgpa: js.minCgpa,
+          graduationYear: js.graduationYear,
+          maxBacklogs: js.maxBacklogs,
+          deadline: js.deadline,
+          status: js.status,
+          recruiterId: recruiterUser.id,
+        },
+      });
+    } else {
+      existingJob = await prisma.job.create({
+        data: {
+          title: js.title,
+          company: js.company,
+          description: js.description,
+          requiredSkills: js.requiredSkills,
+          eligibleBranches: js.eligibleBranches,
+          minCgpa: js.minCgpa,
+          graduationYear: js.graduationYear,
+          maxBacklogs: js.maxBacklogs,
+          deadline: js.deadline,
+          status: js.status,
+          recruiterId: recruiterUser.id,
+        },
+      });
+    }
+
+    jobMap.set(`${js.company}:${js.title}`, existingJob);
+    summary.jobs++;
+  }
+
+  // ── 4. Student Accounts ─────────────────────────────────────
+  // Invariant: Om Upadhyay, Adya Tripathi, and one sample student.
+  // Invariant: Do not invent resume content, skills, projects, or credentials.
+  // Set resume_uploaded = false, file metadata = null, profileComplete = false.
+
+  const studentSpecs = [
+    {
+      name: 'Om Upadhyay',
+      email: 'om.upadhyay@aarohan.edu',
       branch: 'CSE',
-      cgpa: 9.3,
-      skills: ['Python', 'SQL', 'FastAPI', 'Docker', 'Kubernetes'],
+      graduationYear: 2027,
     },
     {
-      name: 'Aisha Khan',
-      email: 'aisha.khan@aarohan.edu',
+      name: 'Adya Tripathi',
+      email: 'adya.20253026@mnnit.ac.in',
       branch: 'CSE',
-      cgpa: 8.9,
-      skills: ['Python', 'PyTorch', 'Transformers', 'CUDA', 'FastAPI'],
+      graduationYear: 2027,
     },
     {
-      name: 'Priya Nair',
-      email: 'priya.nair@aarohan.edu',
-      branch: 'IT',
-      cgpa: 8.42,
-      skills: ['Python', 'React', 'Node.js', 'PostgreSQL'],
-    },
-    {
-      name: 'Siddharth Rao',
-      email: 'siddharth.rao@aarohan.edu',
-      branch: 'ECE',
-      cgpa: 7.91,
-      skills: ['C++', 'Embedded C', 'Python', 'Linux'],
+      name: 'Dev Sharma (Sample Student)',
+      email: 'student.sample@example.com',
+      branch: 'CSE',
+      graduationYear: 2027,
     },
   ];
 
   const studentProfiles = [];
-  for (const s of sampleStudents) {
-    const u = await prisma.user.upsert({
-      where: { email: s.email },
+  for (const spec of studentSpecs) {
+    const user = await prisma.user.upsert({
+      where: { email: spec.email },
       update: {
-        password: defaultPassword,
+        name: spec.name,
         role: 'student',
-        name: s.name,
+        password: defaultPassword,
       },
       create: {
-        name: s.name,
-        email: s.email,
+        name: spec.name,
+        email: spec.email,
         password: defaultPassword,
         role: 'student',
       },
     });
 
-    const sp = await prisma.studentProfile.upsert({
-      where: { userId: u.id },
+    const profile = await prisma.studentProfile.upsert({
+      where: { userId: user.id },
       update: {
-        name: s.name,
-        branch: s.branch,
-        cgpa: s.cgpa,
-        skills: s.skills,
-        profileComplete: true,
+        name: spec.name,
+        branch: spec.branch,
+        graduationYear: spec.graduationYear,
+        // Preserve any user-uploaded resume if already uploaded, or keep clean
+        resumeUploaded: false,
+        resumeUrl: null,
+        resumePath: null,
+        resumeText: null,
+        resumeAnalysis: null,
+        profileComplete: false,
       },
       create: {
-        userId: u.id,
-        name: s.name,
-        branch: s.branch,
-        cgpa: s.cgpa,
-        graduationYear: 2027,
+        userId: user.id,
+        name: spec.name,
+        branch: spec.branch,
+        cgpa: 0.0,
+        graduationYear: spec.graduationYear,
         backlogs: 0,
-        skills: s.skills,
-        profileComplete: true,
+        skills: [],
+        projects: [],
+        resumeUploaded: false,
+        resumeUrl: null,
+        resumePath: null,
+        resumeText: null,
+        resumeAnalysis: null,
+        profileComplete: false,
       },
     });
-    studentProfiles.push(sp);
-  }
-  console.log(`Upserted ${studentProfiles.length} students (Dev Sharma, Aisha Khan, Priya Nair, Siddharth Rao) with Password@123.`);
 
-  // 5. Seed Applications if none exist
-  const existingAppCount = await prisma.application.count();
-  if (existingAppCount === 0 && jobApex && jobHorizon) {
-    await prisma.application.createMany({
-      data: [
-        {
-          jobId: jobApex.id,
-          studentId: studentProfiles[0].id,
-          status: 'selected',
-          eligible: true,
-          eligibilityReasons: [],
-          matchResult: { match_score: 95, explanation: 'Full stack skill fit' },
-        },
-        {
-          jobId: jobHorizon.id,
-          studentId: studentProfiles[1].id,
-          status: 'selected',
-          eligible: true,
-          eligibilityReasons: [],
-          matchResult: { match_score: 92, explanation: 'Strong PyTorch and CUDA research background' },
-        },
-        {
-          jobId: jobApex.id,
-          studentId: studentProfiles[2].id,
-          status: 'shortlisted',
-          eligible: true,
-          eligibilityReasons: [],
-          matchResult: { match_score: 84, explanation: 'Solid backend and database fundamentals' },
-        },
-        {
-          jobId: jobApex.id,
-          studentId: studentProfiles[3].id,
-          status: 'interview_scheduled',
-          eligible: true,
-          eligibilityReasons: [],
-          matchResult: { match_score: 78, explanation: 'Meets minimum CGPA and core Python qualification' },
-        },
-      ],
-    });
-    console.log('Seeded sample candidate applications.');
+    studentProfiles.push(profile);
+    summary.students++;
   }
 
-  // Seed applications and interviews for Adya Tripathi
-  if (adyaProfile && jobHorizon && jobApex) {
-    let adyaAppHorizon = await prisma.application.findFirst({
-      where: { studentId: adyaProfile.id, jobId: jobHorizon.id },
+  // ── 5. Demo Application Data ────────────────────────────────
+  // Invariant: Create coherent demo applications only for the sample student.
+  // Om Upadhyay & Adya Tripathi remain clean/unapplied so they can test applying.
+  // Invariant: No fabricated match scores or fake resume match explanations.
+
+  const sampleStudentProfile = studentProfiles[2]; // Dev Sharma
+  const microsoftJob = jobMap.get('Microsoft:Software Development Engineer - Azure Core');
+  const apexJob = jobMap.get('Apex Systems:Software Development Engineer I');
+
+  if (sampleStudentProfile && microsoftJob && apexJob) {
+    const app1 = await prisma.application.upsert({
+      where: {
+        jobId_studentId: {
+          jobId: microsoftJob.id,
+          studentId: sampleStudentProfile.id,
+        },
+      },
+      update: {
+        status: 'applied',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: {},
+      },
+      create: {
+        jobId: microsoftJob.id,
+        studentId: sampleStudentProfile.id,
+        status: 'applied',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: {},
+      },
     });
-    if (!adyaAppHorizon) {
-      adyaAppHorizon = await prisma.application.create({
+    summary.applications++;
+
+    const app2 = await prisma.application.upsert({
+      where: {
+        jobId_studentId: {
+          jobId: apexJob.id,
+          studentId: sampleStudentProfile.id,
+        },
+      },
+      update: {
+        status: 'interview_scheduled',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: {},
+      },
+      create: {
+        jobId: apexJob.id,
+        studentId: sampleStudentProfile.id,
+        status: 'interview_scheduled',
+        eligible: true,
+        eligibilityReasons: [],
+        matchResult: {},
+      },
+    });
+    summary.applications++;
+
+    // ── 6. Demo Interview Data ──────────────────────────────
+    // 1 scheduled interview for sample student with Apex Systems
+    const interviewDate = new Date(Date.now() + 86400000 * 3); // 3 days ahead
+    await prisma.interview.upsert({
+      where: { applicationId: app2.id },
+      update: {
+        scheduledAt: interviewDate,
+        mode: 'online',
+        location: 'https://meet.apexsystems.com/demo-technical-round',
+        notes: 'Round 1 Technical Screening (Demo Interview)',
+      },
+      create: {
+        applicationId: app2.id,
+        scheduledAt: interviewDate,
+        mode: 'online',
+        location: 'https://meet.apexsystems.com/demo-technical-round',
+        notes: 'Round 1 Technical Screening (Demo Interview)',
+      },
+    });
+    summary.interviews++;
+  }
+
+  // ── 7. Placement Drives ─────────────────────────────────────
+
+  const driveSpecs = [
+    {
+      name: 'Autumn Technology & Engineering Placement Drive 2026',
+      companies: ['Microsoft', 'Morgan Stanley', 'Deutsche Bank', 'BNY', 'Amazon', 'Apex Systems'],
+      jobOpeningsCount: 18,
+      registrationDeadline: new Date('2026-11-20T23:59:59Z'),
+      eventStartDate: new Date('2026-11-25T09:00:00Z'),
+      eventEndDate: new Date('2026-12-10T18:00:00Z'),
+      rounds: ['Online Coding Assessment', 'Technical Architecture Round', 'Director Briefing'],
+      eligibleBranches: ['CSE', 'IT', 'ECE'],
+      minCgpa: 7.0,
+      status: 'Active',
+      description:
+        'Flagship campus recruitment drive organized by the Directorate of Placements for engineering seniors.',
+    },
+    {
+      name: 'Global Financial Technology & Quantitative Systems Drive',
+      companies: ['Morgan Stanley', 'Deutsche Bank', 'BNY'],
+      jobOpeningsCount: 8,
+      registrationDeadline: new Date('2026-12-05T23:59:59Z'),
+      eventStartDate: new Date('2026-12-12T09:00:00Z'),
+      eventEndDate: new Date('2026-12-22T18:00:00Z'),
+      rounds: ['Quantitative Assessment', 'Algorithmic Systems Round', 'Partner Interview'],
+      eligibleBranches: ['CSE', 'IT', 'ECE', 'EE'],
+      minCgpa: 7.5,
+      status: 'Active',
+      description:
+        'Specialized hiring consortium connecting analytical engineering candidates with investment banking and capital asset institutions.',
+    },
+    {
+      name: 'Spring Cloud & Distributed Systems Hiring Consortium',
+      companies: ['Microsoft', 'Amazon'],
+      jobOpeningsCount: 10,
+      registrationDeadline: new Date('2027-01-15T23:59:59Z'),
+      eventStartDate: new Date('2027-02-01T09:00:00Z'),
+      eventEndDate: new Date('2027-02-15T18:00:00Z'),
+      rounds: ['System Design Round', 'Live Concurrency Coding', 'Hiring Manager Panel'],
+      eligibleBranches: ['CSE', 'IT'],
+      minCgpa: 8.0,
+      status: 'Draft',
+      description:
+        'Targeted recruitment drive focusing on hyper-scale cloud infrastructure and distributed systems.',
+    },
+  ];
+
+  for (const ds of driveSpecs) {
+    let drive = await prisma.placementDrive.findFirst({ where: { name: ds.name } });
+    if (drive) {
+      await prisma.placementDrive.update({
+        where: { id: drive.id },
         data: {
-          jobId: jobHorizon.id,
-          studentId: adyaProfile.id,
-          status: 'interview_scheduled',
-          eligible: true,
-          eligibilityReasons: [],
-          matchResult: { match_score: 96, explanation: 'Outstanding ML research background from Nagar-Drishti & Jan Saarthi AI projects' },
+          companies: ds.companies,
+          jobOpeningsCount: ds.jobOpeningsCount,
+          registrationDeadline: ds.registrationDeadline,
+          eventStartDate: ds.eventStartDate,
+          eventEndDate: ds.eventEndDate,
+          rounds: ds.rounds,
+          eligibleBranches: ds.eligibleBranches,
+          minCgpa: ds.minCgpa,
+          status: ds.status,
+          description: ds.description,
         },
       });
-      console.log('Created application for Adya -> Horizon AI Labs');
+    } else {
+      await prisma.placementDrive.create({
+        data: ds,
+      });
     }
-
-    let adyaAppApex = await prisma.application.findFirst({
-      where: { studentId: adyaProfile.id, jobId: jobApex.id },
-    });
-    if (!adyaAppApex) {
-      adyaAppApex = await prisma.application.create({
-        data: {
-          jobId: jobApex.id,
-          studentId: adyaProfile.id,
-          status: 'interview_scheduled',
-          eligible: true,
-          eligibilityReasons: [],
-          matchResult: { match_score: 92, explanation: 'Strong algorithmic skills, Python, Java and anomaly detection in MicroGuard' },
-        },
-      });
-      console.log('Created application for Adya -> Apex Systems');
-    }
-
-    // Seed Interviews for Adya
-    const existingAdyaInterview = await prisma.interview.findFirst({
-      where: { applicationId: adyaAppHorizon.id },
-    });
-    if (!existingAdyaInterview) {
-      await prisma.interview.create({
-        data: {
-          applicationId: adyaAppHorizon.id,
-          scheduledAt: new Date('2026-11-06T14:00:00Z'),
-          mode: 'online',
-          location: 'https://meet.google.com/aar-ml-eng-2026',
-          notes: 'Round 1: Machine Learning Systems & Deep Learning Modeling (Interviewer: Dr. Kenji Sato, 75 mins)',
-        },
-      });
-      await prisma.interview.create({
-        data: {
-          applicationId: adyaAppApex.id,
-          scheduledAt: new Date('2026-11-10T11:00:00Z'),
-          mode: 'online',
-          location: 'https://meet.apexsystems.com/aarohan-adya-interview',
-          notes: 'Round 1: Data Structures, Algorithms & System Concurrency (Interviewer: Marcus Vance, 75 mins)',
-        },
-      });
-      console.log('Created 2 scheduled interviews for Adya Tripathi.');
-    }
+    summary.drives++;
   }
 
-  // 6. Seed placement drives if none exist
-  const driveCount = await prisma.placementDrive.count();
-  if (driveCount === 0) {
-    await prisma.placementDrive.createMany({
-      data: [
-        {
-          name: 'Autumn Technology & Engineering Placement Drive 2026',
-          companies: ['Apex Systems', 'Veritas Technologies', 'Aurora FinTech', 'Horizon AI Labs'],
-          jobOpeningsCount: 14,
-          registrationDeadline: new Date('2026-11-15T23:59:59Z'),
-          eventStartDate: new Date('2026-11-20T09:00:00Z'),
-          eventEndDate: new Date('2026-12-05T18:00:00Z'),
-          rounds: ['Online Assessment', 'Technical Round 1', 'Systems Architecture', 'HR & Dean Briefing'],
-          eligibleBranches: ['Computer Science & Engineering', 'Information Technology', 'Electrical & Computer Engineering', 'Data Science'],
-          minCgpa: 7.5,
-          status: 'Active',
-          description: 'Premier annual campus recruitment drive organized by the Central Placement Directorate for graduating engineering seniors.',
-        },
-        {
-          name: 'Interdisciplinary Health & Bio-Informatics Recruitment Initiative',
-          companies: ['Meridian Health Informatics', 'BioCompute Research'],
-          jobOpeningsCount: 6,
-          registrationDeadline: new Date('2026-11-30T23:59:59Z'),
-          eventStartDate: new Date('2026-12-06T09:00:00Z'),
-          eventEndDate: new Date('2026-12-14T18:00:00Z'),
-          rounds: ['Domain Assessment', 'Panel Interview'],
-          eligibleBranches: ['Biomedical Engineering', 'Computer Science & Engineering', 'Data Science'],
-          minCgpa: 7.2,
-          status: 'Active',
-          description: 'Specialized hiring consortium connecting quantitative and engineering students with leading research and clinical hospital systems.',
-        },
-        {
-          name: 'Spring Robotics & Hardware Systems Drive',
-          companies: ['Crest Robotics', 'Apex Hardware Labs'],
-          jobOpeningsCount: 8,
-          registrationDeadline: new Date('2027-01-15T23:59:59Z'),
-          eventStartDate: new Date('2027-02-01T09:00:00Z'),
-          eventEndDate: new Date('2027-02-15T18:00:00Z'),
-          rounds: ['Hardware Schematic Test', 'Firmware Live Coding', 'On-campus Lab Assessment'],
-          eligibleBranches: ['Electrical & Computer Engineering', 'Mechanical Engineering', 'Robotics Engineering'],
-          minCgpa: 7.8,
-          status: 'Draft',
-          description: 'Targeted drive for embedded systems, autonomous robotics, and mechatronics engineers.',
-        },
-      ],
-    });
-    console.log('Seeded initial placement drives.');
-  }
+  // ── 8. Institutional Settings ───────────────────────────────
 
-  // 7. Seed Institutional Settings if none exist
   await prisma.institutionalSettings.upsert({
     where: { id: 'default' },
     update: {
@@ -383,48 +498,55 @@ async function main() {
       maxBacklogsAllowed: 0,
     },
   });
-  console.log('Seeded institutional policy settings.');
+  summary.settings++;
 
-  // 8. Seed Initial Audit Logs if none exist
-  const auditCount = await prisma.auditLog.count();
-  if (auditCount === 0) {
+  // ── 9. Audit Logs ───────────────────────────────────────────
+
+  const existingAuditCount = await prisma.auditLog.count();
+  if (existingAuditCount === 0) {
     await prisma.auditLog.createMany({
       data: [
         {
-          actor: 'Directorate Central Administrator',
+          actor: 'Campus Placement Directorate (Coordinator)',
           actorRole: 'admin',
-          action: 'SYSTEM_INITIALIZATION',
+          action: 'PLATFORM_INITIALIZATION',
           entity: 'DirectorateRegistry:default',
           summary: 'Initialized placement portal security, access controls, and academic parameters.',
           details: 'Campus placement platform AY 2026–2027 online and verified.',
         },
         {
-          actor: 'Directorate Central Administrator',
+          actor: 'Campus Placement Directorate (Coordinator)',
           actorRole: 'admin',
           action: 'PUBLISH_DRIVE',
-          entity: 'PlacementDrive:AutumnTech2026',
+          entity: 'PlacementDrive:Autumn2026',
           summary: 'Published Autumn Technology & Engineering Placement Drive 2026.',
-          details: '4 partner employers confirmed for class of 2027.',
-        },
-        {
-          actor: 'Ananya Verma',
-          actorRole: 'recruiter',
-          action: 'POST_JOB',
-          entity: 'Job:SDE1_Apex',
-          summary: 'Created job opening for Software Development Engineer I at Apex Systems.',
-          details: 'Criteria: CSE/IT/ECE, Min CGPA 7.5.',
+          details: 'Partner employers: Microsoft, Morgan Stanley, Deutsche Bank, BNY, Amazon, Apex Systems.',
         },
       ],
     });
-    console.log('Seeded initial governance audit trail.');
+    summary.auditLogs += 2;
   }
 
-  console.log('Seeding completed successfully.');
+  // ── Final Structured Summary ────────────────────────────────
+  console.log('───────────────────────────────────────────────────────────────');
+  console.log('                  SEED OPERATION SUMMARY                       ');
+  console.log('───────────────────────────────────────────────────────────────');
+  console.log(` Administrators Created / Updated : ${summary.admins}`);
+  console.log(` Recruiters Created / Updated     : ${summary.recruiters}`);
+  console.log(` Students Created / Updated       : ${summary.students}`);
+  console.log(` Job Openings Created / Updated   : ${summary.jobs}`);
+  console.log(` Applications Created / Updated   : ${summary.applications}`);
+  console.log(` Interviews Created / Updated     : ${summary.interviews}`);
+  console.log(` Placement Drives Created / Updated: ${summary.drives}`);
+  console.log(` Institutional Settings Configured : ${summary.settings}`);
+  console.log('───────────────────────────────────────────────────────────────');
+  console.log('✔ Idempotent seed completed successfully.');
+  console.log('═══════════════════════════════════════════════════════════════');
 }
 
 main()
-  .catch(e => {
-    console.error(e);
+  .catch((e) => {
+    console.error('❌ Seeding failed:', e.message);
     process.exit(1);
   })
   .finally(async () => {

@@ -444,3 +444,73 @@ export const updateApplicationStatus = async (req, res) => {
   }
 };
 
+export const withdrawApplication = async (req, res) => {
+  try {
+    const { application_id } = req.params;
+
+    const studentProfile = await prisma.studentProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!studentProfile && req.user.role !== 'admin') {
+      return res.status(404).json({
+        code: 'STUDENT_NOT_FOUND',
+        message: 'Student profile not found',
+        details: {},
+      });
+    }
+
+    const application = await prisma.application.findUnique({
+      where: { id: application_id },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        code: 'APPLICATION_NOT_FOUND',
+        message: 'Application not found',
+        details: {},
+      });
+    }
+
+    if (req.user.role !== 'admin' && application.studentId !== studentProfile.id) {
+      return res.status(403).json({
+        code: 'FORBIDDEN',
+        message: 'Not authorized to withdraw this application',
+        details: {},
+      });
+    }
+
+    if (application.status === 'rejected') {
+      return res.status(400).json({
+        code: 'ALREADY_WITHDRAWN',
+        message: 'Application is already withdrawn or rejected',
+        details: {},
+      });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.interview.deleteMany({
+        where: { applicationId: application.id },
+      });
+
+      return tx.application.update({
+        where: { id: application.id },
+        data: { status: 'rejected' },
+      });
+    });
+
+    return res.status(200).json({
+      id: updated.id,
+      status: updated.status,
+      message: 'Application withdrawn successfully',
+    });
+  } catch (error) {
+    console.error('WithdrawApplication error:', error);
+    return res.status(500).json({
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to withdraw application',
+      details: {},
+    });
+  }
+};
+

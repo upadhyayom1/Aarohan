@@ -204,7 +204,7 @@ def compare_matching(
 ):
     """Keyword-only vs semantic matching on the same student/job (demo / brownie point)."""
     require_roles(principal, "student", "recruiter", "admin")
-    student = _student(repo, body.student_id)
+    student = _student(repo, _resolve_student_id(principal, body.student_id))
     job = _job(repo, body.job_id)
     _guard_student_job(repo, principal, student, job)
     ctx = svc.resumes.try_get_context(student)

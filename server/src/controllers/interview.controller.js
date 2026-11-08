@@ -158,3 +158,130 @@ export const listMyInterviews = async (req, res) => {
   }
 };
 
+export const rescheduleInterview = async (req, res) => {
+  try {
+    const { interview_id } = req.params;
+    const { scheduled_at, mode, location, notes } = req.body;
+
+    const interview = await prisma.interview.findUnique({
+      where: { id: interview_id },
+      include: {
+        application: {
+          include: {
+            job: true,
+            student: { include: { user: true } },
+          },
+        },
+      },
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        code: 'INTERVIEW_NOT_FOUND',
+        message: 'Interview not found',
+        details: {},
+      });
+    }
+
+    if (req.user.role !== 'admin' && interview.application.job.recruiterId !== req.user.id) {
+      return res.status(403).json({
+        code: 'FORBIDDEN',
+        message: 'Not authorized to reschedule this interview',
+        details: {},
+      });
+    }
+
+    let parsedDate = undefined;
+    if (scheduled_at) {
+      parsedDate = new Date(scheduled_at);
+      if (parsedDate <= new Date()) {
+        return res.status(400).json({
+          code: 'PAST_DATE',
+          message: 'scheduled_at is in the past',
+          details: {},
+        });
+      }
+    }
+
+    const updated = await prisma.interview.update({
+      where: { id: interview_id },
+      data: {
+        ...(parsedDate ? { scheduledAt: parsedDate } : {}),
+        ...(mode ? { mode } : {}),
+        ...(location ? { location } : {}),
+        ...(notes !== undefined ? { notes } : {}),
+      },
+      include: {
+        application: {
+          include: {
+            job: true,
+            student: { include: { user: true } },
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(formatInterview(updated));
+  } catch (error) {
+    console.error('RescheduleInterview error:', error);
+    return res.status(500).json({
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to reschedule interview',
+      details: {},
+    });
+  }
+};
+
+export const cancelInterview = async (req, res) => {
+  try {
+    const { interview_id } = req.params;
+
+    const interview = await prisma.interview.findUnique({
+      where: { id: interview_id },
+      include: {
+        application: {
+          include: { job: true },
+        },
+      },
+    });
+
+    if (!interview) {
+      return res.status(404).json({
+        code: 'INTERVIEW_NOT_FOUND',
+        message: 'Interview not found',
+        details: {},
+      });
+    }
+
+    if (req.user.role !== 'admin' && interview.application.job.recruiterId !== req.user.id) {
+      return res.status(403).json({
+        code: 'FORBIDDEN',
+        message: 'Not authorized to cancel this interview',
+        details: {},
+      });
+    }
+
+    await prisma.$transaction([
+      prisma.interview.delete({
+        where: { id: interview_id },
+      }),
+      prisma.application.update({
+        where: { id: interview.applicationId },
+        data: { status: 'shortlisted' },
+      }),
+    ]);
+
+    return res.status(200).json({
+      message: 'Interview cancelled successfully',
+      interview_id,
+    });
+  } catch (error) {
+    console.error('CancelInterview error:', error);
+    return res.status(500).json({
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to cancel interview',
+      details: {},
+    });
+  }
+};
+

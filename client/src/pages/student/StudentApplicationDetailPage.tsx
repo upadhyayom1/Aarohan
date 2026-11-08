@@ -48,11 +48,22 @@ export function StudentApplicationDetailPage() {
   }, [params.applicationId]);
 
   const app = useMemo(() => {
-    const fromStore = applications.find(a => a.id === params.applicationId) || applications[0];
+    const fromStore = applications.find(a => a.id === params.applicationId) || null;
     if (backendApp) {
       return {
-        ...fromStore,
+        ...(fromStore || {}),
         id: backendApp.id,
+        jobId: backendApp.job?.id || fromStore?.jobId || '',
+        jobTitle: backendApp.job?.title || fromStore?.jobTitle || 'Role Application',
+        company: backendApp.job?.company || fromStore?.company || 'Corporate Partner',
+        appliedDate: backendApp.applied_at ? new Date(backendApp.applied_at).toISOString().split('T')[0] : (fromStore?.appliedDate || 'Recent'),
+        history: fromStore?.history || [
+          {
+            stage: backendApp.status,
+            date: backendApp.applied_at ? new Date(backendApp.applied_at).toISOString().split('T')[0] : 'Recent',
+            note: 'Official application dossier recorded in Directorate registry.',
+          },
+        ],
         status: (backendApp.status === 'interview_scheduled'
           ? 'Interview Scheduled'
           : backendApp.status === 'shortlisted'
@@ -64,8 +75,8 @@ export function StudentApplicationDetailPage() {
           : backendApp.status === 'withdrawn'
           ? 'Withdrawn'
           : 'Under Review') as any,
-        matchScore: backendApp.matchResult?.match_score ?? backendApp.match_score ?? fromStore.matchScore,
-        recruiterNotes: backendApp.notes || backendApp.recruiterNotes || fromStore.recruiterNotes,
+        matchScore: backendApp.match_result?.match_score ?? backendApp.matchResult?.match_score ?? fromStore?.matchScore ?? 0,
+        recruiterNotes: backendApp.notes || backendApp.recruiterNotes || fromStore?.recruiterNotes,
       };
     }
     return fromStore;
@@ -83,10 +94,38 @@ export function StudentApplicationDetailPage() {
     { title: 'Selected', desc: 'Final placement offer extended' },
   ];
 
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
+    if (!app?.id) return;
+    try {
+      await api.applications.withdraw(app.id);
+    } catch (err) {
+      console.debug('Application withdrawal backend sync:', err);
+    }
     actions.withdrawApplication(app.id);
+    await actions.loadStudentPortalData();
     setWithdrawModalOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="py-24 flex flex-col items-center justify-center text-xs font-mono text-[#858585] gap-2 border border-[#E4E4E1] bg-white max-w-[1440px] mx-auto my-10">
+        <RefreshCw className="animate-spin text-[#111111]" size={20} />
+        <span>Retrieving application details from database...</span>
+      </div>
+    );
+  }
+
+  if (!app) {
+    return (
+      <div className="max-w-[1440px] mx-auto px-4 py-16 text-center space-y-4">
+        <h2 className="text-xl font-bold text-[#111111]">Application Dossier Not Found</h2>
+        <p className="text-xs font-mono text-[#858585]">The requested application record could not be located in the database.</p>
+        <Link to="/student/applications">
+          <Button variant="secondary" size="sm">Back to Applications</Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -183,7 +222,7 @@ export function StudentApplicationDetailPage() {
             <div className="space-y-2">
               <div>Candidate: <strong>{app.studentName}</strong></div>
               <div>Department: <strong>{app.studentBranch}</strong></div>
-              <div>CGPA at Submission: <strong>{app.studentCgpa.toFixed(2)}</strong></div>
+              <div>CGPA at Submission: <strong>{typeof app.studentCgpa === 'number' ? app.studentCgpa.toFixed(2) : 'N/A'}</strong></div>
               <div>Cohort: <strong>Class of {app.studentGradYear}</strong></div>
               <div>Match Fit Index: <strong>{app.matchScore}%</strong></div>
             </div>

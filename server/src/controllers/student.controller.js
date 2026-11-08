@@ -118,6 +118,28 @@ export const getStudentById = async (req, res) => {
       });
     }
 
+    if (req.user.role === 'recruiter') {
+      const hasApplication = await prisma.application.findFirst({
+        where: {
+          studentId: profile.id,
+          job: { recruiterId: req.user.id },
+        },
+      });
+      if (!hasApplication) {
+        return res.status(403).json({
+          code: 'FORBIDDEN',
+          message: 'You can only view profiles of students who applied to your job postings',
+          details: {},
+        });
+      }
+    } else if (req.user.role === 'student' && profile.userId !== req.user.id) {
+      return res.status(403).json({
+        code: 'FORBIDDEN',
+        message: 'You can only view your own profile',
+        details: {},
+      });
+    }
+
     return res.status(200).json(formatStudentProfile(profile, profile.user?.email));
   } catch (error) {
     console.error('GetStudentById error:', error);

@@ -9,6 +9,7 @@ export function useCampusStore() {
   );
 
   return {
+    authReady: storeVersion.isAuthReady(),
     currentUser: storeVersion.getCurrentUser(),
     studentProfile: storeVersion.getStudentProfile(),
     jobs: storeVersion.getJobs(),
@@ -26,8 +27,8 @@ export function useCampusStore() {
       login: (user: Parameters<typeof storeVersion.login>[0], token: string) =>
         storeVersion.login(user, token),
       logout: () => storeVersion.logout(),
-      loadStudentPortalData: () => storeVersion.loadStudentPortalData(),
-      loadRecruiterPortalData: () => storeVersion.loadRecruiterPortalData(),
+      loadStudentPortalData: (force?: boolean) => storeVersion.loadStudentPortalData(force),
+      loadRecruiterPortalData: (force?: boolean) => storeVersion.loadRecruiterPortalData(force),
       syncStudentProfile: (p: any) => storeVersion.syncStudentProfile(p),
       syncJobs: (j: any[]) => storeVersion.syncJobs(j),
       syncApplications: (a: any[]) => storeVersion.syncApplications(a),

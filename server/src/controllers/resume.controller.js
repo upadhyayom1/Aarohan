@@ -197,6 +197,28 @@ export const getStudentResumeFile = async (req, res) => {
       });
     }
 
+    if (req.user.role === 'recruiter') {
+      const hasApplication = await prisma.application.findFirst({
+        where: {
+          studentId: profile.id,
+          job: { recruiterId: req.user.id },
+        },
+      });
+      if (!hasApplication) {
+        return res.status(403).json({
+          code: 'FORBIDDEN',
+          message: 'You can only download resumes of students who applied to your job postings',
+          details: {},
+        });
+      }
+    } else if (req.user.role === 'student' && profile.userId !== req.user.id) {
+      return res.status(403).json({
+        code: 'FORBIDDEN',
+        message: 'You can only download your own resume',
+        details: {},
+      });
+    }
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename="resume.pdf"');
     return res.sendFile(path.resolve(profile.resumePath));

@@ -5,6 +5,7 @@ import {
   getJobApplicants,
   getApplicationById,
   updateApplicationStatus,
+  withdrawApplication,
 } from '../controllers/application.controller.js';
 import { authenticate, authorizeRole } from '../middlewares/auth.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
@@ -21,8 +22,11 @@ router.post('/', authenticate, authorizeRole('student'), validate(applyJobSchema
 // Student get own applications: GET /applications/my
 router.get('/my', authenticate, authorizeRole('student'), getMyApplications);
 
-// Recruiter get single application detail: GET /applications/:application_id
-router.get('/:application_id', authenticate, authorizeRole('recruiter', 'admin'), getApplicationById);
+// Student / Recruiter / Admin get single application detail: GET /applications/:application_id
+router.get('/:application_id', authenticate, getApplicationById);
+
+// Student withdraw own application: POST /applications/:application_id/withdraw
+router.post('/:application_id/withdraw', authenticate, authorizeRole('student', 'admin'), withdrawApplication);
 
 // Recruiter update application status: PATCH /applications/:application_id/status
 router.patch(

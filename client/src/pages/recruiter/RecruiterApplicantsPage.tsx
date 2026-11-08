@@ -192,15 +192,33 @@ export function RecruiterApplicantsPage() {
 
   const handleConfirmSchedule = async () => {
     if (selectedApp) {
+      const loc = locationOrLink.trim() || 'Online Video Meeting Room';
       setIsScheduling(true);
       try {
-        const scheduledDateIso = new Date(`${interviewDate}T10:00:00.000Z`).toISOString();
+        let hours = 10;
+        let minutes = 0;
+        if (startTime) {
+          const match = startTime.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+          if (match) {
+            let h = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            const modifier = match[3]?.toUpperCase();
+            if (modifier === 'PM' && h < 12) h += 12;
+            if (modifier === 'AM' && h === 12) h = 0;
+            hours = h;
+            minutes = m;
+          }
+        }
+        const d = new Date(interviewDate);
+        d.setHours(hours, minutes, 0, 0);
+        const scheduledDateIso = d.toISOString();
+
         await api.interviews.schedule({
           application_id: selectedApp.id,
           scheduled_at: scheduledDateIso,
           mode: interviewMode === 'In-person' ? 'on_campus' : 'online',
-          location: locationOrLink,
-          notes: interviewNotes,
+          location: loc,
+          notes: `${interviewRound}: ${interviewNotes || 'Campus interview round'}`,
         });
         await api.applications.updateStatus(selectedApp.id, 'interview_scheduled').catch(() => null);
       } catch (err) {
@@ -221,12 +239,13 @@ export function RecruiterApplicantsPage() {
         date: interviewDate,
         startTime,
         endTime,
-        timezone: 'EST',
+        timezone: 'Local',
         mode: interviewMode,
-        locationOrLink,
+        locationOrLink: loc,
         notes: interviewNotes,
       });
 
+      await actions.loadRecruiterPortalData().catch(() => {});
       setScheduleModalOpen(false);
     }
   };

@@ -64,6 +64,21 @@ test('Authentication API Suite (/api/v1/auth)', async (t) => {
     registeredToken = body.token;
   });
 
+  await t.test('POST /register: rejects role admin (403)', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Hacker Admin',
+        email: `hacker_${uniqueId}@aarohan.edu`,
+        password: 'Password@123',
+        role: 'admin',
+      }),
+    });
+    // Validator or controller rejects
+    assert.ok([400, 403].includes(res.status));
+  });
+
   await t.test('POST /register: rejects duplicate email registration (409)', async () => {
     const res = await fetch(`${baseUrl}/api/v1/auth/register`, {
       method: 'POST',
@@ -126,6 +141,25 @@ test('Authentication API Suite (/api/v1/auth)', async (t) => {
     assert.ok(body.id);
     assert.equal(body.email, testStudent.email);
     assert.equal(body.role, 'student');
+  });
+
+  // ── 4. PUT /api/v1/auth/me ────────────────────────────
+
+  await t.test('PUT /me: updates authenticated user profile name (200)', async () => {
+    const res = await fetch(`${baseUrl}/api/v1/auth/me`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${registeredToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: 'Updated Student Name',
+      }),
+    });
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.user.name, 'Updated Student Name');
+    assert.ok(body.message.includes('successfully'));
   });
 });
 

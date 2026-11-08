@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, Link } from '../../lib/router';
 import { useCampusStore } from '../../lib/useStore';
+import { api } from '../../lib/api';
 import { Button, StatusBadge, Dialog, FormField, Input } from '../../components/ui';
 import { Calendar, Clock, Video, PlusCircle, CheckCircle2, RotateCcw, XCircle, RefreshCw } from 'lucide-react';
 
@@ -42,17 +43,47 @@ export function RecruiterInterviewsPage() {
     setRescheduleModalOpen(true);
   };
 
-  const handleConfirmReschedule = () => {
+  const handleConfirmReschedule = async () => {
     if (selectedInterviewId) {
+      try {
+        let hours = 14;
+        let minutes = 0;
+        if (newStart) {
+          const match = newStart.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+          if (match) {
+            let h = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            const modifier = match[3]?.toUpperCase();
+            if (modifier === 'PM' && h < 12) h += 12;
+            if (modifier === 'AM' && h === 12) h = 0;
+            hours = h;
+            minutes = m;
+          }
+        }
+        const d = new Date(newDate);
+        d.setHours(hours, minutes, 0, 0);
+        await api.interviews.reschedule(selectedInterviewId, {
+          scheduled_at: d.toISOString(),
+        });
+      } catch (err) {
+        console.debug('Reschedule backend sync:', err);
+      }
       actions.rescheduleInterview(selectedInterviewId, newDate, newStart, newEnd);
+      await actions.loadRecruiterPortalData();
       setRescheduleModalOpen(false);
     }
   };
 
-  const handleCancelInterview = (id: string) => {
+  const handleCancelInterview = async (id: string) => {
     const reason = prompt('Please enter cancellation reason for student notification:');
     if (reason !== null) {
+      try {
+        await api.interviews.cancel(id);
+      } catch (err) {
+        console.debug('Cancel interview backend sync:', err);
+      }
       actions.cancelInterview(id, reason);
+      await actions.loadRecruiterPortalData();
     }
   };
 

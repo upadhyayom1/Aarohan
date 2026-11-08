@@ -169,7 +169,12 @@ export function StudentSkillsPage() {
         </h2>
 
         <div className="divide-y divide-[#E4E4E1] border border-[#E4E4E1] bg-white">
-          {filteredResources.map(res => (
+          {filteredResources.length === 0 ? (
+            <div className="p-8 text-center text-xs font-mono text-[#858585]">
+              No learning resources found matching the current filter.
+            </div>
+          ) : (
+            filteredResources.map(res => (
             <div
               key={res.id}
               className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#FAFAF9] transition-colors"
@@ -226,7 +231,7 @@ export function StudentSkillsPage() {
                 </a>
               </div>
             </div>
-          ))}
+          ))) }
         </div>
       </div>
     </div>

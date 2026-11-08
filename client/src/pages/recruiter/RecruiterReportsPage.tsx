@@ -257,7 +257,7 @@ export function RecruiterReportsPage() {
                       <td className="py-3.5 px-4">{shortlisted}</td>
                       <td className="py-3.5 px-4">{interviewsCount}</td>
                       <td className="py-3.5 px-4 text-right font-bold text-[#111111]">
-                        {avgScore > 0 ? `${avgScore}%` : '85%'}
+                        {avgScore > 0 ? `${avgScore}%` : '—'}
                       </td>
                     </tr>
                   );
