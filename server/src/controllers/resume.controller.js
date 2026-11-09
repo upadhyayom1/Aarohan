@@ -1,25 +1,56 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import prisma from '../config/db.js';
 import { extractTextFromPdf, analyzeResumeText } from '../services/resume.service.js';
 import { formatStudentProfile } from './student.controller.js';
 
 export const uploadResume = async (req, res) => {
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({
+      code: 'VALIDATION_ERROR',
+      message: 'No file uploaded',
+      details: { file: 'PDF resume file is required' },
+    });
+  }
+
   try {
-    const file = req.file;
-    if (!file) {
+    // 1. Validate file size and existence
+    if (!fs.existsSync(file.path) || file.size === 0) {
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
       return res.status(400).json({
-        code: 'VALIDATION_ERROR',
-        message: 'No file uploaded',
-        details: { file: 'PDF resume file is required' },
+        code: 'RESUME_UNREADABLE',
+        message: 'Resume file is empty',
+        details: {},
       });
     }
 
-    // Extract text from uploaded PDF
-    const text = await extractTextFromPdf(file.path);
+    // 2. Extract text from uploaded PDF with strict magic-byte validation
+    let text;
+    try {
+      text = await extractTextFromPdf(file.path);
+    } catch (parseErr) {
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+      return res.status(400).json({
+        code: parseErr.code || 'INVALID_FILE_TYPE',
+        message: parseErr.message || 'File is not a valid PDF or is unreadable',
+        details: {},
+      });
+    }
 
-    // Analyze extracted text
+    // Compute SHA-256 digest of the PDF file
+    const fileBuffer = fs.readFileSync(file.path);
+    const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+
+    // 3. Analyze extracted text
     const analysis = await analyzeResumeText(text);
+    const enrichedAnalysis = {
+      ...analysis,
+      status: 'COMPLETED',
+      sha256: fileHash,
+      uploadedAt: new Date().toISOString(),
+    };
 
     const resumeUrl = '/students/resume/file';
 
@@ -28,7 +59,18 @@ export const uploadResume = async (req, res) => {
       where: { userId: req.user.id },
     });
 
-    // 1. Process Extracted Skills
+    // Clean up older resume file from disk if re-uploading
+    if (existingProfile?.resumePath && existingProfile.resumePath !== file.path) {
+      try {
+        if (fs.existsSync(existingProfile.resumePath)) {
+          fs.unlinkSync(existingProfile.resumePath);
+        }
+      } catch (cleanupErr) {
+        console.warn('Failed to clean up old resume file:', cleanupErr.message);
+      }
+    }
+
+    // Process Extracted Skills
     const parsedSkills = Array.isArray(analysis?.skills)
       ? analysis.skills.map((s) => String(s).trim()).filter(Boolean)
       : [];
@@ -36,7 +78,7 @@ export const uploadResume = async (req, res) => {
       new Set([...(parsedSkills.length > 0 ? parsedSkills : existingProfile?.skills || [])])
     );
 
-    // 2. Process Extracted Projects
+    // Process Extracted Projects
     const parsedProjects = Array.isArray(analysis?.projects) ? analysis.projects : [];
     const formattedProjects = parsedProjects.map((p, idx) => ({
       id: p.id || `proj_${Date.now()}_${idx}`,
@@ -53,7 +95,7 @@ export const uploadResume = async (req, res) => {
 
     const finalProjects = formattedProjects.length > 0 ? formattedProjects : (existingProfile?.projects || []);
 
-    // 3. Process Extracted Education (Branch, CGPA, Graduation Year)
+    // Process Extracted Education (Branch, CGPA, Graduation Year)
     const firstEdu =
       Array.isArray(analysis?.education) && analysis.education.length > 0
         ? analysis.education[0]
@@ -119,7 +161,7 @@ export const uploadResume = async (req, res) => {
         resumeUrl,
         resumePath: file.path,
         resumeText: text,
-        resumeAnalysis: analysis,
+        resumeAnalysis: enrichedAnalysis,
         profileComplete: isComplete,
       },
       update: {
@@ -132,7 +174,7 @@ export const uploadResume = async (req, res) => {
         resumeUrl,
         resumePath: file.path,
         resumeText: text,
-        resumeAnalysis: analysis,
+        resumeAnalysis: enrichedAnalysis,
         profileComplete: isComplete,
       },
       include: { user: true },
@@ -141,14 +183,52 @@ export const uploadResume = async (req, res) => {
     return res.status(200).json({
       message: 'Resume uploaded and analyzed successfully',
       resume_url: resumeUrl,
-      analysis,
+      resume_status: 'COMPLETED',
+      analysis: enrichedAnalysis,
       profile: formatStudentProfile(updatedProfile, req.user.email),
     });
   } catch (error) {
+    if (file?.path && fs.existsSync(file.path)) {
+      try { fs.unlinkSync(file.path); } catch (_) {}
+    }
     console.error('UploadResume error:', error);
     return res.status(500).json({
       code: 'INTERNAL_ERROR',
       message: 'Failed to upload and analyze resume',
+      details: {},
+    });
+  }
+};
+
+export const getResumeStatus = async (req, res) => {
+  try {
+    const profile = await prisma.studentProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!profile || !profile.resumeUploaded) {
+      return res.status(200).json({
+        status: 'NOT_UPLOADED',
+        resume_uploaded: false,
+        has_file: false,
+      });
+    }
+
+    const analysis = profile.resumeAnalysis;
+    const status = analysis?.status || 'COMPLETED';
+
+    return res.status(200).json({
+      status,
+      resume_uploaded: profile.resumeUploaded,
+      has_file: Boolean(profile.resumePath && fs.existsSync(profile.resumePath)),
+      uploaded_at: analysis?.uploadedAt || profile.updatedAt,
+      version: analysis?.sha256 || null,
+    });
+  } catch (error) {
+    console.error('GetResumeStatus error:', error);
+    return res.status(500).json({
+      code: 'INTERNAL_ERROR',
+      message: 'Failed to retrieve resume status',
       details: {},
     });
   }

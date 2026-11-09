@@ -109,7 +109,7 @@ class ResumeService:
 
     def get_context(self, student: StudentRecord) -> ResumeContext:
         if not student.resume_path:
-            raise AppError(404, "RESUME_NOT_FOUND", "No resume uploaded yet")
+            raise AppError(404, "RESUME_NOT_UPLOADED", "No resume uploaded yet")
         pdf = load_resume_pdf(student.resume_path)
         analysis, used_llm = self._analyze_pdf(pdf)
         return ResumeContext(analysis=analysis, pdf=pdf, used_llm=used_llm)

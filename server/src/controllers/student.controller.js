@@ -1,21 +1,28 @@
 import prisma from '../config/db.js';
 
-export const formatStudentProfile = (profile, userEmail) => ({
-  id: profile.id,
-  user_id: profile.userId,
-  name: profile.name,
-  email: userEmail || profile.user?.email || '',
-  branch: profile.branch,
-  cgpa: profile.cgpa,
-  graduation_year: profile.graduationYear,
-  backlogs: profile.backlogs,
-  skills: profile.skills || [],
-  projects: profile.projects || [],
-  resume_uploaded: profile.resumeUploaded,
-  resume_url: profile.resumeUrl,
-  resume_analysis: profile.resumeAnalysis || null,
-  profile_complete: profile.profileComplete,
-});
+export const formatStudentProfile = (profile, userEmail) => {
+  const resumeStatus =
+    profile.resumeAnalysis?.status ||
+    (profile.resumeUploaded ? 'COMPLETED' : 'NOT_UPLOADED');
+
+  return {
+    id: profile.id,
+    user_id: profile.userId,
+    name: profile.name,
+    email: userEmail || profile.user?.email || '',
+    branch: profile.branch,
+    cgpa: profile.cgpa,
+    graduation_year: profile.graduationYear,
+    backlogs: profile.backlogs,
+    skills: profile.skills || [],
+    projects: profile.projects || [],
+    resume_uploaded: profile.resumeUploaded,
+    resume_status: resumeStatus,
+    resume_url: profile.resumeUrl,
+    resume_analysis: profile.resumeAnalysis || null,
+    profile_complete: profile.profileComplete,
+  };
+};
 
 export const getMyProfile = async (req, res) => {
   try {

@@ -31,7 +31,7 @@ export function PageTransition({
       y: 0,
       transition: {
         duration: shouldReduceMotion ? 0.05 : 0.16,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
       },
     },
     exit: {
@@ -39,7 +39,7 @@ export function PageTransition({
       y: shouldReduceMotion ? 0 : -4,
       transition: {
         duration: shouldReduceMotion ? 0.05 : 0.11,
-        ease: [0.16, 1, 0.3, 1],
+        ease: [0.16, 1, 0.3, 1] as const,
       },
     },
   };
@@ -85,7 +85,7 @@ export function TabTransition({
           y: 0,
           transition: {
             duration: shouldReduceMotion ? 0.05 : 0.14,
-            ease: [0.16, 1, 0.3, 1],
+            ease: [0.16, 1, 0.3, 1] as const,
           },
         }}
         exit={{

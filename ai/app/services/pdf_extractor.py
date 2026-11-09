@@ -39,7 +39,7 @@ def resolve_resume_path(stored: str) -> Path:
     base = get_settings().resume_dir
     raw = (stored or "").strip()
     if not raw:
-        raise AppError(404, "RESUME_NOT_FOUND", "No resume uploaded yet")
+        raise AppError(404, "RESUME_NOT_UPLOADED", "No resume uploaded yet")
     if re.match(r"^https?://", raw, re.IGNORECASE):
         raw = urlparse(raw).path
     raw = raw.replace("\\", "/")
@@ -60,7 +60,7 @@ def resolve_resume_path(stored: str) -> Path:
             continue
         if resolved.is_file() and resolved.is_relative_to(base):
             return resolved
-    raise AppError(404, "RESUME_NOT_FOUND", "Resume file could not be found on disk")
+    raise AppError(404, "RESUME_NOT_UPLOADED", "Resume file could not be found on disk")
 
 
 def load_resume_pdf(stored_path: str) -> ExtractedPdf:

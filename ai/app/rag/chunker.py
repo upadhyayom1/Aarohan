@@ -19,6 +19,8 @@ class Chunk:
     section: str
     text: str  # what gets embedded / shown (may begin with overlap from the previous chunk)
     body: str  # the part that is NOT overlap - used to rebuild text without duplicates
+    student_id: Optional[str] = None
+    resume_sha: Optional[str] = None
 
 
 def _heading(line: str) -> Optional[str]:
@@ -52,7 +54,13 @@ def _wc(s: str) -> int:
     return len(s.split())
 
 
-def split_resume(text: str, max_words: int = 90, overlap_words: int = 15) -> list[Chunk]:
+def split_resume(
+    text: str,
+    max_words: int = 90,
+    overlap_words: int = 15,
+    student_id: Optional[str] = None,
+    resume_sha: Optional[str] = None,
+) -> list[Chunk]:
     max_words = max(20, max_words)
     overlap_words = max(0, min(overlap_words, max_words // 2))
     chunks: list[Chunk] = []
@@ -61,7 +69,14 @@ def split_resume(text: str, max_words: int = 90, overlap_words: int = 15) -> lis
         if not body:
             return
         chunks.append(
-            Chunk(idx=len(chunks), section=section, text="\n".join(overlap + body), body="\n".join(body))
+            Chunk(
+                idx=len(chunks),
+                section=section,
+                text="\n".join(overlap + body),
+                body="\n".join(body),
+                student_id=student_id,
+                resume_sha=resume_sha,
+            )
         )
 
     for section, lines in _blocks(text or ""):

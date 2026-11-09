@@ -37,6 +37,7 @@ _PARSE_SECTIONS = set(_PARSE_QUERIES)
 class ResumeIndex:
     sha: str
     chunks: list[Chunk]
+    student_id: Optional[str] = None
 
 
 def _snippet(text: str, limit: int) -> str:
@@ -56,25 +57,40 @@ class ResumeRAG:
     def enabled(self) -> bool:
         return bool(getattr(self.settings, "rag_enabled", True))
 
-    def index(self, pdf) -> ResumeIndex:
+    def index(self, pdf, student_id: Optional[str] = None) -> ResumeIndex:
+        cache_key = f"{student_id or 'anon'}:{pdf.sha256}"
         with self._lock:
-            hit = self._indexes.get(pdf.sha256)
+            hit = self._indexes.get(cache_key)
             if hit is not None:
-                self._indexes.move_to_end(pdf.sha256)
+                self._indexes.move_to_end(cache_key)
                 return hit
         idx = ResumeIndex(
             sha=pdf.sha256,
+            student_id=student_id,
             chunks=split_resume(
                 pdf.text,
                 max_words=self.settings.rag_chunk_words,
                 overlap_words=self.settings.rag_chunk_overlap,
+                student_id=student_id,
+                resume_sha=pdf.sha256,
             ),
         )
         with self._lock:
-            self._indexes[pdf.sha256] = idx
+            if student_id:
+                to_remove = [k for k in self._indexes if k.startswith(f"{student_id}:") and k != cache_key]
+                for k in to_remove:
+                    self._indexes.pop(k, None)
+            self._indexes[cache_key] = idx
             while len(self._indexes) > max(1, self.settings.rag_index_cache):
                 self._indexes.popitem(last=False)
         return idx
+
+    def invalidate_student(self, student_id: str) -> None:
+        """Purge all cached indexes for a given student when a resume is updated or deleted."""
+        with self._lock:
+            to_remove = [k for k in self._indexes if k.startswith(f"{student_id}:")]
+            for k in to_remove:
+                self._indexes.pop(k, None)
 
     def _sims(self, chunks: Sequence[Chunk], queries: Sequence[str]) -> np.ndarray:
         """(n_chunks, n_queries) cosine matrix; zeros if the embedder is unavailable."""
@@ -86,7 +102,7 @@ class ResumeRAG:
 
     # ------------------------------------------------------------------ evidence for skills
     def skill_evidence(
-        self, pdf, skills: Sequence[str], *, per_skill: int = 1, relax: float = 1.0
+        self, pdf, skills: Sequence[str], *, per_skill: int = 1, relax: float = 1.0, student_id: Optional[str] = None
     ) -> dict[str, str]:
         """skill -> the resume passage that best shows it (or, for a missing skill, the closest
         place it could naturally be added). Skills with no relevant passage are omitted, so the
@@ -96,7 +112,8 @@ class ResumeRAG:
             wanted = wanted[: self.settings.rag_max_snippets]
             if not self.enabled or not wanted or pdf is None:
                 return {}
-            chunks = [c for c in self.index(pdf).chunks if c.section != HEADER] or self.index(pdf).chunks
+            idx = self.index(pdf, student_id=student_id)
+            chunks = [c for c in idx.chunks if c.section != HEADER] or idx.chunks
             if not chunks:
                 return {}
             sims = self._sims(chunks, wanted)
@@ -119,13 +136,16 @@ class ResumeRAG:
             return {}
 
     # ------------------------------------------------------------------ free-form excerpts
-    def excerpts(self, pdf, queries: Sequence[str], *, per_query: int = 1, max_total: Optional[int] = None) -> list[str]:
+    def excerpts(
+        self, pdf, queries: Sequence[str], *, per_query: int = 1, max_total: Optional[int] = None, student_id: Optional[str] = None
+    ) -> list[str]:
         """Top passage(s) for each query, de-duplicated, in resume order."""
         try:
             qs = [q for q in dict.fromkeys(q.strip() for q in queries if q and q.strip())]
             if not self.enabled or not qs or pdf is None:
                 return []
-            chunks = [c for c in self.index(pdf).chunks if c.section != HEADER] or self.index(pdf).chunks
+            idx = self.index(pdf, student_id=student_id)
+            chunks = [c for c in idx.chunks if c.section != HEADER] or idx.chunks
             if not chunks:
                 return []
             sims = self._sims(chunks, qs)
@@ -141,7 +161,7 @@ class ResumeRAG:
             return []
 
     # ------------------------------------------------------------------ parsing prompt
-    def parse_context(self, pdf, limit: int) -> str:
+    def parse_context(self, pdf, limit: int, student_id: Optional[str] = None) -> str:
         """Resume text for the parsing prompt.
 
         * Fits in `limit`  -> the full text, byte-for-byte what was always sent (identical output).
@@ -151,7 +171,7 @@ class ResumeRAG:
         if len(text) <= limit or not self.enabled:
             return text[:limit]
         try:
-            chunks = self.index(pdf).chunks
+            chunks = self.index(pdf, student_id=student_id).chunks
             if not chunks:
                 return text[:limit]
             sims = self._sims(chunks, list(_PARSE_QUERIES.values())).max(axis=1)

@@ -181,6 +181,12 @@ class MatchService:
     # ------------------------------------------------------------------ explanation
     @staticmethod
     def _template(f: dict) -> str:
+        if not f.get("resume_available") and not f.get("matched_skills"):
+            msg = "No verified resume uploaded and no technical skills in profile. Please upload a resume in the Resume Management portal to activate match intelligence."
+            if not f.get("eligible"):
+                msg += " Additionally, the candidate does not meet eligibility criteria: " + "; ".join(f.get("eligibility_reasons", [])) + "."
+            return msg
+
         n_req, matched, missing = f["required_skill_count"], f["matched_skills"], f["missing_skills"]
         if n_req == 0:
             text = f"No specific skills were required, so the score reflects how relevant the candidate's profile is to this role ({f['resume_content_relevance_to_job']} relevance)."

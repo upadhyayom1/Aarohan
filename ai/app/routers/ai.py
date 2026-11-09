@@ -207,7 +207,7 @@ def compare_matching(
     student = _student(repo, _resolve_student_id(principal, body.student_id))
     job = _job(repo, body.job_id)
     _guard_student_job(repo, principal, student, job)
-    ctx = svc.resumes.try_get_context(student)
+    ctx = svc.resumes.get_context(student)
     out = svc.matching.compare(student, job, ctx)
     return MatchComparison(student_id=student.id, job_id=job.id, embedding_backend=svc.embedder.name, **out)
 

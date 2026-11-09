@@ -5,15 +5,49 @@ import { GoogleGenAI } from '@google/genai';
 export const extractTextFromPdf = async (filePath) => {
   try {
     const dataBuffer = fs.readFileSync(filePath);
+    if (!dataBuffer || dataBuffer.length === 0) {
+      const err = new Error('Resume file is empty');
+      err.code = 'RESUME_UNREADABLE';
+      throw err;
+    }
+
+    // Verify PDF magic bytes (%PDF-)
+    const header = dataBuffer.slice(0, 5).toString('ascii');
+    if (!header.startsWith('%PDF')) {
+      const err = new Error('File is not a valid PDF');
+      err.code = 'INVALID_FILE_TYPE';
+      throw err;
+    }
+
     const parsed = await pdfParse(dataBuffer);
-    return parsed.text || '';
+    const text = parsed.text || '';
+    if (text.trim().length < 20) {
+      const err = new Error('Resume PDF contains insufficient readable text');
+      err.code = 'RESUME_UNREADABLE';
+      throw err;
+    }
+    return text;
   } catch (error) {
+    if (error.code === 'INVALID_FILE_TYPE' || error.code === 'RESUME_UNREADABLE') {
+      throw error;
+    }
     console.error('PDF parsing error:', error);
-    return '';
+    const err = new Error('The PDF is corrupted or cannot be read');
+    err.code = 'RESUME_UNREADABLE';
+    throw err;
   }
 };
 
 export const fallbackAnalysis = (text) => {
+  if (!text || typeof text !== 'string' || !text.trim()) {
+    return {
+      skills: [],
+      education: [],
+      experience: [],
+      projects: [],
+      summary: '',
+    };
+  }
   const commonSkills = [
     'Python', 'FastAPI', 'SQL', 'React', 'React.js', 'Node.js', 'Express', 'Express.js',
     'JavaScript', 'TypeScript', 'Java', 'C++', 'C', 'Git', 'GitHub', 'Docker', 'Kubernetes',
@@ -123,26 +157,27 @@ export const fallbackAnalysis = (text) => {
     }
   }
 
+  const education = [];
+  if (institution || text.match(/bachelor|master|b\.?\s*tech|m\.?\s*tech|mca|degree|college|university/i)) {
+    education.push({
+      degree,
+      branch,
+      institution: institution || '',
+      graduation_year: graduationYear,
+      cgpa: cgpa > 0 ? cgpa : undefined,
+    });
+  }
+
+  const summary = foundSkills.length > 0 || projects.length > 0
+    ? `Student profile with extracted competencies: ${foundSkills.slice(0, 5).join(', ')}.`
+    : '';
+
   return {
-    skills: foundSkills.length > 0 ? foundSkills : ['Python', 'SQL', 'JavaScript'],
-    education: [
-      {
-        degree,
-        branch,
-        institution: institution || 'Motilal Nehru National Institute of Technology Allahabad',
-        graduation_year: graduationYear,
-        cgpa: cgpa || 8.0,
-      },
-    ],
+    skills: foundSkills,
+    education,
     experience,
-    projects: projects.length > 0 ? projects : [
-      {
-        title: 'Academic Engineering Project',
-        description: 'Developed backend and web applications using software development best practices.',
-        tech_stack: foundSkills.slice(0, 4),
-      },
-    ],
-    summary: 'Engineering student with verified software development and technical competencies.',
+    projects,
+    summary,
   };
 };
 
