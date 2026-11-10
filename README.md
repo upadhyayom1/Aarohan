@@ -165,6 +165,9 @@ The entire platform is now available on **`http://localhost`** (port 80):
 - **Express API**: `http://localhost/api/v1/`
 - **FastAPI AI**: `http://localhost/api/v1/ai/`
 
+### Production Deployment
+For complete step-by-step production cloud deployment instructions (AWS EC2, DigitalOcean, Hetzner, GCP), domain setup, Let's Encrypt SSL, and GitHub Actions CI/CD automation, consult the comprehensive [Production Deployment Guide](file:///Users/om_upadhyay/OM/workspace/Projects/Aarohan/docs/DEPLOYMENT_GUIDE.md).
+
 To shut down:
 ```bash
 docker compose down
