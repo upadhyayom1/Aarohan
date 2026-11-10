@@ -111,14 +111,22 @@ export function StudentMatchesPage() {
 
   const handleRunComparison = async () => {
     if (!studentProfile.id || !selectedJobId) return;
+    if (!studentProfile.resume) {
+      setAiError('Semantic comparison requires an uploaded resume document. Please upload your resume first.');
+      return;
+    }
     setIsComparing(true);
     setAiError(null);
     try {
       const comp = await api.ai.compareMatching(studentProfile.id, selectedJobId);
       setComparison(comp);
     } catch (err: any) {
-      console.warn('Comparison failed:', err);
-      setAiError('Could not execute semantic comparison. Using deterministic matching.');
+      if (err?.code === 'RESUME_NOT_UPLOADED') {
+        setAiError('Resume not uploaded. Model comparison requires an uploaded resume document.');
+      } else {
+        console.warn('Comparison failed:', err);
+        setAiError(err?.message || 'Could not execute semantic comparison. Using deterministic matching.');
+      }
     } finally {
       setIsComparing(false);
     }
@@ -157,6 +165,32 @@ export function StudentMatchesPage() {
           </Button>
         )}
       </div>
+
+      {/* Advisory Banner when resume is absent */}
+      {!studentProfile.resume && (
+        <div className="p-4 border border-[#111111] bg-[#FAFAF9] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-[#111111]">
+          <div className="flex items-center gap-2.5">
+            <Clock size={16} className="text-[#111111] shrink-0" />
+            <span>
+              <strong>Resume Not Uploaded:</strong> Match scores are currently computed from academic profile credentials. Upload your resume in Resume Management to activate neural semantic matching and AI ATS insights.
+            </span>
+          </div>
+          <Link to="/student/resume">
+            <Button variant="primary" size="sm">
+              Upload Resume
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {aiError && (
+        <div className="p-4 border border-[#111111] bg-neutral-50 text-xs font-mono text-[#111111] flex items-center justify-between">
+          <span>{aiError}</span>
+          <button onClick={() => setAiError(null)} className="underline hover:text-black">
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Overview Analytics Bar */}
       <div className="border border-[#E4E4E1] bg-[#FAFAF9] p-6">

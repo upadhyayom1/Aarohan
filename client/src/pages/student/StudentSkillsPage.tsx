@@ -137,13 +137,19 @@ export function StudentSkillsPage() {
             <span className="text-[10px] text-[#111111] font-bold uppercase block">
               ✓ Verified in Your Profile ({studentProfile.skills.length})
             </span>
-            <div className="flex flex-wrap gap-1.5">
-              {studentProfile.skills.map(s => (
-                <span key={s} className="bg-[#FAFAF9] border border-[#111111] text-[#111111] px-2 py-0.5">
-                  {s}
-                </span>
-              ))}
-            </div>
+            {studentProfile.skills.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {studentProfile.skills.map(s => (
+                  <span key={s} className="bg-[#FAFAF9] border border-[#111111] text-[#111111] px-2 py-0.5">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[#858585] leading-relaxed">
+                No technical competencies recorded yet. Upload your resume in the Resume Management portal to extract and verify competencies automatically.
+              </p>
+            )}
           </div>
 
           {/* Underrepresented / In Demand */}

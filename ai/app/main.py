@@ -103,6 +103,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(health.router, prefix=s.api_prefix, include_in_schema=False)
+    app.include_router(health.router, prefix=f"{s.api_prefix}/ai", include_in_schema=False)
     app.include_router(ai.router, prefix=f"{s.api_prefix}/ai")
     return app
 

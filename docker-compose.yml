@@ -1,0 +1,90 @@
+services:
+  # -----------------------------------------------------------
+  # 1. Express Backend REST API Server
+  # -----------------------------------------------------------
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: aarohan_server
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET:-production_aarohan_jwt_secret_key_32_chars_min}
+      - JWT_EXPIRES_IN=7d
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CLIENT_URL=http://localhost
+    volumes:
+      - resume_uploads:/app/uploads
+    networks:
+      - aarohan_network
+    expose:
+      - "8000"
+
+  # -----------------------------------------------------------
+  # 2. FastAPI AI Intelligence & RAG Service
+  # -----------------------------------------------------------
+  ai:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile
+    container_name: aarohan_ai
+    restart: unless-stopped
+    environment:
+      - AI_PORT=8001
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET:-production_aarohan_jwt_secret_key_32_chars_min}
+      - RESUME_STORAGE_DIR=/app/uploads
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - resume_uploads:/app/uploads:ro
+    networks:
+      - aarohan_network
+    expose:
+      - "8001"
+
+  # -----------------------------------------------------------
+  # 3. React 19 Frontend Client (SPA)
+  # -----------------------------------------------------------
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=/api/v1
+        - VITE_AI_BASE_URL=/api/v1/ai
+    container_name: aarohan_client
+    restart: unless-stopped
+    networks:
+      - aarohan_network
+    expose:
+      - "80"
+
+  # -----------------------------------------------------------
+  # 4. Nginx Unified Gateway & Reverse Proxy
+  # -----------------------------------------------------------
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: aarohan_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+      - ai
+      - client
+    networks:
+      - aarohan_network
+
+volumes:
+  resume_uploads:
+    driver: local
+
+networks:
+  aarohan_network:
+    driver: bridge
+

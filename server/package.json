@@ -8,7 +8,7 @@
     "dev": "nodemon src/index.js",
     "build": "npx prisma generate",
     "start": "node src/index.js",
-    "test": "NODE_ENV=test node --env-file=.env --test tests/**/*.test.js",
+    "test": "NODE_ENV=test node --env-file=.env --test --test-concurrency=1 tests/**/*.test.js",
     "seed": "node prisma/seed.js",
     "db:reset": "node --env-file=.env scripts/reset-db.js",
     "db:demo-reset": "DEMO_RESET=true node --env-file=.env scripts/reset-db.js",
